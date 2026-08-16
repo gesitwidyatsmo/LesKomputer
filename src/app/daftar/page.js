@@ -55,7 +55,8 @@ export default function PendaftaranSiswaPage() {
 
         if (mData && mData.length > 0) {
           setModulList(mData);
-          setFormData((f) => ({ ...f, modul_id: mData[0].id }));
+          const firstActive = mData.find((m) => (m.status || "Aktif") === "Aktif");
+          setFormData((f) => ({ ...f, modul_id: firstActive ? firstActive.id : "" }));
         }
         if (kData && kData.length > 0) {
           setKelasList(kData);
@@ -100,6 +101,13 @@ export default function PendaftaranSiswaPage() {
     if (!formData.tanggal_lahir) return "Tanggal lahir wajib diisi.";
     if (!formData.wa.trim()) return "Nomor WhatsApp aktif wajib diisi.";
     if (!formData.modul_id) return "Silakan pilih modul kursus yang diminati.";
+    const chosenModul = modulList.find((m) => m.id === formData.modul_id);
+    if (!chosenModul || chosenModul.status === "Tidak Aktif") {
+      return "Modul yang dipilih tidak tersedia saat ini.";
+    }
+    if (chosenModul.status === "Akan Datang") {
+      return "Modul ini berstatus 'Akan Datang' dan belum dapat dipilih untuk pendaftaran.";
+    }
     if (!formData.password) return "Kata sandi (password) wajib diisi.";
     if (formData.password.length < 6) return "Kata sandi minimal 6 karakter.";
     if (formData.password !== formData.confirm_password) return "Konfirmasi kata sandi tidak cocok.";
@@ -498,42 +506,63 @@ export default function PendaftaranSiswaPage() {
                         Pilih Modul Kursus <span className="text-rose-600 font-black">*</span>
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {modulList.map((m) => {
-                          const isSelected = formData.modul_id === m.id;
-                          return (
-                            <label
-                              key={m.id}
-                              className={`p-3.5 border-2 border-black cursor-pointer transition-all flex items-start gap-3 select-none ${
-                                isSelected
-                                  ? "bg-amber-200 shadow-[3px_3px_0px_0px_#000] -translate-x-0.5 -translate-y-0.5"
-                                  : "bg-white hover:bg-yellow-50 shadow-[2px_2px_0px_0px_#000]"
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name="modul_id"
-                                value={m.id}
-                                checked={isSelected}
-                                onChange={handleChange("modul_id")}
-                                className="mt-1 accent-orange-600 cursor-pointer"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-lg">{m.icon || "💻"}</span>
-                                  <p className="font-heading font-black text-sm text-black leading-tight">
-                                    {m.nama}
+                        {modulList
+                          .filter((m) => (m.status || "Aktif") !== "Tidak Aktif")
+                          .map((m) => {
+                            const isComingSoon = (m.status || "Aktif") === "Akan Datang";
+                            const isSelected = !isComingSoon && formData.modul_id === m.id;
+
+                            return (
+                              <label
+                                key={m.id}
+                                className={`p-3.5 border-2 border-black transition-all flex items-start gap-3 select-none relative ${
+                                  isComingSoon
+                                    ? "bg-slate-100/80 border-dashed border-slate-400 opacity-75 cursor-not-allowed"
+                                    : isSelected
+                                    ? "bg-amber-200 shadow-[3px_3px_0px_0px_#000] -translate-x-0.5 -translate-y-0.5 cursor-pointer"
+                                    : "bg-white hover:bg-yellow-50 shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="modul_id"
+                                  value={m.id}
+                                  checked={isSelected}
+                                  disabled={isComingSoon}
+                                  onChange={isComingSoon ? () => {} : handleChange("modul_id")}
+                                  className="mt-1 accent-orange-600 cursor-pointer disabled:cursor-not-allowed"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className="text-lg">{m.icon || "💻"}</span>
+                                      <p className="font-heading font-black text-sm text-black leading-tight truncate">
+                                        {m.nama}
+                                      </p>
+                                    </div>
+                                    {isComingSoon && (
+                                      <span className="px-1.5 py-0.5 bg-amber-300 text-black border border-black font-mono text-[9px] font-bold uppercase shadow-[1px_1px_0px_0px_#000]">
+                                        Akan Datang
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-slate-700 mt-1 line-clamp-2">
+                                    {m.deskripsi || `${m.total_pertemuan || 10} Pertemuan Belajar`}
                                   </p>
+                                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                    <span className="inline-block px-1.5 py-0.5 bg-white border border-black font-mono text-[10px] font-bold text-black">
+                                      {m.total_pertemuan || 10} Pertemuan
+                                    </span>
+                                    {isComingSoon && (
+                                      <span className="text-[10px] font-mono text-amber-700 font-bold">
+                                        [Segera Hadir]
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                                <p className="text-xs text-slate-700 mt-1 line-clamp-2">
-                                  {m.deskripsi || `${m.total_pertemuan || 10} Pertemuan Belajar`}
-                                </p>
-                                <span className="inline-block px-1.5 py-0.5 bg-white border border-black font-mono text-[10px] font-bold text-black mt-2">
-                                  {m.total_pertemuan || 10} Pertemuan
-                                </span>
-                              </div>
-                            </label>
-                          );
-                        })}
+                              </label>
+                            );
+                          })}
                       </div>
                     </div>
 
@@ -550,7 +579,7 @@ export default function PendaftaranSiswaPage() {
                         <option value="">-- [PILIHAN] Konsultasikan Jadwal dengan Admin Nanti --</option>
                         {kelasList.map((k) => (
                           <option key={k.id} value={k.id}>
-                            {k.nama} • {k.jadwal || "Hari Fleksibel"} ({k.waktu || "16.00-18.00"}) - {k.ruangan || "Lab 1"}
+                            {k.nama} • {k.jadwal || "Hari Fleksibel"} ({k.waktu || "16.00-18.00"})
                           </option>
                         ))}
                       </select>

@@ -8,9 +8,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  MapPin,
   AlertCircle,
-  Sparkles,
 } from "lucide-react";
 
 function StatusBadge({ status }) {
@@ -259,7 +257,7 @@ export default function JadwalPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-4 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg flex items-center gap-3">
             <div className="p-2.5 bg-amber-300 border border-black rounded-lg shrink-0">
               <Calendar className="w-4 h-4 text-black" />
@@ -284,20 +282,6 @@ export default function JadwalPage() {
               </p>
               <p className="font-heading font-black text-sm text-black">
                 {currentSiswa.waktu || "16.00 - 18.00 WIB"}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-4 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg flex items-center gap-3">
-            <div className="p-2.5 bg-purple-300 border border-black rounded-lg shrink-0">
-              <MapPin className="w-4 h-4 text-black" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-500 uppercase">
-                Ruangan Belajar
-              </p>
-              <p className="font-heading font-black text-sm text-black">
-                {currentSiswa.ruangan || "Lab Komputer GWA"}
               </p>
             </div>
           </div>

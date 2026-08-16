@@ -19,6 +19,7 @@ function ModulModal({ modul, onClose, onSaved }) {
 		icon: modul?.icon || '💻',
 		total_pertemuan: modul?.total_pertemuan || 10,
 		urutan: modul?.urutan ?? 0,
+		status: modul?.status || 'Aktif',
 	});
 	const [saving, setSaving] = useState(false);
 	const [err, setErr] = useState('');
@@ -29,7 +30,12 @@ function ModulModal({ modul, onClose, onSaved }) {
 			return;
 		}
 		setSaving(true);
-		const { error } = await upsertModul({ ...form, urutan: Number(form.urutan), total_pertemuan: Number(form.total_pertemuan) });
+		const { error } = await upsertModul({ 
+			...form, 
+			status: form.status || 'Aktif',
+			urutan: Number(form.urutan), 
+			total_pertemuan: Number(form.total_pertemuan) 
+		});
 		if (error) {
 			setErr(error.message);
 			setSaving(false);
@@ -121,7 +127,7 @@ function ModulModal({ modul, onClose, onSaved }) {
 							/>
 						</div>
 
-						<div className='grid grid-cols-2 gap-3'>
+						<div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
 							<div>
 								<label className='block font-mono text-xs font-bold uppercase text-black mb-1'>Total Pertemuan</label>
 								<input
@@ -141,6 +147,17 @@ function ModulModal({ modul, onClose, onSaved }) {
 									onChange={(e) => setForm({ ...form, urutan: e.target.value })}
 									className='w-full border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-2 text-sm font-mono font-bold bg-white focus:bg-yellow-50 focus:outline-none'
 								/>
+							</div>
+							<div>
+								<label className='block font-mono text-xs font-bold uppercase text-black mb-1'>Status Modul</label>
+								<select
+									value={form.status}
+									onChange={(e) => setForm({ ...form, status: e.target.value })}
+									className='w-full border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2 py-2 text-sm font-mono font-bold bg-white focus:bg-yellow-50 focus:outline-none cursor-pointer'>
+									<option value='Aktif'>🟢 Aktif</option>
+									<option value='Tidak Aktif'>🔴 Tidak Aktif</option>
+									<option value='Akan Datang'>🟡 Akan Datang</option>
+								</select>
 							</div>
 						</div>
 					</div>
@@ -414,7 +431,7 @@ export default function ManajemenMateri() {
 	};
 
 	return (
-		<div className='flex flex-col h-full space-y-6'>
+		<div className='space-y-6 pb-12'>
 			{/* Page Header Banner */}
 			<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 border-2 border-black shadow-[4px_4px_0px_0px_#000] shrink-0'>
 				<div>
@@ -455,16 +472,16 @@ export default function ManajemenMateri() {
 					</option>
 					{modulList.map((m) => (
 						<option key={m.id} value={m.id}>
-							{m.icon} {m.nama}
+							{m.icon} {m.nama} [{m.status || 'Aktif'}]
 						</option>
 					))}
 				</select>
 			</div>
 
 			{/* Desktop: 2-panel side by side | Mobile: full panel */}
-			<div className='flex flex-1 min-h-0 gap-6'>
+			<div className='flex flex-col lg:flex-row items-start gap-6'>
 				{/* ── LEFT: Modul Sidebar — DESKTOP ONLY ── */}
-				<div className='hidden lg:flex w-64 xl:w-72 shrink-0 flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden'>
+				<div className='hidden lg:flex w-64 xl:w-72 shrink-0 lg:sticky lg:top-4 flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden'>
 					{/* Window Titlebar */}
 					<div className='flex items-center justify-between px-3 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none shrink-0'>
 						<div className='flex items-center gap-2'>
@@ -495,7 +512,7 @@ export default function ManajemenMateri() {
 						<Droppable droppableId="modul-list">
 							{(provided) => (
 								<div 
-									className='flex-1 overflow-y-auto p-2.5 space-y-2 bg-[#FFFDF5]'
+									className='p-2.5 space-y-2 bg-[#FFFDF5]'
 									{...provided.droppableProps}
 									ref={provided.innerRef}
 								>
@@ -533,7 +550,18 @@ export default function ManajemenMateri() {
 															</div>
 															<span className='text-xl leading-none shrink-0'>{modul.icon || '📚'}</span>
 															<div className='flex-1 min-w-0'>
-																<p className='font-heading font-black text-xs uppercase truncate'>{modul.nama}</p>
+																<div className='flex items-center justify-between gap-1'>
+																	<p className='font-heading font-black text-xs uppercase truncate'>{modul.nama}</p>
+																	<span className={`shrink-0 px-1.5 py-0.5 text-[8px] font-mono font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] ${
+																		modul.status === 'Tidak Aktif'
+																			? 'bg-rose-400 text-black'
+																			: modul.status === 'Akan Datang'
+																				? 'bg-amber-300 text-black'
+																				: 'bg-emerald-400 text-black'
+																	}`}>
+																		{modul.status === 'Tidak Aktif' ? 'Nonaktif' : modul.status || 'Aktif'}
+																	</span>
+																</div>
 																<p className={`font-mono text-[10px] truncate ${isSelected ? 'text-black font-bold' : 'text-slate-600'}`}>{modul.total_pertemuan} pertemuan</p>
 															</div>
 															{isSelected && <ChevronRight className='w-4 h-4 shrink-0 text-black' />}
@@ -557,7 +585,7 @@ export default function ManajemenMateri() {
 				</div>
 
 				{/* ── RIGHT: Materi Panel ── */}
-				<div className='flex-1 flex flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden min-w-0'>
+				<div className='flex-1 min-w-0 w-full flex flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden'>
 					{/* Window Titlebar */}
 					<div className='flex items-center justify-between px-4 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none shrink-0'>
 						<div className='flex items-center gap-2'>
@@ -577,8 +605,17 @@ export default function ManajemenMateri() {
 							<div className='flex items-center gap-3 min-w-0'>
 								<span className='text-3xl shrink-0 p-1.5 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000]'>{selectedModul.icon || '📚'}</span>
 								<div className='min-w-0'>
-									<div className='flex items-center gap-2 mb-0.5'>
+									<div className='flex items-center gap-2 mb-0.5 flex-wrap'>
 										<h2 className='font-heading font-black text-black uppercase truncate text-sm sm:text-base'>{selectedModul.nama}</h2>
+										<span className={`px-2 py-0.5 text-[10px] font-mono font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] ${
+											selectedModul.status === 'Tidak Aktif'
+												? 'bg-rose-400 text-black'
+												: selectedModul.status === 'Akan Datang'
+													? 'bg-amber-300 text-black'
+													: 'bg-emerald-400 text-black'
+										}`}>
+											{selectedModul.status || 'Aktif'}
+										</span>
 										<button
 											onClick={() => {
 												setEditingModul(selectedModul);
@@ -617,9 +654,9 @@ export default function ManajemenMateri() {
 					</div>
 
 					{/* Pertemuan List */}
-					<div className='flex-1 overflow-y-auto p-3 sm:p-5 bg-[#FFFDF5]'>
+					<div className='p-3 sm:p-5 bg-[#FFFDF5]'>
 						{!selectedModul ? (
-							<div className='flex flex-col items-center justify-center h-full text-center py-20'>
+							<div className='flex flex-col items-center justify-center min-h-[350px] text-center py-20'>
 								<Layers className='w-12 h-12 text-slate-300 mb-3' />
 								<p className='font-heading font-black text-black uppercase'>Belum Ada Modul Dipilih</p>
 								<p className='font-mono text-xs text-slate-500 mt-1'>Pilih modul di panel kiri atau tambah modul baru.</p>

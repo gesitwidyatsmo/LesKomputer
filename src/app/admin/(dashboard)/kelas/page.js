@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Calendar as CalendarIcon, Clock, Users, Edit2, Trash2, ChevronRight, Loader2, Play, X, ChevronLeft, RefreshCw, BookOpen, Layers } from "lucide-react";
+import { Plus, Search, Calendar as CalendarIcon, Clock, Users, Edit2, Trash2, ChevronRight, Loader2, Play, X, ChevronLeft, RefreshCw } from "lucide-react";
 import { getSemuaKelas, upsertKelas, deleteKelas } from "@/lib/kelasService";
 import { getJadwalByKelas, upsertJadwal, deleteJadwal, deleteJadwalAndResequence, insertJadwalBatch, saveJadwalWithShift } from "@/lib/jadwalService";
-import { getSemuaModul } from "@/lib/modulService";
 import Swal from "sweetalert2";
 import ClientPortal from "@/components/ClientPortal";
 
@@ -13,7 +12,6 @@ const HARI_PILIHAN = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Min
 export default function ManajemenKelasJadwal() {
   // ── States untuk Kelas ──
   const [kelasList, setKelasList] = useState([]);
-  const [modulList, setModulList] = useState([]);
   const [kelasLoading, setKelasLoading] = useState(true);
   const [selectedKelas, setSelectedKelas] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,8 +28,6 @@ export default function ManajemenKelasJadwal() {
   const [editingKelas, setEditingKelas] = useState(null);
   const [formKelas, setFormKelas] = useState({
     nama: "",
-    modul_id: "",
-    ruangan: "Lab 1 (5 PC)",
     mentor: "Gesit Widi Atmoko",
     selectedDays: ["Senin", "Rabu"],
     jamMulai: "09:00",
@@ -63,12 +59,8 @@ export default function ManajemenKelasJadwal() {
   // ── Load Data Awal ──
   const loadKelas = useCallback(async () => {
     setKelasLoading(true);
-    const [{ data: kData }, { data: mData }] = await Promise.all([
-      getSemuaKelas(),
-      getSemuaModul()
-    ]);
+    const { data: kData } = await getSemuaKelas();
     if (kData) setKelasList(kData);
-    if (mData) setModulList(mData);
     setKelasLoading(false);
   }, []);
 
@@ -104,8 +96,6 @@ export default function ManajemenKelasJadwal() {
 
       setFormKelas({
         nama: kelas.nama || "",
-        modul_id: kelas.modul_id || "",
-        ruangan: kelas.ruangan || "Lab 1 (5 PC)",
         mentor: kelas.mentor || "Gesit Widi Atmoko",
         selectedDays: days,
         jamMulai: jMulai,
@@ -116,8 +106,6 @@ export default function ManajemenKelasJadwal() {
       setEditingKelas(null);
       setFormKelas({
         nama: "",
-        modul_id: modulList[0]?.id || "",
-        ruangan: "Lab 1 (5 PC)",
         mentor: "Gesit Widi Atmoko",
         selectedDays: ["Senin", "Rabu"],
         jamMulai: "09:00",
@@ -138,8 +126,6 @@ export default function ManajemenKelasJadwal() {
 
     const kelasData = {
       nama: formKelas.nama.trim(),
-      modul_id: formKelas.modul_id || null,
-      ruangan: formKelas.ruangan,
       mentor: formKelas.mentor,
       jadwal: formKelas.selectedDays.join(" & "),
       waktu: `${formKelas.jamMulai} - ${formKelas.jamSelesai}`,
@@ -229,13 +215,7 @@ export default function ManajemenKelasJadwal() {
       if (parts[1] && parts[1].length >= 4) jSelesai = parts[1].length === 4 ? `0${parts[1]}` : parts[1];
     }
 
-    let totalPertemuan = 10;
-    if (targetKelas.modul_id) {
-      const matchedModul = modulList.find(m => m.id === targetKelas.modul_id);
-      if (matchedModul?.total_pertemuan) {
-        totalPertemuan = matchedModul.total_pertemuan;
-      }
-    }
+    const totalPertemuan = 10;
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -458,7 +438,7 @@ export default function ManajemenKelasJadwal() {
 
   // ── Panel Kiri (Daftar Kelas) ──
   const LeftPanel = () => (
-    <div className="flex flex-col h-full bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden">
+    <div className="flex flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden">
       {/* Retro Window Bar */}
       <div className="flex items-center justify-between px-3.5 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none shrink-0">
         <div className="flex items-center gap-2">
@@ -498,7 +478,7 @@ export default function ManajemenKelasJadwal() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-[#FFFDF5]">
+      <div className="p-3 space-y-2 bg-[#FFFDF5]">
         {kelasLoading ? (
           <div className="flex flex-col justify-center items-center py-10 gap-2">
             <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
@@ -532,9 +512,6 @@ export default function ManajemenKelasJadwal() {
                           : 'bg-slate-200 text-slate-800'
                       }`}>
                         {kelas.status}
-                      </span>
-                      <span className="font-mono text-[9px] text-slate-600 font-bold bg-white px-1 border border-black">
-                        {kelas.ruangan || 'Lab 1'}
                       </span>
                     </div>
                     <h3 className="font-heading font-black text-sm text-black truncate uppercase">
@@ -575,9 +552,9 @@ export default function ManajemenKelasJadwal() {
 
   // ── Panel Kanan (Sesi Pertemuan) ──
   const RightPanel = () => (
-    <div className="flex flex-col h-full bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden">
+    <div className="flex flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden">
       {!selectedKelas ? (
-        <div className="flex flex-col items-center justify-center h-full text-slate-500 p-8 bg-[#FFFDF5]">
+        <div className="flex flex-col items-center justify-center min-h-[350px] text-slate-500 p-8 bg-[#FFFDF5]">
           <CalendarIcon className="w-16 h-16 text-black/20 mb-3" />
           <p className="font-heading font-black text-base text-black uppercase">PILIH BATCH KELAS</p>
           <p className="font-mono text-xs text-slate-500 mt-1">[SYS_INFO] Klik salah satu kelas pada panel kiri untuk melihat dan mengelola sesi jadwal pertemuan.</p>
@@ -610,9 +587,6 @@ export default function ManajemenKelasJadwal() {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg sm:text-xl font-heading font-black text-black uppercase">{selectedKelas.nama}</h2>
-                  <span className="px-2 py-0.5 bg-yellow-300 border border-black font-mono text-[10px] font-bold text-black">
-                    {selectedKelas.ruangan || 'Lab 1'}
-                  </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-1.5 font-mono text-xs text-slate-800">
                   <span className="flex items-center gap-1"><CalendarIcon className="w-3.5 h-3.5 text-orange-600" /> {selectedKelas.jadwal}</span>
@@ -640,7 +614,7 @@ export default function ManajemenKelasJadwal() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 bg-[#FFFDF5]">
+          <div className="p-4 sm:p-5 bg-[#FFFDF5]">
             {jadwalLoading ? (
               <div className="flex flex-col justify-center items-center py-12 gap-2">
                 <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
@@ -713,14 +687,14 @@ export default function ManajemenKelasJadwal() {
                         className="p-1.5 bg-yellow-300 hover:bg-yellow-200 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
                         title="Edit Sesi"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Edit2 className="w-3 h-3" />
                       </button>
                       <button
                         onClick={(e) => handleDeleteSesi(sesi.id, sesi.pertemuan_ke, e)}
                         className="p-1.5 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
                         title="Hapus Sesi"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
                   </div>
@@ -734,45 +708,45 @@ export default function ManajemenKelasJadwal() {
   );
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
+    <div className="space-y-6 pb-12">
       {/* ── HEADER BANNER ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 border-2 border-black shadow-[4px_4px_0px_0px_#000] shrink-0">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="font-mono text-xs font-bold px-2 py-0.5 bg-amber-300 border border-black text-black">
-              [SYS_SCHEDULE // LAB_5PC]
+              [SYS_SCHEDULE]
             </span>
             <span className="font-mono text-xs text-slate-500 font-bold">
-              WORKSTATIONS: 5 PC / LAB
+              TIMELINE SESI KELAS
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-heading font-black uppercase tracking-tight text-black">
-            Manajemen Batch Kelas & Jadwal Lab
+            Manajemen Batch Kelas & Jadwal
           </h1>
           <p className="text-xs sm:text-sm font-mono text-slate-600 mt-0.5">
-            Atur batch kelas, alokasi ruang lab, dan generate timeline sesi pertemuan otomatis.
+            Atur batch kelas dan generate timeline sesi pertemuan secara otomatis.
           </p>
         </div>
       </div>
 
       {/* ── DESKTOP: 2-PANEL SIDE BY SIDE ── */}
-      <div className="hidden lg:flex flex-1 gap-6 min-h-0">
-        <div className="w-1/3 min-h-0">
+      <div className="hidden lg:flex items-start gap-6">
+        <div className="w-1/3 min-w-[320px] lg:sticky lg:top-4 shrink-0">
           <LeftPanel />
         </div>
-        <div className="w-2/3 min-h-0">
+        <div className="w-2/3 flex-1 min-w-0">
           <RightPanel />
         </div>
       </div>
 
       {/* ── MOBILE: SINGLE PANEL VIEW TOGGLE ── */}
-      <div className="flex-1 lg:hidden min-h-0">
+      <div className="lg:hidden">
         {mobileView === "list" ? (
-          <div className="h-full">
+          <div>
             <LeftPanel />
           </div>
         ) : (
-          <div className="h-full">
+          <div>
             <RightPanel />
           </div>
         )}
@@ -813,34 +787,6 @@ export default function ManajemenKelasJadwal() {
                     className="w-full border-2 border-black px-3 py-2 text-sm font-medium focus:bg-yellow-50 focus:outline-none shadow-[2px_2px_0px_0px_#000]"
                     placeholder="Misal: MS Office – Batch 44"
                   />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-mono text-xs font-bold uppercase text-black mb-1">[SELECT] Modul Kursus</label>
-                    <select
-                      value={formKelas.modul_id}
-                      onChange={e => setFormKelas({...formKelas, modul_id: e.target.value})}
-                      className="w-full border-2 border-black px-3 py-2 text-sm font-bold bg-white focus:bg-cyan-50 focus:outline-none shadow-[2px_2px_0px_0px_#000] cursor-pointer"
-                    >
-                      <option value="">-- Pilih Modul --</option>
-                      {modulList.map(m => (
-                        <option key={m.id} value={m.id}>{m.nama}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-mono text-xs font-bold uppercase text-black mb-1">[SELECT] Ruangan Lab</label>
-                    <select
-                      value={formKelas.ruangan}
-                      onChange={e => setFormKelas({...formKelas, ruangan: e.target.value})}
-                      className="w-full border-2 border-black px-3 py-2 text-sm font-bold bg-white focus:bg-cyan-50 focus:outline-none shadow-[2px_2px_0px_0px_#000] cursor-pointer"
-                    >
-                      <option value="Lab 1 (5 PC)">Lab 1 (5 PC)</option>
-                      <option value="Lab 2 (5 PC)">Lab 2 (5 PC)</option>
-                      <option value="Lab 3 (5 PC)">Lab 3 (5 PC)</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div>

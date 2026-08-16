@@ -13,7 +13,6 @@ import {
   Clock,
   Star,
   Award,
-  MapPin,
   Sparkles,
   Smile,
 } from "lucide-react";
@@ -204,7 +203,7 @@ export default function SiswaDashboard() {
               .split(" ")
               .slice(0, 2)
               .join(" "),
-            sub: currentSiswa.ruangan || "Lab Komputer",
+            sub: "Instruktur Kelas",
             icon: Award,
             stripColor: "bg-purple-500",
             iconBg: "bg-purple-200",
@@ -313,18 +312,12 @@ export default function SiswaDashboard() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs font-medium text-slate-800">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-black shrink-0" />
-                    <span>
-                      {currentSiswa.jadwal || "Senin & Rabu"} · Jam{" "}
-                      {currentSiswa.waktu || "16.00 - 18.00"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-black shrink-0" />
-                    <span>{currentSiswa.ruangan || "Lab Komputer (1 Siswa 1 PC)"}</span>
-                  </div>
+                <div className="flex items-center gap-2 pt-2 text-xs font-medium text-slate-800">
+                  <Clock className="w-4 h-4 text-black shrink-0" />
+                  <span>
+                    {currentSiswa.jadwal || "Senin & Rabu"} · Jam{" "}
+                    {currentSiswa.waktu || "16.00 - 18.00"}
+                  </span>
                 </div>
               </div>
 

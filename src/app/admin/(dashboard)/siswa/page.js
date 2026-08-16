@@ -228,9 +228,17 @@ function SiswaFormModal({ siswa, kelasList, modulList, onClose, onSaved }) {
               <Field label="[SELECT] Modul Kursus" required>
                 <select value={form.modul_id} onChange={set("modul_id")} className={selectCls}>
                   <option value="">-- Pilih Modul --</option>
-                  {modulList.map((m) => (
-                    <option key={m.id} value={m.id}>{m.icon} {m.nama}</option>
-                  ))}
+                  {modulList
+                    .filter((m) => (m.status || 'Aktif') !== 'Tidak Aktif' || m.id === form.modul_id)
+                    .map((m) => (
+                      <option 
+                        key={m.id} 
+                        value={m.id}
+                        disabled={(m.status || 'Aktif') === 'Akan Datang' && m.id !== form.modul_id}
+                      >
+                        {m.icon} {m.nama} {(m.status || 'Aktif') === 'Akan Datang' ? '(Akan Datang)' : (m.status === 'Tidak Aktif' ? '(Nonaktif)' : '')}
+                      </option>
+                    ))}
                 </select>
               </Field>
             </div>

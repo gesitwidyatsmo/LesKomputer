@@ -257,9 +257,6 @@ export default function DashboardOverview() {
                 >
                   <div className="flex justify-between items-start mb-1.5">
                     <h4 className="font-heading font-bold text-sm text-black">{jadwal.nama}</h4>
-                    <span className="px-1.5 py-0.5 bg-cyan-200 border border-black text-black text-[10px] font-mono font-bold">
-                      {jadwal.ruangan || 'Lab 1'}
-                    </span>
                   </div>
                   <div className="text-xs font-mono text-slate-700 flex justify-between items-center mt-2 pt-2 border-t border-dashed border-slate-300">
                     <span className="font-semibold">{jadwal.jadwal} // {jadwal.waktu}</span>
