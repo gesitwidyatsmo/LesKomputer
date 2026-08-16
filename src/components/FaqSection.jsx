@@ -2,46 +2,55 @@
 
 import { useState } from "react";
 import { HelpCircle, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
+import { formatWhatsAppUrl } from "@/lib/landingService";
 
-export default function FaqSection({ data }) {
+export default function FaqSection({ data, globalWhatsapp }) {
   const [openIndex, setOpenIndex] = useState(0);
 
+  const showBadge = data?.showBadge !== false;
   const badgeText = data?.badgeText || "[KNOWLEDGE_BASE // FAQ]";
   const titlePrefix = data?.titlePrefix || "PERTANYAAN UMUM";
   const titleHighlight = data?.titleHighlight || "SEPUTAR KELAS & FASILITAS";
   const description = data?.description || "Punya pertanyaan sebelum mendaftar? Temukan jawabannya di bawah ini atau tanyakan langsung ke admin kami.";
 
+  const showHelpBox = data?.showHelpBox !== false;
   const helpBoxTitle = data?.helpBoxTitle || "Masih Ada Pertanyaan Lain?";
   const helpBoxDesc = data?.helpBoxDesc || "Tim admin & mentor kami siap menjawab konsultasi kebutuhan belajar Anda.";
   const helpBoxButtonText = data?.helpBoxButtonText || "Chat Admin WhatsApp";
   const helpBoxWhatsappMessage = data?.helpBoxWhatsappMessage || "Halo Admin GWA, saya ingin tanya-tanya seputar kursus.";
 
-  const helpWaLink = `https://wa.me/6280000000000?text=${encodeURIComponent(helpBoxWhatsappMessage)}`;
+  const helpWaLink = formatWhatsAppUrl(globalWhatsapp, helpBoxWhatsappMessage);
 
   const defaultFaqs = [
     {
+      isVisible: true,
       q: "Saya benar-benar awam dan belum pernah menyentuh komputer. Apakah bisa ikut?",
       a: "Tentu sangat bisa! Kurikulum kami dimulai dari cara penggunaan dasar, pengenalan keyboard shortcuts, hingga logika penggunaan software secara bertahap. Dengan konsep maksimal 5 siswa per sesi, mentor akan memandu Anda secara personal step-by-step tanpa perlu merasa malu atau tertinggal."
     },
     {
+      isVisible: true,
       q: "Apakah jadwal belajarnya fleksibel jika saya seorang pekerja atau mahasiswa?",
       a: "Ya! Kami menyediakan pilihan shift belajar yang fleksibel: Shift Pagi (08.30 - 10.30 WIB), Shift Siang (13.30 - 15.30 WIB), Shift Sore (16.00 - 18.00 WIB), dan Shift Malam (19.00 - 21.00 WIB). Anda juga bisa berkonsultasi untuk penyesuaian jadwal khusus."
     },
     {
+      isVisible: true,
       q: "Apakah saya perlu membawa laptop sendiri saat kelas berlangsung?",
       a: "Tidak perlu repot! Kami sudah menyediakan 5 unit komputer PC berspesifikasi tinggi lengkap dengan software Microsoft Office berlisensi di lab belajar ber-AC. Anda cukup datang dan fokus belajar."
     },
     {
+      isVisible: true,
       q: "Apakah lulusan akan mendapatkan sertifikat resmi?",
       a: "Ya! Setelah menyelesaikan modul dan lulus ujian proyek praktik, Anda akan menerima Sertifikat Fisik Resmi ber-QR Code serta E-Sertifikat Digital (PDF) berstempel resmi yang dapat dilampirkan untuk melamar kerja di perusahaan swasta, BUMN, maupun berkas instansi."
     },
     {
+      isVisible: true,
       q: "Bagaimana jika ada materi yang belum saya pahami setelah sesi selesai?",
       a: "Kami memberikan Garansi Bimbingan Sampai Bisa. Anda berhak mendapatkan sesi konsultasi & asistensi tambahan dengan mentor serta akses materi pada portal siswa secara gratis tanpa dipungut biaya tambahan."
     }
   ];
 
-  const faqs = data?.faqs || defaultFaqs;
+  const rawFaqs = data?.faqs || defaultFaqs;
+  const faqs = rawFaqs.filter((f) => f.isVisible !== false);
 
   const toggleFaq = (idx) => {
     setOpenIndex(openIndex === idx ? null : idx);
@@ -53,7 +62,7 @@ export default function FaqSection({ data }) {
         
         {/* Header */}
         <div className="text-center mb-16">
-          {badgeText && (
+          {showBadge && badgeText && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-rose-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
               <HelpCircle className="w-3.5 h-3.5" /> {badgeText}
             </div>
@@ -112,7 +121,7 @@ export default function FaqSection({ data }) {
         </div>
 
         {/* Bottom Help Contact Box */}
-        {helpBoxTitle && (
+        {showHelpBox && helpBoxTitle && (
           <div className="mt-12 p-6 bg-cyan-100 border-3 border-black shadow-[4px_4px_0px_0px_#000] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <h4 className="font-heading font-black text-lg text-black">

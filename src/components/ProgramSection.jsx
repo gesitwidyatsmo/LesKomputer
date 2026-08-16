@@ -6,25 +6,40 @@ import {
   Presentation, 
   Layers, 
   Clock, 
-  BookOpen
+  BookOpen,
+  Terminal
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function ProgramSection({ data }) {
+import { formatWhatsAppUrl } from "@/lib/landingService";
+
+export default function ProgramSection({ data, globalWhatsapp }) {
   const [activeModal, setActiveModal] = useState(null);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setActiveModal(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const showBadge = data?.showBadge !== false;
   const badgeText = data?.badgeText || "[CURRICULUM_MATRIX // 2026]";
   const titlePrefix = data?.titlePrefix || "PILIH MODUL KEAHLIAN";
   const titleHighlight = data?.titleHighlight || "SESUAI TARGET KARIR ANDA";
   const description = data?.description || "Setiap modul dirancang dari level dasar hingga mahir dengan kurikulum berbasis proyek nyata. Anda juga bisa mengambil paket lengkap 3-in-1 dengan potongan harga khusus.";
 
+  const showPromoBanner = data?.showPromoBanner !== false;
   const promoBadge = data?.promoBadge || "🔥 PAKET KOMPLIT ALL-IN-ONE";
   const promoTitle = data?.promoTitle || "Paket Mahir Komputer Kantor (Word + Excel + PPT)";
   const promoDesc = data?.promoDesc || "Ambil 3 modul sekaligus untuk penguasaan total administrasi kantor & bisnis. Dapatkan diskon spesial, modul cetak eksklusif, serta garansi bimbingan sampai mahir!";
   const promoButtonText = data?.promoButtonText || "KLAIM PROMO PAKET 3-IN-1";
   const promoWhatsappMessage = data?.promoWhatsappMessage || "Halo Admin GWA, saya tertarik dengan Paket Komplit 3-in-1 (Word+Excel+PPT).";
 
-  const promoWaLink = `https://wa.me/6280000000000?text=${encodeURIComponent(promoWhatsappMessage)}`;
+  const promoWaLink = formatWhatsAppUrl(globalWhatsapp, promoWhatsappMessage);
 
   const defaultPrograms = [
     {
@@ -101,18 +116,20 @@ export default function ProgramSection({ data }) {
     powerpoint: <Presentation className="w-8 h-8 text-black" />
   };
 
-  const programs = data?.items || defaultPrograms;
-  const currentProgram = programs.find((p) => p.id === activeModal);
+  const rawPrograms = data?.items || defaultPrograms;
+  const programs = rawPrograms.filter((p) => p.isVisible !== false);
+
+  const currentProgram = activeModal ? (programs.find(p => p.id === activeModal) || defaultPrograms.find(p => p.id === activeModal)) : null;
 
   return (
-    <section id="program" className="py-20 lg:py-28 bg-[#FFFDF5] bg-retro-grid border-b-3 border-black">
+    <section id="program" className="py-20 lg:py-28 bg-[#FFFDF5] border-b-3 border-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          {badgeText && (
+          {showBadge && badgeText && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-emerald-400 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
-              <Layers className="w-3.5 h-3.5" /> {badgeText}
+              <Terminal className="w-3.5 h-3.5" /> {badgeText}
             </div>
           )}
           
@@ -225,22 +242,23 @@ export default function ProgramSection({ data }) {
         </div>
 
         {/* 3-in-1 Bundle Promo Card */}
-        {promoTitle && (
-          <div className="mt-12 bg-amber-300 border-3 border-black shadow-[6px_6px_0px_0px_#000] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        {showPromoBanner && promoTitle && (
+          <div className="mt-12 bg-amber-300 border-3 border-black shadow-[6px_6px_0px_0px_#000] p-5 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 bg-black text-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] flex items-center justify-center font-mono font-black text-2xl shrink-0 hidden sm:flex">
-                3-in-1
+              <div className="px-3.5 py-2.5 bg-black text-amber-300 border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] flex flex-col items-center justify-center font-mono font-black shrink-0 hidden sm:flex leading-none text-center">
+                <span className="text-base tracking-tight text-amber-300">3-IN-1</span>
+                <span className="text-[9px] text-emerald-400 font-bold uppercase mt-0.5">BUNDLE</span>
               </div>
               <div>
                 {promoBadge && (
-                  <div className="inline-block bg-black text-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase mb-1">
+                  <div className="inline-block bg-black text-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase mb-1.5 shadow-[1px_1px_0px_0px_#000]">
                     {promoBadge}
                   </div>
                 )}
-                <h3 className="text-2xl sm:text-3xl font-heading font-black text-black">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-heading font-black text-black leading-snug">
                   {promoTitle}
                 </h3>
-                <p className="text-sm font-bold text-slate-900 mt-1 max-w-2xl">
+                <p className="text-xs sm:text-sm font-medium text-slate-900 mt-1.5 max-w-2xl leading-relaxed">
                   {promoDesc}
                 </p>
               </div>
@@ -250,7 +268,7 @@ export default function ProgramSection({ data }) {
               href={promoWaLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3.5 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs sm:text-sm font-black uppercase border-2 border-black shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all whitespace-nowrap shrink-0 flex items-center gap-2"
+              className="px-5 py-3 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs sm:text-sm font-black uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all whitespace-nowrap shrink-0 flex items-center gap-2 self-stretch sm:self-auto justify-center"
             >
               <span>&gt;_</span> {promoButtonText}
             </a>
@@ -260,7 +278,7 @@ export default function ProgramSection({ data }) {
       </div>
 
       {/* Neobrutalist Curriculum Modal */}
-      {currentProgram && (
+      {activeModal && currentProgram && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
@@ -345,7 +363,7 @@ export default function ProgramSection({ data }) {
               {/* CTA Action */}
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <a 
-                  href={`https://wa.me/6280000000000?text=Halo%20Admin%20GWA,%20saya%20ingin%20mendaftar%20kelas%20${encodeURIComponent(currentProgram.title)}.`}
+                  href={formatWhatsAppUrl(globalWhatsapp, `Halo Admin GWA, saya ingin mendaftar kelas ${currentProgram.title}.`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 py-3.5 px-4 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs sm:text-sm font-black uppercase border-2 border-black shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-center flex items-center justify-center gap-2"

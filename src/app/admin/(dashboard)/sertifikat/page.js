@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Download, Search, FileText, Printer, CheckCircle, Loader2, Award, UserCheck, ShieldCheck } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { QRCodeCanvas } from "qrcode.react";
 import { getLulusanSiswa, uploadSertifikat, simpanSertifikatRecord, getRiwayatSertifikat } from "@/lib/adminService";
 import Swal from "sweetalert2";
 
@@ -50,7 +51,28 @@ export default function Sertifikat() {
       const canvas = await html2canvas(certificateRef.current, {
         scale: 2,
         useCORS: true,
-        logging: false
+        logging: false,
+        backgroundColor: "#FFFDF5",
+        onclone: (clonedDoc) => {
+          // Remove any CSS stylesheet or variables that might contain modern lab/oklch colors
+          const elList = clonedDoc.querySelectorAll("*");
+          elList.forEach((el) => {
+            try {
+              const cs = window.getComputedStyle(el);
+              if (cs.backgroundColor && (cs.backgroundColor.includes("lab") || cs.backgroundColor.includes("oklch"))) {
+                el.style.backgroundColor = "#ffffff";
+              }
+              if (cs.color && (cs.color.includes("lab") || cs.color.includes("oklch"))) {
+                el.style.color = "#000000";
+              }
+              if (cs.borderColor && (cs.borderColor.includes("lab") || cs.borderColor.includes("oklch"))) {
+                el.style.borderColor = "#000000";
+              }
+            } catch (e) {
+              // ignore
+            }
+          });
+        }
       });
       
       const imgData = canvas.toDataURL("image/png");
@@ -86,15 +108,15 @@ export default function Sertifikat() {
       // Show success
       Swal.fire({
         icon: 'success',
-        title: 'Berhasil!',
+        title: 'Berhasil! 🎉',
         text: 'Sertifikat resmi berhasil dicetak & diarsipkan ke database.',
-        timer: 2000,
+        timer: 2500,
         showConfirmButton: false
       });
       
     } catch (error) {
       console.error("Gagal membuat PDF:", error);
-      Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat memproses sertifikat PDF.' });
+      Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat memproses sertifikat PDF: ' + (error.message || "") });
     } finally {
       setIsGenerating(false);
     }
@@ -243,58 +265,102 @@ export default function Sertifikat() {
                     {/* The actual certificate that will be captured by html2canvas */}
                     <div 
                       ref={certificateRef}
-                      className="w-[1122px] h-[793px] bg-[#FFFDF5] relative p-16 shadow-2xl border-8 border-black select-none"
+                      style={{
+                        width: '1122px',
+                        height: '793px',
+                        backgroundColor: '#FFFDF5',
+                        border: '8px solid #000000',
+                        color: '#000000',
+                        position: 'relative',
+                        padding: '64px',
+                        boxSizing: 'border-box',
+                        fontFamily: 'sans-serif',
+                      }}
+                      className="shadow-2xl select-none"
                     >
                       {/* Inner border */}
-                      <div className="absolute inset-4 border-2 border-black pointer-events-none"></div>
+                      <div style={{ position: 'absolute', inset: '16px', border: '2px solid #000000', pointerEvents: 'none' }} />
 
                       {/* Corner Decorations */}
-                      <div className="absolute top-6 left-6 w-16 h-16 border-t-4 border-l-4 border-orange-500"></div>
-                      <div className="absolute top-6 right-6 w-16 h-16 border-t-4 border-r-4 border-orange-500"></div>
-                      <div className="absolute bottom-6 left-6 w-16 h-16 border-b-4 border-l-4 border-orange-500"></div>
-                      <div className="absolute bottom-6 right-6 w-16 h-16 border-b-4 border-r-4 border-orange-500"></div>
+                      <div style={{ position: 'absolute', top: '24px', left: '24px', width: '64px', height: '64px', borderTop: '4px solid #FF6B00', borderLeft: '4px solid #FF6B00' }} />
+                      <div style={{ position: 'absolute', top: '24px', right: '24px', width: '64px', height: '64px', borderTop: '4px solid #FF6B00', borderRight: '4px solid #FF6B00' }} />
+                      <div style={{ position: 'absolute', bottom: '24px', left: '24px', width: '64px', height: '64px', borderBottom: '4px solid #FF6B00', borderLeft: '4px solid #FF6B00' }} />
+                      <div style={{ position: 'absolute', bottom: '24px', right: '24px', width: '64px', height: '64px', borderBottom: '4px solid #FF6B00', borderRight: '4px solid #FF6B00' }} />
 
                       {/* Header */}
-                      <div className="text-center mb-12">
-                        <div className="w-16 h-16 mx-auto bg-black text-white font-heading font-black text-3xl flex items-center justify-center border-2 border-black shadow-[3px_3px_0px_0px_#FF6B00] mb-3">
+                      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                        <div style={{ width: '64px', height: '64px', margin: '0 auto 12px', backgroundColor: '#000000', color: '#FFFFFF', fontSize: '30px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #000000', boxShadow: '3px 3px 0px 0px #FF6B00' }}>
                           G
                         </div>
-                        <h1 className="text-3xl font-heading font-black text-black tracking-widest uppercase">
+                        <h1 style={{ fontSize: '28px', fontWeight: '900', color: '#000000', letterSpacing: '2px', textTransform: 'uppercase', margin: '0' }}>
                           Sertifikat Kelulusan &amp; Kompetensi
                         </h1>
-                        <p className="text-sm font-mono text-slate-700 font-bold tracking-widest mt-1 uppercase">
+                        <p style={{ fontSize: '13px', fontWeight: '700', color: '#334155', letterSpacing: '1.5px', marginTop: '4px', textTransform: 'uppercase' }}>
                           GWA TECH COMPUTER LEARNING CENTER
                         </p>
-                        <p className="font-mono text-xs text-slate-500 mt-2 bg-yellow-100 px-3 py-1 border border-black inline-block">
+                        <p style={{ fontSize: '12px', color: '#475569', marginTop: '8px', backgroundColor: '#FEF9C3', padding: '4px 12px', border: '1px solid #000000', display: 'inline-block' }}>
                           NO: {selectedSiswa.id}/CERT/GWA/{new Date().getFullYear()}
                         </p>
                       </div>
 
                       {/* Body */}
-                      <div className="text-center space-y-4 mb-12">
-                        <p className="font-mono text-sm uppercase text-slate-600 font-bold">Diberikan secara resmi kepada:</p>
-                        <h2 className="text-4xl font-heading font-black text-black uppercase border-b-4 border-black inline-block px-12 pb-1 tracking-wider">
+                      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                        <p style={{ fontSize: '13px', textTransform: 'uppercase', color: '#475569', fontWeight: '700', marginBottom: '8px' }}>
+                          Diberikan secara resmi kepada:
+                        </p>
+                        <h2 style={{ fontSize: '36px', fontWeight: '900', color: '#000000', textTransform: 'uppercase', borderBottom: '4px solid #000000', display: 'inline-block', padding: '0 48px 4px', letterSpacing: '1px', margin: '0 0 16px' }}>
                           {selectedSiswa.nama}
                         </h2>
-                        <p className="text-base text-slate-700 max-w-2xl mx-auto leading-relaxed mt-4 font-sans font-medium">
-                          Telah menyelesaikan seluruh rangkaian program pelatihan modul <strong className="text-black font-black bg-yellow-200 px-1 border border-black">{selectedSiswa.modul}</strong> dengan evaluasi tugas praktik dan dinyatakan <strong className="text-emerald-700 font-black">LULUS</strong> dengan predikat <strong>"{selectedSiswa.predikat || 'Sangat Memuaskan'}"</strong> (Skor: {selectedSiswa.nilaiAkhir || 90}).
+                        <p style={{ fontSize: '16px', color: '#1E293B', maxWidth: '720px', margin: '16px auto 0', lineHeight: '1.6', fontWeight: '500' }}>
+                          Telah menyelesaikan seluruh rangkaian program pelatihan modul <strong style={{ color: '#000000', backgroundColor: '#FEF08A', padding: '2px 6px', border: '1px solid #000000' }}>{selectedSiswa.modul}</strong> dengan evaluasi tugas praktik dan dinyatakan <strong style={{ color: '#047857', fontWeight: '900' }}>LULUS</strong> dengan predikat <strong>&quot;{selectedSiswa.predikat || 'Sangat Memuaskan'}&quot;</strong> (Skor: {selectedSiswa.nilaiAkhir || 90}).
                         </p>
                       </div>
 
-                      {/* Footer Signatures */}
-                      <div className="absolute bottom-14 left-24 text-center font-mono">
-                        <p className="text-xs font-bold text-slate-600 uppercase mb-14">Instruktur &amp; Penguji</p>
-                        <div className="border-b-2 border-black w-48 mb-1.5"></div>
-                        <p className="font-heading font-black text-sm uppercase text-black">Gesit Widi Atmoko</p>
-                        <p className="text-[10px] text-slate-500 font-bold">Head Instructor</p>
+                      {/* Footer Signatures & QR Code Verification */}
+                      <div style={{ position: 'absolute', bottom: '48px', left: '80px', textAlign: 'center' }}>
+                        <p style={{ fontSize: '12px', fontWeight: '700', color: '#475569', textTransform: 'uppercase', marginBottom: '48px' }}>
+                          Instruktur &amp; Penguji
+                        </p>
+                        <div style={{ borderBottom: '2px solid #000000', width: '180px', marginBottom: '4px' }}></div>
+                        <p style={{ fontSize: '14px', fontWeight: '900', textTransform: 'uppercase', color: '#000000', margin: '0' }}>
+                          Gesit Widi Atmoko, S.Kom
+                        </p>
+                        <p style={{ fontSize: '10px', color: '#64748B', fontWeight: '700', margin: '0' }}>
+                          Head Instructor GWA
+                        </p>
                       </div>
 
-                      <div className="absolute bottom-14 right-24 text-center font-mono">
-                        <p className="text-xs font-bold text-slate-600 uppercase mb-1">Tanggal Terbit: {selectedSiswa.tanggalLulus}</p>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-10">[OFFICIAL_VERIFIED]</p>
-                        <div className="border-b-2 border-black w-48 mb-1.5"></div>
-                        <p className="font-heading font-black text-sm uppercase text-black">GWA TECH DIRECTOR</p>
-                        <p className="text-[10px] text-slate-500 font-bold">Authorized Signatory</p>
+                      {/* QR Code Center Verification */}
+                      <div style={{ position: 'absolute', bottom: '32px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ padding: '8px', backgroundColor: '#FFFFFF', border: '2px solid #000000', boxShadow: '2px 2px 0px 0px #000000' }}>
+                          <QRCodeCanvas
+                            value={`${typeof window !== "undefined" ? window.location.origin : ""}/verifikasi?id=${selectedSiswa.id}`}
+                            size={72}
+                            level="M"
+                          />
+                        </div>
+                        <span style={{ fontSize: '9px', fontWeight: '700', color: '#1E293B', marginTop: '4px', textTransform: 'uppercase' }}>
+                          SCAN UNTUK VERIFIKASI
+                        </span>
+                        <span style={{ fontSize: '8px', color: '#64748B' }}>
+                          ID: {selectedSiswa.id}
+                        </span>
+                      </div>
+
+                      <div style={{ position: 'absolute', bottom: '48px', right: '80px', textAlign: 'center' }}>
+                        <p style={{ fontSize: '12px', fontWeight: '700', color: '#475569', textTransform: 'uppercase', marginBottom: '4px' }}>
+                          Tanggal Terbit: {selectedSiswa.tanggalLulus}
+                        </p>
+                        <p style={{ fontSize: '10px', fontWeight: '700', color: '#047857', textTransform: 'uppercase', marginBottom: '32px' }}>
+                          [OFFICIAL_VERIFIED ✓]
+                        </p>
+                        <div style={{ borderBottom: '2px solid #000000', width: '180px', marginBottom: '4px' }}></div>
+                        <p style={{ fontSize: '14px', fontWeight: '900', textTransform: 'uppercase', color: '#000000', margin: '0' }}>
+                          DIREKTUR LEMBAGA
+                        </p>
+                        <p style={{ fontSize: '10px', color: '#64748B', fontWeight: '700', margin: '0' }}>
+                          Authorized Signatory
+                        </p>
                       </div>
                     </div>
                   </div>

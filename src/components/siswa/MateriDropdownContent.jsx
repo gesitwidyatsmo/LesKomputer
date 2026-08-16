@@ -1,11 +1,15 @@
 "use client";
 
-import { Lightbulb, FileText, Brain, ChevronRight, Check } from "lucide-react";
+import { Lightbulb, FileText, Brain, ChevronRight, MessageCircle } from "lucide-react";
 import MateriViewer from "./MateriViewer";
 import { useRouter } from "next/navigation";
+import { useSiswa } from "@/context/SiswaContext";
+import { formatWhatsAppUrl } from "@/lib/landingService";
 
 export default function MateriDropdownContent({ materi }) {
   const router = useRouter();
+  const { currentSiswa } = useSiswa();
+
   const topik = Array.isArray(materi.topik)
     ? materi.topik
     : JSON.parse(materi.topik || "[]");
@@ -15,6 +19,15 @@ export default function MateriDropdownContent({ materi }) {
     materi.lampiran &&
     materi.lampiran.length > 0;
   const showQuizButton = materi.tipe_konten !== "materi_saja";
+
+  const waText = `Halo Guru/Instruktur GWA, saya ${currentSiswa?.nama || "Siswa"} (ID: ${
+    currentSiswa?.id || "-"
+  }) dari kelas ${
+    currentSiswa?.kelas || "-"
+  }. Saya ingin bertanya tentang materi: "${materi.judul}" (Pertemuan ${
+    materi.pertemuan
+  }).`;
+  const waUrl = formatWhatsAppUrl("6280000000000", waText);
 
   return (
     <div className="p-5 sm:p-6 bg-white space-y-5 animate-in fade-in duration-150">
@@ -92,28 +105,42 @@ export default function MateriDropdownContent({ materi }) {
         </div>
       )}
 
-      {/* Tombol Mulai Quiz */}
-      {showQuizButton && (
-        <div className="pt-3 border-t-2 border-dashed border-black flex flex-col sm:flex-row items-center justify-between gap-3 bg-amber-50 p-4 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000]">
-          <div>
-            <span className="font-heading font-black text-xs sm:text-sm text-black block">
-              🎮 Kuis Pemahaman Materi
-            </span>
-            <span className="text-slate-600 text-xs font-medium">
-              Yuk coba kuis pilihan ganda untuk menguji apa yang sudah kamu pelajari!
-            </span>
-          </div>
-
-          <button
-            onClick={() => router.push(`/siswa/quiz?materi=${materi.id}`)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs sm:text-sm uppercase tracking-wide border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer shrink-0"
-          >
-            <Brain className="w-4 h-4" />
-            <span>Mulai Kuis Pertemuan {materi.pertemuan}</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+      {/* Action Footer: Tanya Guru via WhatsApp + Tombol Mulai Quiz */}
+      <div className="pt-3 border-t-2 border-dashed border-black flex flex-col sm:flex-row items-center justify-between gap-3 bg-amber-50 p-4 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000]">
+        <div className="space-y-1">
+          <span className="font-heading font-black text-xs sm:text-sm text-black block">
+            🎮 Kuis & Bantuan Belajar
+          </span>
+          <p className="text-slate-600 text-xs font-medium">
+            Ada materi atau rumus yang membingungkan? Langsung tanya gurumu ya!
+          </p>
         </div>
-      )}
+
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          {/* Tombol Tanya Guru WhatsApp */}
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-heading text-xs font-bold border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+          >
+            <MessageCircle className="w-4 h-4 text-black" />
+            <span>Tanya Guru</span>
+          </a>
+
+          {/* Tombol Mulai Kuis */}
+          {showQuizButton && (
+            <button
+              onClick={() => router.push(`/siswa/quiz?materi=${materi.id}`)}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs sm:text-sm uppercase tracking-wide border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer shrink-0"
+            >
+              <Brain className="w-4 h-4" />
+              <span>Mulai Kuis P{materi.pertemuan}</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

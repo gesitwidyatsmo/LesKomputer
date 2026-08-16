@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   XCircle,
   ChevronRight,
+  ChevronLeft,
   RotateCcw,
   Trophy,
   Clock,
@@ -22,132 +23,417 @@ import {
   Loader2,
   ArrowLeft,
   Sparkles,
+  Check,
+  Send,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+import confetti from "canvas-confetti";
+
+function triggerCelebration(isPerfect = false) {
+  try {
+    if (isPerfect) {
+      // Double big fireworks for 100 score
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#FF6B00', '#FACC15', '#10B981', '#06B6D4', '#8B5CF6']
+      });
+      setTimeout(() => {
+        confetti({
+          particleCount: 80,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#FF6B00', '#FACC15', '#10B981']
+        });
+        confetti({
+          particleCount: 80,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#06B6D4', '#8B5CF6', '#F43F5E']
+        });
+      }, 250);
+    } else {
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#10B981', '#FACC15', '#06B6D4']
+      });
+    }
+  } catch (err) {
+    console.error("Confetti error:", err);
+  }
+}
 
 function QuizCard({ quiz, onFinish }) {
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [showExplain, setShowExplain] = useState(false);
-  const [done, setDone] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState({}); // { [qIdx]: optionIdx }
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [showReview, setShowReview] = useState(false);
 
   const soalList = quiz.soal || [];
-  const q = soalList[currentIdx];
   const totalQ = soalList.length;
-  const isAnswered = selected !== null;
+  const q = soalList[currentIdx];
 
-  const correctIdx = q?.pilihan?.findIndex((p) => p.adalah_benar);
-  const isCorrect = selected === correctIdx;
+  const currentSelectedOption = selectedAnswers[currentIdx];
 
-  const handleSelect = (idx) => {
-    if (isAnswered) return;
-    setSelected(idx);
-    setShowExplain(true);
+  // Count answered questions
+  const answeredCount = Object.keys(selectedAnswers).filter(
+    (k) => selectedAnswers[k] !== undefined && selectedAnswers[k] !== null
+  ).length;
+
+  const handleSelectOption = (optIdx) => {
+    if (isSubmitted) return;
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [currentIdx]: optIdx,
+    }));
   };
 
-  const handleNext = () => {
-    const newAnswers = [...answers, { correct: selected === correctIdx }];
-    if (currentIdx + 1 < totalQ) {
-      setAnswers(newAnswers);
-      setCurrentIdx(currentIdx + 1);
-      setSelected(null);
-      setShowExplain(false);
-    } else {
-      setAnswers(newAnswers);
-      const calculatedScore = Math.round(
-        (newAnswers.filter((a) => a.correct).length / totalQ) * 100
-      );
-      setScore(calculatedScore);
-      setDone(true);
-      onFinish(calculatedScore);
+  const processSubmission = () => {
+    let correctCount = 0;
+    soalList.forEach((soal, idx) => {
+      const correctIdx = soal.pilihan?.findIndex((p) => p.adalah_benar);
+      if (selectedAnswers[idx] === correctIdx) {
+        correctCount++;
+      }
+    });
+
+    const calculatedScore = Math.round((correctCount / totalQ) * 100);
+    setScore(calculatedScore);
+    setIsSubmitted(true);
+
+    const passingScore = quiz?.passing_score ?? 70;
+    if (calculatedScore >= passingScore) {
+      triggerCelebration(calculatedScore === 100);
     }
+
+    onFinish(calculatedScore);
+  };
+
+  const handleSubmitQuiz = () => {
+    const unansweredCount = totalQ - answeredCount;
+
+    if (unansweredCount > 0) {
+      Swal.fire({
+        title: "Ada Soal Belum Terjawab!",
+        html: `Masih ada <b>${unansweredCount} dari ${totalQ} soal</b> yang belum kamu jawab.<br/><span class="text-xs text-slate-500 mt-2 block">Yakin ingin mengumpulkan kuis sekarang?</span>`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Tetap Kumpulkan",
+        cancelButtonText: "Periksa Lagi",
+        confirmButtonColor: "#f97316",
+        cancelButtonColor: "#64748b",
+        customClass: {
+          popup: "border-3 border-black rounded-xl shadow-[6px_6px_0px_0px_#000]",
+          confirmButton: "border-2 border-black font-bold text-black rounded-lg cursor-pointer",
+          cancelButton: "border-2 border-black font-bold text-white rounded-lg cursor-pointer",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          processSubmission();
+        }
+      });
+    } else {
+      Swal.fire({
+        title: "Kumpulkan Jawaban?",
+        text: "Semua soal sudah kamu jawab! Apakah kamu sudah yakin untuk mengumpulkannya?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Kumpulkan Sekarang! 🚀",
+        cancelButtonText: "Periksa Dulu",
+        confirmButtonColor: "#10b981",
+        cancelButtonColor: "#64748b",
+        customClass: {
+          popup: "border-3 border-black rounded-xl shadow-[6px_6px_0px_0px_#000]",
+          confirmButton: "border-2 border-black font-bold text-black rounded-lg cursor-pointer",
+          cancelButton: "border-2 border-black font-bold text-white rounded-lg cursor-pointer",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          processSubmission();
+        }
+      });
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedAnswers({});
+    setCurrentIdx(0);
+    setIsSubmitted(false);
+    setShowReview(false);
+    setScore(0);
   };
 
   if (totalQ === 0) {
     return (
       <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl p-8 text-center max-w-md mx-auto">
-        <p className="font-bold text-slate-800 text-sm">Soal kuis belum tersedia untuk materi ini.</p>
+        <p className="font-bold text-slate-800 text-sm">
+          Soal kuis belum tersedia untuk materi ini.
+        </p>
       </div>
     );
   }
 
-  if (done) {
+  // --- SUBMITTED / RESULTS SCREEN ---
+  if (isSubmitted) {
     const passingScore = quiz?.passing_score ?? 70;
-    const correct = answers.filter((a) => a.correct).length;
+    let correctCount = 0;
+    soalList.forEach((soal, idx) => {
+      const correctIdx = soal.pilihan?.findIndex((p) => p.adalah_benar);
+      if (selectedAnswers[idx] === correctIdx) {
+        correctCount++;
+      }
+    });
     const isPassed = score >= passingScore;
 
     return (
-      <div className="bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-xl overflow-hidden max-w-lg mx-auto animate-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
-          <div className="flex items-center gap-2">
-            <span>🏆</span>
-            <span className="text-amber-300">Hasil Kuis Selesai!</span>
-          </div>
-          <span className="text-[11px] text-emerald-400">● Selesai</span>
-        </div>
-
-        <div className="p-6 sm:p-8 text-center space-y-6 bg-[#FFFDF5]">
-          <div
-            className={`w-24 h-24 mx-auto border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-2xl flex items-center justify-center text-5xl ${
-              isPassed ? "bg-emerald-300" : "bg-amber-300"
-            }`}
-          >
-            {isPassed ? "🏆" : "💪"}
-          </div>
-
-          <div>
-            <div className="inline-block px-3 py-1 font-heading font-black text-xs uppercase border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000] mb-2 bg-white">
-              {isPassed ? "🎉 Kamu Lulus Kuis!" : "📖 Yuk Belajar Lagi!"}
+      <div className="space-y-6 max-w-2xl mx-auto animate-in zoom-in-95 duration-200">
+        <div className="bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-xl overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-2.5 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
+            <div className="flex items-center gap-2">
+              <span>🏆</span>
+              <span className="text-amber-300">Hasil Kuis Selesai!</span>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-heading font-black text-black">
-              {isPassed ? "Hebat Sekali! 🌟" : "Tetap Semangat! 🚀"}
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-700 font-bold mt-1">
-              Kamu berhasil menjawab {correct} dari {totalQ} soal dengan benar.
-            </p>
+            <span className="text-[11px] text-emerald-400">● Selesai & Dinilai</span>
           </div>
 
-          {/* Score box */}
-          <div className="p-5 bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl space-y-1">
-            <span className="text-xs font-bold text-slate-500 uppercase block">
-              Nilai Akhir Kamu
-            </span>
+          <div className="p-6 sm:p-8 text-center space-y-6 bg-[#FFFDF5]">
             <div
-              className={`text-5xl sm:text-6xl font-heading font-black ${
-                isPassed ? "text-emerald-600" : "text-amber-600"
+              className={`w-24 h-24 mx-auto border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-2xl flex items-center justify-center text-5xl ${
+                isPassed ? "bg-emerald-300" : "bg-amber-300"
               }`}
             >
-              {score}
+              {isPassed ? "🏆" : "💪"}
             </div>
-            <p className="text-xs font-bold text-slate-600">
-              (Batas Lulus: {passingScore} Poin)
-            </p>
-          </div>
 
-          <div className="flex gap-3 justify-center pt-2">
-            <button
-              onClick={() => {
-                setCurrentIdx(0);
-                setSelected(null);
-                setAnswers([]);
-                setShowExplain(false);
-                setDone(false);
-              }}
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange-500 hover:bg-orange-400 text-black font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4" /> Main Kuis Lagi
-            </button>
+            <div>
+              <div className="inline-block px-3 py-1 font-heading font-black text-xs uppercase border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000] mb-2 bg-white">
+                {isPassed ? "🎉 Kamu Lulus Kuis!" : "📖 Yuk Belajar Lagi!"}
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-heading font-black text-black">
+                {isPassed ? "Hebat Sekali! 🌟" : "Tetap Semangat! 🚀"}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-700 font-bold mt-1">
+                Kamu berhasil menjawab {correctCount} dari {totalQ} soal dengan benar.
+              </p>
+            </div>
+
+            {/* Score box & stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-4 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-3 sm:col-span-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase block">
+                  Nilai Akhir
+                </span>
+                <div
+                  className={`text-4xl sm:text-5xl font-heading font-black ${
+                    isPassed ? "text-emerald-600" : "text-amber-600"
+                  }`}
+                >
+                  {score}
+                </div>
+                <p className="text-[10px] font-bold text-slate-500">
+                  (Batas: {passingScore})
+                </p>
+              </div>
+
+              <div className="p-4 bg-emerald-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-1.5 sm:col-span-1 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-emerald-800 uppercase block">
+                  Jawaban Benar
+                </span>
+                <div className="text-2xl sm:text-3xl font-heading font-black text-emerald-700">
+                  {correctCount}
+                </div>
+                <p className="text-[10px] font-bold text-emerald-600">Soal</p>
+              </div>
+
+              <div className="p-4 bg-rose-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-1.5 sm:col-span-1 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-rose-800 uppercase block">
+                  Jawaban Salah
+                </span>
+                <div className="text-2xl sm:text-3xl font-heading font-black text-rose-700">
+                  {totalQ - correctCount}
+                </div>
+                <p className="text-[10px] font-bold text-rose-600">Soal</p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-wrap gap-3 justify-center pt-2">
+              <button
+                onClick={() => setShowReview((prev) => !prev)}
+                className="inline-flex items-center gap-2 px-5 py-3 bg-cyan-300 hover:bg-cyan-200 text-black font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              >
+                {showReview ? (
+                  <>
+                    <EyeOff className="w-4 h-4" /> Sembunyikan Pembahasan
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4" /> Lihat Pembahasan Soal
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleReset}
+                className="inline-flex items-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" /> Main Kuis Lagi
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Detailed Review Section */}
+        {showReview && (
+          <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
+              <div className="flex items-center gap-2">
+                <span>📖</span>
+                <span className="text-cyan-300">Pembahasan Lengkap Semua Soal</span>
+              </div>
+              <span className="text-[11px] text-amber-300">{totalQ} Soal</span>
+            </div>
+
+            <div className="p-5 sm:p-7 space-y-8 bg-[#FFFDF5]">
+              {soalList.map((item, idx) => {
+                const studentAns = selectedAnswers[idx];
+                const correctOptIdx = item.pilihan?.findIndex((p) => p.adalah_benar);
+                const isItemCorrect = studentAns === correctOptIdx;
+                const isItemUnanswered = studentAns === undefined || studentAns === null;
+
+                return (
+                  <div
+                    key={idx}
+                    className="p-5 bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] space-y-4"
+                  >
+                    {/* Soal header badge */}
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-xs font-black bg-black text-white px-2.5 py-0.5 rounded font-heading">
+                        Soal #{idx + 1}
+                      </span>
+                      {isItemUnanswered ? (
+                        <span className="text-[11px] font-bold bg-slate-200 text-slate-700 px-2.5 py-0.5 border border-black rounded-full">
+                          ⚪ Tidak Dijawab
+                        </span>
+                      ) : isItemCorrect ? (
+                        <span className="text-[11px] font-bold bg-emerald-200 text-emerald-950 px-2.5 py-0.5 border border-black rounded-full flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-800" /> Jawabanmu Benar (+100%)
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold bg-rose-200 text-rose-950 px-2.5 py-0.5 border border-black rounded-full flex items-center gap-1">
+                          <XCircle className="w-3.5 h-3.5 text-rose-800" /> Jawabanmu Kurang Tepat
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Question text & optional image */}
+                    <p className="text-sm sm:text-base font-heading font-black text-black leading-relaxed">
+                      {item.pertanyaan}
+                    </p>
+                    {item.gambar_url && (
+                      <div className="mt-2 flex justify-start">
+                        <img
+                          src={item.gambar_url}
+                          alt="Gambar Soal"
+                          className="max-h-56 w-auto max-w-full object-contain rounded-lg border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Options list */}
+                    <div className="space-y-2 pt-1">
+                      {item.pilihan?.map((opt, optIdx) => {
+                        const letter = ["A", "B", "C", "D"][optIdx] || "-";
+                        const isCorrectOption = opt.adalah_benar;
+                        const isChosenByStudent = studentAns === optIdx;
+
+                        let optClass = "p-3 rounded-lg border-2 text-xs sm:text-sm font-medium flex items-center justify-between gap-3 ";
+
+                        if (isCorrectOption) {
+                          optClass += "bg-emerald-100 border-emerald-600 text-emerald-950 font-bold";
+                        } else if (isChosenByStudent && !isCorrectOption) {
+                          optClass += "bg-rose-100 border-rose-600 text-rose-950 font-bold";
+                        } else {
+                          optClass += "bg-slate-50 border-slate-200 text-slate-600";
+                        }
+
+                        return (
+                          <div key={optIdx} className={optClass}>
+                            <div className="flex items-center gap-2.5">
+                              <span
+                                className={`w-6 h-6 border rounded flex items-center justify-center font-heading font-bold text-xs shrink-0 ${
+                                  isCorrectOption
+                                    ? "bg-emerald-600 text-white border-emerald-700"
+                                    : isChosenByStudent
+                                    ? "bg-rose-600 text-white border-rose-700"
+                                    : "bg-slate-200 text-slate-700 border-slate-300"
+                                }`}
+                              >
+                                {letter}
+                              </span>
+                              {opt.gambar_url && (
+                                <img
+                                  src={opt.gambar_url}
+                                  alt={`Pilihan ${letter}`}
+                                  className="w-10 h-10 object-contain rounded border border-black bg-white shrink-0 p-0.5"
+                                />
+                              )}
+                              {opt.teks && <span>{opt.teks}</span>}
+                            </div>
+
+                            <div className="text-[11px] font-heading font-black shrink-0">
+                              {isCorrectOption && isChosenByStudent && (
+                                <span className="text-emerald-700 flex items-center gap-1">
+                                  <Check className="w-3.5 h-3.5" /> Pilihanmu (Benar ✓)
+                                </span>
+                              )}
+                              {isCorrectOption && !isChosenByStudent && (
+                                <span className="text-emerald-700 flex items-center gap-1">
+                                  <Check className="w-3.5 h-3.5" /> Kunci Jawaban
+                                </span>
+                              )}
+                              {!isCorrectOption && isChosenByStudent && (
+                                <span className="text-rose-700">
+                                  ✗ Pilihanmu
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Penjelasan */}
+                    {item.penjelasan && (
+                      <div className="p-3.5 bg-yellow-50 border border-amber-300 rounded-lg text-xs space-y-1 text-slate-800">
+                        <p className="font-heading font-bold text-amber-900 flex items-center gap-1.5">
+                          <span>💡 Pembahasan:</span>
+                        </p>
+                        <p className="leading-relaxed">{item.penjelasan}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
+  // --- QUIZ IN PROGRESS SCREEN ---
   return (
     <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden max-w-2xl mx-auto">
-      {/* Top Header with Timer */}
+      {/* Top Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
         <div className="flex items-center gap-2">
           <span>🎮</span>
@@ -163,117 +449,191 @@ function QuizCard({ quiz, onFinish }) {
         </div>
       </div>
 
-      {/* Progress meter */}
-      <div className="bg-slate-100 border-b-2 border-black p-2 flex items-center justify-between px-5 font-heading text-xs font-bold text-black">
-        <span>
-          Pertanyaan {currentIdx + 1} dari {totalQ}
-        </span>
-        <span className="bg-orange-500 text-black px-2.5 py-0.5 rounded border border-black text-xs font-black">
-          {Math.round(((currentIdx + 1) / totalQ) * 100)}%
-        </span>
-      </div>
-
-      <div className="p-5 sm:p-7 space-y-6 bg-yellow-50/30">
-        {/* Question Box */}
-        <div className="p-5 bg-yellow-100 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000]">
-          <span className="text-xs font-black bg-black text-white px-2.5 py-0.5 mb-2.5 inline-block rounded font-heading">
-            Soal #{currentIdx + 1}
+      {/* Progress & Quick Jump Palette */}
+      <div className="bg-slate-100 border-b-2 border-black p-3 space-y-2.5">
+        <div className="flex items-center justify-between font-heading text-xs font-bold text-black px-1 flex-wrap gap-2">
+          <span>
+            Soal {currentIdx + 1} dari {totalQ}
           </span>
-          <p className="text-base sm:text-lg font-heading font-black text-black leading-relaxed">
-            {q.pertanyaan}
-          </p>
+          <span className="text-xs text-slate-600">
+            Terjawab: <strong className="text-emerald-700 font-heading font-black">{answeredCount}</strong> / {totalQ}
+          </span>
         </div>
 
-        {/* Options A, B, C, D */}
-        <div className="space-y-3">
-          {q.pilihan?.map((p, i) => {
-            const letter = ["A", "B", "C", "D"][i] || "-";
-            let btnClass =
-              "w-full text-left p-4 border-2 border-black rounded-xl font-medium text-sm transition-all flex items-center gap-3.5 ";
+        {/* Question number buttons grid */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          {soalList.map((_, idx) => {
+            const isCurrent = idx === currentIdx;
+            const isAnswered = selectedAnswers[idx] !== undefined && selectedAnswers[idx] !== null;
 
-            if (!isAnswered) {
-              btnClass +=
-                "bg-white text-black shadow-[3px_3px_0px_0px_#000] hover:bg-yellow-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer";
-            } else if (i === correctIdx) {
-              btnClass +=
-                "bg-emerald-300 text-black font-bold shadow-[3px_3px_0px_0px_#000]";
-            } else if (i === selected && selected !== correctIdx) {
-              btnClass +=
-                "bg-rose-300 text-black font-bold shadow-[3px_3px_0px_0px_#000]";
+            let btnClass = "w-7 h-7 sm:w-8 sm:h-8 font-heading text-xs rounded-lg border-2 transition-all flex items-center justify-center cursor-pointer ";
+
+            if (isCurrent && isAnswered) {
+              // Sedang dibuka & sudah dijawab -> Hijau dengan ring hitam tebal + shadow
+              btnClass += "bg-emerald-400 border-black text-black font-black scale-110 ring-3 ring-black shadow-[3px_3px_0px_0px_#000] z-10";
+            } else if (isCurrent && !isAnswered) {
+              // Sedang dibuka & belum dijawab -> Kuning dengan ring hitam tebal
+              btnClass += "bg-amber-300 border-black text-black font-black scale-110 ring-3 ring-black shadow-[3px_3px_0px_0px_#000] z-10";
+            } else if (isAnswered) {
+              // Tidak sedang dibuka tapi sudah dijawab -> Hijau
+              btnClass += "bg-emerald-400 border-black text-black font-bold shadow-[2px_2px_0px_0px_#000] hover:bg-emerald-300";
             } else {
-              btnClass +=
-                "bg-slate-100 text-slate-400 opacity-60 cursor-not-allowed shadow-none";
+              // Belum dijawab -> Putih
+              btnClass += "bg-white border-slate-300 text-slate-600 hover:border-black hover:text-black";
             }
 
             return (
               <button
-                key={i}
+                key={idx}
+                type="button"
+                onClick={() => setCurrentIdx(idx)}
                 className={btnClass}
-                onClick={() => handleSelect(i)}
-                disabled={isAnswered}
+                title={`Soal ${idx + 1}: ${isAnswered ? "Sudah Dijawab" : "Belum Dijawab"}${isCurrent ? " (Sedang Dibuka)" : ""}`}
               >
-                <span
-                  className={`w-8 h-8 border-2 border-black font-heading font-black text-xs flex items-center justify-center rounded-lg shrink-0 ${
-                    !isAnswered
-                      ? "bg-slate-100 text-black"
-                      : i === correctIdx
-                      ? "bg-emerald-600 text-white"
-                      : i === selected
-                      ? "bg-rose-600 text-white"
-                      : "bg-slate-200 text-slate-500"
-                  }`}
-                >
-                  {letter}
-                </span>
-                <span className="font-heading font-bold text-sm text-black">
-                  {p.teks}
-                </span>
+                {idx + 1}
               </button>
             );
           })}
         </div>
 
-        {/* Positive Explanations */}
-        {showExplain && q.penjelasan && (
-          <div
-            className={`p-4 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] flex gap-3 animate-in fade-in duration-200 ${
-              isCorrect ? "bg-emerald-100" : "bg-rose-100"
-            }`}
-          >
-            {isCorrect ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-800 shrink-0 mt-0.5" />
-            ) : (
-              <XCircle className="w-5 h-5 text-rose-800 shrink-0 mt-0.5" />
+        {/* Palette Legend */}
+        <div className="flex items-center gap-3 pt-1 text-[11px] font-medium text-slate-600 border-t border-slate-200">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded bg-white border border-slate-300 inline-block" />
+            <span>Belum dijawab</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded bg-emerald-400 border border-black inline-block" />
+            <span>Sudah dijawab</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded bg-amber-300 border border-black ring-1 ring-black inline-block" />
+            <span>Sedang dibuka</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 sm:p-7 space-y-6 bg-yellow-50/30">
+        {/* Question Box */}
+        <div className="p-5 bg-yellow-100 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000]">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-xs font-black bg-black text-white px-2.5 py-0.5 inline-block rounded font-heading">
+              Soal #{currentIdx + 1}
+            </span>
+            {currentSelectedOption !== undefined && currentSelectedOption !== null && (
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-400 px-2 py-0.5 rounded-full">
+                ✓ Sudah dipilih
+              </span>
             )}
-            <div className="text-xs sm:text-sm">
-              <p
-                className={`font-heading font-black uppercase ${
-                  isCorrect ? "text-emerald-950" : "text-rose-950"
+          </div>
+          <p className="text-base sm:text-lg font-heading font-black text-black leading-relaxed">
+            {q?.pertanyaan}
+          </p>
+          {q?.gambar_url && (
+            <div className="mt-3 flex justify-center">
+              <img
+                src={q.gambar_url}
+                alt="Gambar Soal"
+                className="max-h-64 sm:max-h-80 w-auto max-w-full object-contain rounded-lg border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000]"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Options A, B, C, D */}
+        <div className="space-y-3">
+          {q?.pilihan?.map((p, i) => {
+            const letter = ["A", "B", "C", "D"][i] || "-";
+            const isSelected = currentSelectedOption === i;
+
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleSelectOption(i)}
+                className={`w-full text-left p-4 border-2 border-black rounded-xl font-medium text-sm transition-all flex items-center justify-between gap-3.5 cursor-pointer ${
+                  isSelected
+                    ? "bg-amber-300 text-black font-bold shadow-[3px_3px_0px_0px_#000] -translate-x-0.5 -translate-y-0.5 ring-1 ring-black"
+                    : "bg-white text-black shadow-[2px_2px_0px_0px_#000] hover:bg-yellow-100/70 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 }`}
               >
-                {isCorrect ? "🎉 Hore! Jawabanmu Benar!" : "💡 Ups! Jawaban belum tepat."}
-              </p>
-              <p className="text-slate-800 mt-1 leading-relaxed font-medium">
-                {q.penjelasan}
-              </p>
-            </div>
-          </div>
-        )}
+                <div className="flex items-center gap-3.5">
+                  <span
+                    className={`w-8 h-8 border-2 border-black font-heading font-black text-xs flex items-center justify-center rounded-lg shrink-0 ${
+                      isSelected
+                        ? "bg-black text-amber-300"
+                        : "bg-slate-100 text-black"
+                    }`}
+                  >
+                    {letter}
+                  </span>
+                  {p.gambar_url && (
+                    <img
+                      src={p.gambar_url}
+                      alt={`Pilihan ${letter}`}
+                      className="w-14 h-14 sm:w-16 sm:h-16 object-contain rounded-md border border-black bg-white shrink-0 p-0.5"
+                    />
+                  )}
+                  {p.teks && (
+                    <span className="font-heading font-bold text-sm text-black">
+                      {p.teks}
+                    </span>
+                  )}
+                </div>
 
-        {/* Next Question CTA */}
-        {isAnswered && (
+                {isSelected && (
+                  <span className="text-xs font-heading font-black bg-black text-amber-300 px-2 py-0.5 rounded shrink-0">
+                    Pilihanmu ✓
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Bottom Navigation Buttons */}
+        <div className="pt-3 border-t-2 border-black/10 flex items-center justify-between gap-3">
+          {/* Previous Button */}
           <button
-            onClick={handleNext}
-            className="w-full flex items-center justify-center gap-2 py-4 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-sm uppercase tracking-wide border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            type="button"
+            disabled={currentIdx === 0}
+            onClick={() => setCurrentIdx((prev) => prev - 1)}
+            className={`inline-flex items-center gap-1.5 px-4 py-3 font-heading font-bold text-xs uppercase border-2 border-black rounded-xl transition-all ${
+              currentIdx === 0
+                ? "bg-slate-100 text-slate-400 border-slate-300 cursor-not-allowed shadow-none"
+                : "bg-white hover:bg-slate-100 text-black shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+            }`}
           >
-            <span>
-              {currentIdx + 1 < totalQ
-                ? "Lanjut ke Soal Berikutnya"
-                : "Lihat Hasil & Skor Kuis"}
-            </span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Sebelumnya</span>
           </button>
-        )}
+
+          {/* Question Counter */}
+          <div className="text-center font-heading font-bold text-xs text-slate-700">
+            {currentIdx + 1} / {totalQ}
+          </div>
+
+          {/* Next / Submit Button */}
+          {currentIdx < totalQ - 1 ? (
+            <button
+              type="button"
+              onClick={() => setCurrentIdx((prev) => prev + 1)}
+              className="inline-flex items-center gap-1.5 px-5 py-3 bg-yellow-300 hover:bg-yellow-200 text-black font-heading font-bold text-xs uppercase border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            >
+              <span>Berikutnya</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmitQuiz}
+              className="inline-flex items-center gap-1.5 px-5 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            >
+              <Send className="w-4 h-4" />
+              <span>Kumpulkan Jawaban</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -440,10 +800,10 @@ function QuizPageContent() {
         </div>
         <div className="text-xs sm:text-sm space-y-1">
           <p className="font-heading font-bold text-black">
-            Cara Bermain Kuis:
+            Cara Mengerjakan Kuis:
           </p>
           <p className="text-slate-700 leading-relaxed font-medium">
-            Pilih salah satu materi di bawah. Jawab setiap soal dengan teliti. Kamu akan langsung tahu jawaban mana yang benar beserta pembahasannya!
+            Pilih salah satu materi di bawah. Jawab semua soal dengan teliti dan leluasa. Kamu bisa berpindah antar-soal untuk memeriksa atau mengubah jawabanmu sebelum menekan tombol <strong>Kumpulkan Jawaban</strong> di akhir soal!
           </p>
         </div>
       </div>

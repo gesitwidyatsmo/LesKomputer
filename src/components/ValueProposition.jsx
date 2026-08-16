@@ -3,6 +3,7 @@
 import { Zap, BrainCircuit, Wrench, Terminal } from "lucide-react";
 
 export default function ValueProposition({ data }) {
+  const showBadge = data?.showBadge !== false;
   const badgeText = data?.badgeText || "[FILOSOFI INTI GWA TECH]";
   const titlePrefix = data?.titlePrefix || "Bukan Sekadar Belajar Mengetik.";
   const titleHighlight = data?.titleHighlight || "Kami Membentuk Mindset Solutif.";
@@ -17,6 +18,7 @@ export default function ValueProposition({ data }) {
   const defaultValues = [
     {
       id: "gesit",
+      isVisible: true,
       code: "SYS_VAL // 01",
       title: "Gesit",
       subtitle: "Shortcut & Efisiensi Waktu",
@@ -33,6 +35,7 @@ export default function ValueProposition({ data }) {
     },
     {
       id: "wawasan",
+      isVisible: true,
       code: "SYS_VAL // 02",
       title: "Wawasan",
       subtitle: "Logika Rumus & Problem Solving",
@@ -49,6 +52,7 @@ export default function ValueProposition({ data }) {
     },
     {
       id: "aplikatif",
+      isVisible: true,
       code: "SYS_VAL // 03",
       title: "Aplikatif",
       subtitle: "100% Studi Kasus Dunia Kerja",
@@ -65,7 +69,8 @@ export default function ValueProposition({ data }) {
     }
   ];
 
-  const values = data?.items || defaultValues;
+  const rawValues = data?.items || defaultValues;
+  const values = rawValues.filter((v) => v.isVisible !== false);
 
   return (
     <section id="keunggulan" className="py-20 lg:py-28 bg-[#FFFDF5] border-b-3 border-black">
@@ -73,7 +78,7 @@ export default function ValueProposition({ data }) {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          {badgeText && (
+          {showBadge && badgeText && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-amber-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
               <Terminal className="w-3.5 h-3.5" /> {badgeText}
             </div>
@@ -95,7 +100,7 @@ export default function ValueProposition({ data }) {
           )}
         </div>
 
-        {/* 3 Value Cards Grid */}
+        {/* Value Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {values.map((val, idx) => (
             <div 

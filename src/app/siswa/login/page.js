@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSiswa } from "@/context/SiswaContext";
 import { User, Lock, AlertCircle, Eye, EyeOff, ArrowLeft, Sparkles } from "lucide-react";
+import { getLandingPageConfig, formatWhatsAppUrl } from "@/lib/landingService";
 
 export default function SiswaLoginPage() {
   const { login } = useSiswa();
@@ -14,11 +15,22 @@ export default function SiswaLoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [inactiveData, setInactiveData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [adminWa, setAdminWa] = useState("6280000000000");
+
+  useEffect(() => {
+    getLandingPageConfig().then((res) => {
+      if (res?.data?.general?.content?.whatsappNumber) {
+        setAdminWa(res.data.general.content.whatsappNumber);
+      }
+    });
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
+    setInactiveData(null);
     setIsLoading(true);
 
     setTimeout(async () => {
@@ -27,9 +39,18 @@ export default function SiswaLoginPage() {
         router.push("/siswa");
       } else {
         setError(result.message);
+        if (result.isInactive) {
+          setInactiveData(result.data || { id: idSiswa.trim().toUpperCase() });
+        }
         setIsLoading(false);
       }
     }, 600);
+  };
+
+  const getWaActivationLink = () => {
+    if (!inactiveData) return "#";
+    const pesan = `Halo Admin GWA Tech Course,\n\nSaya ingin mengonfirmasi aktivasi akun siswa saya:\n- *ID Siswa*: ${inactiveData.id}\n${inactiveData.nama ? `- *Nama*: ${inactiveData.nama}\n` : ''}Mohon bantuan untuk aktivasi akun agar saya dapat mulai login dan belajar. Terima kasih!`;
+    return formatWhatsAppUrl(adminWa, pesan);
   };
 
   return (
@@ -68,10 +89,31 @@ export default function SiswaLoginPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Error banner */}
-            {error && (
+            {error && !inactiveData && (
               <div className="bg-rose-100 text-rose-950 p-3.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] text-xs sm:text-sm font-bold flex items-center gap-2 rounded-lg">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                 <span>{error}</span>
+              </div>
+            )}
+
+            {/* Inactive Account Alert Banner */}
+            {inactiveData && (
+              <div className="bg-amber-100 text-slate-900 p-4 border-2 border-black shadow-[3px_3px_0px_0px_#000] text-xs space-y-2.5 rounded-lg">
+                <div className="flex items-center gap-2 font-heading font-black uppercase text-amber-950 text-sm">
+                  <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>Akun Menunggu Aktivasi</span>
+                </div>
+                <p className="text-slate-700 leading-relaxed">
+                  Pendaftaran dengan ID <strong>{inactiveData.id}</strong> sudah tercatat, namun status Anda masih <strong>Tidak Aktif</strong> (menunggu aktivasi manual oleh Admin).
+                </p>
+                <a
+                  href={getWaActivationLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                >
+                  📲 Hubungi Admin WhatsApp untuk Aktivasi
+                </a>
               </div>
             )}
 
@@ -89,7 +131,7 @@ export default function SiswaLoginPage() {
                   type="text"
                   value={idSiswa}
                   onChange={(e) => setIdSiswa(e.target.value)}
-                  placeholder="Contoh: S-001"
+                  placeholder="Contoh: GWA-202608-001"
                   required
                   className="w-full pl-10 pr-3 py-3 bg-white text-black font-mono font-bold text-sm border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg focus:bg-yellow-50 focus:outline-none placeholder:text-slate-400 placeholder:font-normal transition-colors"
                 />
@@ -138,15 +180,18 @@ export default function SiswaLoginPage() {
               </button>
             </div>
 
-            {/* Friendly Hint Box */}
-            <div className="p-3.5 bg-yellow-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg text-xs text-slate-900 space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-black">
-                <span>💡</span> Bantuan Masuk:
+            {/* Link to Register */}
+            <div className="p-3.5 bg-yellow-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg text-xs text-slate-900 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-black">Belum punya akun siswa?</p>
+                <p className="text-[11px] text-slate-600">Daftar kursus online sekarang.</p>
               </div>
-              <p className="text-[12px] text-slate-700 leading-relaxed font-medium">
-                Gunakan ID Siswa dari guru/instruktur. Password awal kamu adalah{" "}
-                <span className="bg-white px-1.5 py-0.5 border border-black font-mono font-bold text-black">123456</span>.
-              </p>
+              <Link
+                href="/daftar"
+                className="px-3 py-1.5 bg-white hover:bg-amber-300 text-black font-mono font-bold text-[11px] uppercase border border-black shadow-[1.5px_1.5px_0px_0px_#000] transition-colors"
+              >
+                Daftar &gt;
+              </Link>
             </div>
 
             {/* Back link */}

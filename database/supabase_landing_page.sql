@@ -35,6 +35,20 @@ CREATE POLICY "Allow all modifications for landing_settings"
 
 INSERT INTO landing_settings (section_key, is_visible, content)
 VALUES
+-- ⭐ PENGATURAN UMUM & KONTAK TERPUSAT (SATU INPUT NO. WA UNTUK SEMUA)
+(
+  'general',
+  true,
+  '{
+    "whatsappNumber": "6280000000000",
+    "brandName": "GWA.TECH",
+    "brandTagline": "// Gesit, Wawasan, Aplikatif",
+    "brandDescription": "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.",
+    "address": "Jl. Pendidikan No. 123, Kecamatan Ilmu, Kota Teknologi, Indonesia 12345",
+    "workingHours": "Senin - Sabtu: 08.30 - 21.00 WIB",
+    "copyright": "GWA TECH COURSE. HAK CIPTA DILINDUNGI."
+  }'::jsonb
+),
 -- Top Announcement Bar
 (
   'announcement',
@@ -46,7 +60,6 @@ VALUES
     "marqueeText2": "1 SISWA 1 KOMPUTER — METODE PRAKTIK LANGSUNG DI TEMPAT",
     "marqueeText3": "DAFTAR SEGERA >_",
     "buttonText": "CEK SLOT >",
-    "whatsappNumber": "6280000000000",
     "whatsappMessage": "Halo Admin GWA, saya ingin cek slot kelas terdekat."
   }'::jsonb
 ),
@@ -417,7 +430,6 @@ VALUES
   true,
   '{
     "tooltipText": "[ CHAT MENTOR GESIT >_ ]",
-    "whatsappNumber": "6280000000000",
     "whatsappMessage": "Halo Admin GWA Tech Course, saya ingin konsultasi jadwal dan program kursus."
   }'::jsonb
 ),
@@ -425,15 +437,7 @@ VALUES
 (
   'footer',
   true,
-  '{
-    "brandName": "GWA.TECH",
-    "brandTagline": "// Gesit, Wawasan, Aplikatif",
-    "brandDescription": "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.",
-    "address": "Jl. Pendidikan No. 123, Kecamatan Ilmu, Kota Teknologi, Indonesia 12345",
-    "workingHours": "Senin - Sabtu: 08.30 - 21.00 WIB",
-    "phone": "+62 800-0000-0000",
-    "copyright": "GWA TECH COURSE. HAK CIPTA DILINDUNGI."
-  }'::jsonb
+  '{}'::jsonb
 )
 ON CONFLICT (section_key) DO UPDATE 
 SET 

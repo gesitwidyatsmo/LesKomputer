@@ -5,10 +5,12 @@ import {
   Search, Users, Filter, Edit2, Trash2, Calendar, FileText,
   CheckCircle2, Lock, BookOpen, Clock, Loader2, Plus, X,
   AlertCircle, Save, KeyRound, Phone, User, RefreshCw, ChevronDown,
+  Award, Calculator, Sparkles, TrendingUp, Zap,
 } from "lucide-react";
 import {
   getSemuaSiswa, getKehadiranSiswa, upsertKehadiran,
   generateIdSiswa, tambahSiswa, editSiswa, deleteSiswa, resetPasswordSiswa,
+  simpanKelulusanSiswa, aktivasiSiswa,
 } from "@/lib/siswaService";
 import { getAksesSiswa, tandaiSelesai, bukaAkses, kunciUlang, bukaSemuaAkses, getMateriByModul } from "@/lib/materiService";
 import { getQuizHasilSiswa } from "@/lib/quizService";
@@ -238,6 +240,7 @@ function SiswaFormModal({ siswa, kelasList, modulList, onClose, onSaved }) {
               <Field label="[STATUS] Status Belajar">
                 <select value={form.status} onChange={set("status")} className={selectCls}>
                   <option value="Aktif">Aktif</option>
+                  <option value="Tidak Aktif">Tidak Aktif (Menunggu Aktivasi)</option>
                   <option value="Lulus">Lulus</option>
                   <option value="Cuti">Cuti</option>
                   <option value="Berhenti">Berhenti</option>
@@ -376,17 +379,137 @@ function ResetPasswordModal({ siswa, onClose }) {
   );
 }
 
+// ─── Modal Aktivasi Siswa ──────────────────────────────────────────────────────
+function AktivasiSiswaModal({ siswa, kelasList, onClose, onActivated }) {
+  const [kelasId, setKelasId] = useState(siswa?.kelas_id || "");
+  const [statusBayar, setStatusBayar] = useState(siswa?.status_bayar || "Belum Lunas");
+  const [isActivating, setIsActivating] = useState(false);
+  const [err, setErr] = useState("");
+
+  const handleAktivasi = async () => {
+    setIsActivating(true);
+    setErr("");
+    const { data, error } = await aktivasiSiswa(siswa.id, {
+      kelas_id: kelasId || null,
+      status_bayar: statusBayar,
+    });
+    setIsActivating(false);
+
+    if (error) {
+      setErr("Gagal aktivasi: " + error.message);
+      return;
+    }
+
+    onActivated(siswa, kelasId, statusBayar);
+  };
+
+  return (
+    <ClientPortal>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs" onClick={onClose} />
+        <div className="relative bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] w-full max-w-md overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-2.5 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 border border-black inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-black inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black inline-block"></span>
+              </div>
+              <span>siswa_activation_wizard.exe</span>
+            </div>
+            <button onClick={onClose} className="px-1.5 py-0.5 bg-rose-600 text-white font-mono text-[10px]">X</button>
+          </div>
+
+          <div className="p-5 space-y-4 bg-[#FFFDF5]">
+            <div className="bg-emerald-100 border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]">
+              <h3 className="font-heading font-black uppercase text-base text-black flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-emerald-700 fill-emerald-500" /> Aktivasi Akun Siswa
+              </h3>
+              <p className="text-xs font-mono text-slate-800 mt-1">
+                Siswa: <strong>{siswa.nama}</strong> ({siswa.id})
+              </p>
+              <p className="text-xs font-mono text-slate-700">
+                Modul: <strong>{siswa.modul || "Kursus Komputer"}</strong>
+              </p>
+            </div>
+
+            {err && (
+              <div className="text-xs font-mono font-bold text-rose-800 bg-rose-100 border-2 border-black p-2.5 shadow-[2px_2px_0px_0px_#000]">
+                [!] {err}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <Field label="[SELECT] Tetapkan Kelas Lab Siswa">
+                <select
+                  value={kelasId}
+                  onChange={(e) => setKelasId(e.target.value)}
+                  className={selectCls}
+                >
+                  <option value="">-- Pilih / Tetapkan Kelas --</option>
+                  {kelasList.map((k) => (
+                    <option key={k.id} value={k.id}>
+                      {k.nama} ({k.jadwal || "Reguler"} - {k.waktu || "Sore"})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="[PAYMENT] Status Pembayaran">
+                <select
+                  value={statusBayar}
+                  onChange={(e) => setStatusBayar(e.target.value)}
+                  className={selectCls}
+                >
+                  <option value="Belum Lunas">Belum Lunas</option>
+                  <option value="Cicilan">Cicilan</option>
+                  <option value="Lunas">Lunas</option>
+                </select>
+              </Field>
+            </div>
+
+            <div className="bg-yellow-50 border border-black p-2.5 text-[11px] font-mono text-slate-700 space-y-1">
+              <p className="font-bold text-black">ℹ️ Informasi Aktivasi:</p>
+              <p>Setelah diaktifkan, status siswa akan menjadi <strong>Aktif</strong> dan siswa dapat login ke portal belajar dengan ID <strong>{siswa.id}</strong>.</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 px-5 py-3.5 border-t-2 border-black justify-end bg-white">
+            <button
+              onClick={onClose}
+              className="px-3.5 py-2 text-xs font-mono font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleAktivasi}
+              disabled={isActivating}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-400 hover:bg-emerald-300 text-black text-xs font-heading font-black uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 transition-all cursor-pointer"
+            >
+              {isActivating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              Aktifkan Siswa Sekarang
+            </button>
+          </div>
+        </div>
+      </div>
+    </ClientPortal>
+  );
+}
+
 // ─── Badge Komponen ───────────────────────────────────────────────────────────
 function StatusBadge({ value }) {
   const map = {
-    Aktif:    "bg-emerald-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
-    Lulus:    "bg-cyan-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
-    Cuti:     "bg-amber-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
-    Berhenti: "bg-slate-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
+    Aktif:        "bg-emerald-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
+    "Tidak Aktif":"bg-amber-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
+    Lulus:        "bg-cyan-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
+    Cuti:         "bg-yellow-200 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
+    Berhenti:     "bg-slate-300 text-black border-1.5 border-black shadow-[1.5px_1.5px_0px_0px_#000]",
   };
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-mono text-[11px] font-bold uppercase ${map[value] || "bg-slate-200 text-black border border-black"}`}>
       {value === "Aktif" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-pulse"></span>}
+      {value === "Tidak Aktif" && <span className="w-1.5 h-1.5 rounded-full bg-amber-700 animate-pulse"></span>}
       {value}
     </span>
   );
@@ -426,12 +549,18 @@ export default function DataSiswa() {
   const [selectedSiswa, setSelectedSiswa] = useState(null);
   const [resetPwModal, setResetPwModal] = useState(false);
 
+  // Aktivasi modal state
+  const [aktivasiModalOpen, setAktivasiModalOpen] = useState(false);
+  const [activatingSiswa, setActivatingSiswa] = useState(null);
+
   // Detail sub-state
   const [materiList, setMateriList] = useState([]);
   const [aksesMateri, setAksesMateri] = useState({});
   const [isUpdatingAkses, setIsUpdatingAkses] = useState(false);
   const [kehadiranList, setKehadiranList] = useState([]);
   const [quizHasilList, setQuizHasilList] = useState([]);
+  const [nilaiPraktikInput, setNilaiPraktikInput] = useState(85);
+  const [isSavingKelulusan, setIsSavingKelulusan] = useState(false);
 
   // ── Loaders ──
   const loadSiswa = useCallback(async () => {
@@ -456,6 +585,7 @@ export default function DataSiswa() {
     setAksesMateri({});
     setKehadiranList([]);
     setQuizHasilList([]);
+    setNilaiPraktikInput(siswa.nilai_akhir || 85);
 
     // Fetch data paralel
     const [{ data: mData }, { aksesMap }, { data: kData }, { data: qData }] = await Promise.all([
@@ -469,6 +599,54 @@ export default function DataSiswa() {
     setAksesMateri(aksesMap || {});
     if (kData) setKehadiranList(kData);
     if (qData) setQuizHasilList(qData);
+  };
+
+  const handleSimpanKelulusan = async (calculatedNilaiAkhir, calculatedPredikat) => {
+    if (!selectedSiswa) return;
+    setIsSavingKelulusan(true);
+    try {
+      const { data, error } = await simpanKelulusanSiswa(selectedSiswa.id, {
+        nilai_akhir: calculatedNilaiAkhir,
+        predikat: calculatedPredikat,
+        status: "Lulus",
+        tanggal_lulus: new Date().toISOString().split("T")[0],
+      });
+
+      if (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal Menyimpan",
+          text: error.message || "Terjadi kesalahan saat menyimpan kelulusan.",
+        });
+      } else {
+        const updated = {
+          ...selectedSiswa,
+          status: "Lulus",
+          nilai_akhir: calculatedNilaiAkhir,
+          nilaiAkhir: calculatedNilaiAkhir,
+          predikat: calculatedPredikat,
+          tanggal_lulus: new Date().toISOString().split("T")[0],
+        };
+        setSelectedSiswa(updated);
+        setSiswaList((prev) =>
+          prev.map((s) => (s.id === selectedSiswa.id ? updated : s))
+        );
+
+        Swal.fire({
+          icon: "success",
+          title: "Kelulusan Ditetapkan! 🎓",
+          html: `Siswa <b>${selectedSiswa.nama}</b> resmi dinyatakan <b>LULUS</b>.<br/>Nilai Akhir: <b>${calculatedNilaiAkhir}</b> (Predikat: <b>${calculatedPredikat}</b>).<br/><span class="text-xs text-slate-500 mt-2 block">E-Sertifikat resmi sudah dapat diterbitkan.</span>`,
+          customClass: {
+            popup: "border-3 border-black rounded-xl shadow-[6px_6px_0px_0px_#000]",
+            confirmButton: "bg-orange-500 border-2 border-black font-bold text-black rounded-lg cursor-pointer",
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Gagal simpan kelulusan:", err);
+    } finally {
+      setIsSavingKelulusan(false);
+    }
   };
 
   // ── CRUD Handlers ──
@@ -513,6 +691,44 @@ export default function DataSiswa() {
       title: editingSiswa ? "Data Diperbarui!" : "Siswa Ditambahkan!",
       timer: 1500,
       showConfirmButton: false,
+    });
+  };
+
+  // ── Aktivasi Handlers ──
+  const handleBukaAktivasi = (siswa) => {
+    setActivatingSiswa(siswa);
+    setAktivasiModalOpen(true);
+  };
+
+  const handleAktivasiSuccess = async (siswa, assignedKelasId, assignedStatusBayar) => {
+    setAktivasiModalOpen(false);
+    setActivatingSiswa(null);
+    await loadSiswa();
+
+    if (selectedSiswa && selectedSiswa.id === siswa.id) {
+      setSelectedSiswa((prev) => ({
+        ...prev,
+        status: "Aktif",
+        status_bayar: assignedStatusBayar,
+        kelas_id: assignedKelasId || prev.kelas_id,
+      }));
+    }
+
+    const waMsg = `Halo ${siswa.nama},\n\nAkun pendaftaran Anda di GWA Tech Course telah *AKTIF*! 🚀\n- *ID Siswa*: ${siswa.id}\n- *Modul*: ${siswa.modul || 'Kursus Komputer'}\n\nSilakan login ke Portal Belajar Siswa di:\n${window.location.origin}/siswa/login\n\nSelamat belajar dan sampai jumpa di kelas!`;
+    const waUrl = siswa.wa ? `https://wa.me/${siswa.wa.replace(/\D/g, "")}?text=${encodeURIComponent(waMsg)}` : null;
+
+    Swal.fire({
+      icon: "success",
+      title: "Siswa Berhasil Diaktifkan! ⚡",
+      html: `Akun <b>${siswa.nama}</b> (${siswa.id}) telah <b>AKTIF</b> dan dapat mengakses portal belajar.<br/><br/>${
+        waUrl
+          ? `<a href="${waUrl}" target="_blank" class="inline-block mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-mono font-bold text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] no-underline">📲 Kirim Notifikasi WhatsApp ke Siswa</a>`
+          : ''
+      }`,
+      customClass: {
+        popup: "border-3 border-black rounded-xl shadow-[6px_6px_0px_0px_#000]",
+        confirmButton: "bg-orange-500 border-2 border-black font-bold text-black rounded-lg cursor-pointer",
+      },
     });
   };
 
@@ -596,6 +812,7 @@ export default function DataSiswa() {
 
   const statsTotal = siswaList.length;
   const statsAktif = siswaList.filter((s) => s.status === "Aktif").length;
+  const statsTidakAktif = siswaList.filter((s) => s.status === "Tidak Aktif").length;
   const statsLunas = siswaList.filter((s) => s.status_bayar === "Lunas").length;
 
   // ── Render ──
@@ -617,7 +834,7 @@ export default function DataSiswa() {
             Manajemen Data Siswa
           </h1>
           <p className="text-xs sm:text-sm font-mono text-slate-600 mt-0.5">
-            Kelola peserta kursus, kontrol akses materi per-pertemuan, presensi, dan status pembayaran.
+            Kelola peserta kursus, kontrol akses materi per-pertemuan, aktivasi pendaftar baru, presensi, dan pembayaran.
           </p>
         </div>
         <button
@@ -630,13 +847,28 @@ export default function DataSiswa() {
       </div>
 
       {/* ── Stat Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "Total Siswa Terdaftar", value: statsTotal, icon: <Users className="w-5 h-5" />, bg: "bg-cyan-300", accent: "bg-cyan-500" },
           { label: "Siswa Status Aktif", value: statsAktif, icon: <CheckCircle2 className="w-5 h-5" />, bg: "bg-emerald-300", accent: "bg-emerald-500" },
+          { 
+            label: "Menunggu Aktivasi", 
+            value: statsTidakAktif, 
+            icon: <Zap className="w-5 h-5" />, 
+            bg: statsTidakAktif > 0 ? "bg-amber-300 animate-pulse" : "bg-amber-100", 
+            accent: "bg-amber-500",
+            onClick: () => setFilterStatus(filterStatus === "Tidak Aktif" ? "Semua" : "Tidak Aktif"),
+            isFilterable: true
+          },
           { label: "Pembayaran Lunas", value: statsLunas, icon: <FileText className="w-5 h-5" />, bg: "bg-amber-300", accent: "bg-amber-500" },
         ].map((s) => (
-          <div key={s.label} className="bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] p-4 flex items-center justify-between relative overflow-hidden">
+          <div 
+            key={s.label} 
+            onClick={s.onClick}
+            className={`bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] p-4 flex items-center justify-between relative overflow-hidden ${
+              s.isFilterable ? "cursor-pointer hover:bg-yellow-50 transition-colors" : ""
+            }`}
+          >
             <div className={`absolute top-0 left-0 right-0 h-1.5 ${s.accent}`}></div>
             <div>
               <p className="text-3xl font-heading font-black text-black">{s.value}</p>
@@ -675,6 +907,7 @@ export default function DataSiswa() {
           >
             <option value="Semua">STATUS: SEMUA</option>
             <option value="Aktif">STATUS: AKTIF</option>
+            <option value="Tidak Aktif">STATUS: TIDAK AKTIF (PENDAFTAR)</option>
             <option value="Lulus">STATUS: LULUS</option>
             <option value="Cuti">STATUS: CUTI</option>
             <option value="Berhenti">STATUS: BERHENTI</option>
@@ -754,7 +987,16 @@ export default function DataSiswa() {
 
                     {/* Aksi */}
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                        {siswa.status === "Tidak Aktif" && (
+                          <button
+                            onClick={() => handleBukaAktivasi(siswa)}
+                            className="px-2.5 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer flex items-center gap-1"
+                            title="Aktifkan Siswa Baru"
+                          >
+                            <Zap className="w-3.5 h-3.5 fill-black" /> Aktifkan
+                          </button>
+                        )}
                         <button
                           onClick={() => handleOpenDetail(siswa)}
                           className="px-2.5 py-1.5 bg-cyan-300 hover:bg-cyan-200 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
@@ -891,6 +1133,26 @@ export default function DataSiswa() {
                 {/* ─ Tab: Profil ─ */}
                 {activeTab === "profil" && (
                   <div className="space-y-4">
+                    {/* Inactive Student Banner */}
+                    {selectedSiswa.status === "Tidak Aktif" && (
+                      <div className="bg-amber-200 border-2 border-black p-4 shadow-[3px_3px_0px_0px_#000] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div>
+                          <p className="font-heading font-black text-sm uppercase text-black flex items-center gap-1.5">
+                            <AlertCircle className="w-4 h-4 text-amber-900" /> SISWA INI MENUNGGU AKTIVASI
+                          </p>
+                          <p className="font-mono text-xs text-slate-800 mt-0.5">
+                            Siswa mendaftar mandiri via web dan berstatus Tidak Aktif. Aktifkan akun agar siswa dapat login.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleBukaAktivasi(selectedSiswa)}
+                          className="px-4 py-2 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Zap className="w-3.5 h-3.5 fill-black" /> Aktifkan Siswa Sekarang
+                        </button>
+                      </div>
+                    )}
+
                     {/* Info Umum */}
                     <div className="bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] p-4 sm:p-5">
                       <div className="flex items-center justify-between pb-2 mb-3 border-b-2 border-black font-heading font-black text-xs uppercase">
@@ -1202,6 +1464,146 @@ export default function DataSiswa() {
                         </tbody>
                       </table>
                     </div>
+
+                    {/* Panel Kalkulasi Otomatis Nilai Akhir & Kelulusan Siswa */}
+                    {(() => {
+                      const avgQuiz = quizHasilList.length > 0
+                        ? Math.round(quizHasilList.reduce((a, q) => a + (q.nilai || 0), 0) / quizHasilList.length)
+                        : 80;
+                      const totalPrtm = materiList.length || selectedSiswa.totalPertemuan || 10;
+                      const hadirCount = kehadiranList.filter((k) => k.status === "Hadir").length;
+                      const hadirPct = totalPrtm > 0 ? Math.min(100, Math.round((hadirCount / totalPrtm) * 100)) : 100;
+                      const nilaiPraktik = Number(nilaiPraktikInput) || 85;
+
+                      // Bobot: 40% Kuis + 30% Presensi + 30% Praktik
+                      const calculatedNilaiAkhir = Math.round((avgQuiz * 0.4) + (hadirPct * 0.3) + (nilaiPraktik * 0.3));
+                      const calculatedPredikat = calculatedNilaiAkhir >= 90
+                        ? "Sangat Baik"
+                        : calculatedNilaiAkhir >= 75
+                        ? "Baik"
+                        : calculatedNilaiAkhir >= 60
+                        ? "Cukup"
+                        : "Perlu Bimbingan";
+                      const isAlreadyLulus = selectedSiswa.status === "Lulus";
+
+                      return (
+                        <div className="bg-amber-100 border-2 border-black shadow-[4px_4px_0px_0px_#000] p-4 sm:p-5 space-y-4">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b-2 border-black/20 pb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="p-1.5 bg-black text-amber-300 rounded border border-black text-sm">
+                                ⚡
+                              </span>
+                              <div>
+                                <h4 className="font-heading font-black text-sm uppercase text-black">
+                                  Kalkulasi Nilai Akhir &amp; Kelulusan Siswa
+                                </h4>
+                                <p className="font-mono text-[11px] text-slate-700">
+                                  Formula: 40% Kuis + 30% Presensi + 30% Nilai Praktik
+                                </p>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`font-mono text-xs font-black px-2.5 py-1 border border-black shadow-[1.5px_1.5px_0px_0px_#000] ${
+                                isAlreadyLulus ? "bg-emerald-300 text-black" : "bg-white text-slate-700"
+                              }`}
+                            >
+                              {isAlreadyLulus ? "🎓 STATUS: SUDAH LULUS" : "⏳ STATUS: MASIH AKTIF"}
+                            </span>
+                          </div>
+
+                          {/* 3 Metric Inputs / Displays */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {/* Kuis */}
+                            <div className="bg-white border-2 border-black p-3 shadow-[2px_2px_0px_0px_#000] space-y-1">
+                              <div className="flex justify-between text-[11px] font-mono font-bold text-slate-500">
+                                <span>[01] RATA KUIS (40%)</span>
+                              </div>
+                              <div className="text-xl font-heading font-black text-black">
+                                {avgQuiz}{" "}
+                                <span className="text-xs font-mono text-slate-500 font-normal">
+                                  ({quizHasilList.length} Kuis)
+                                </span>
+                              </div>
+                              <p className="text-[10px] font-mono text-slate-500">
+                                Poin: {Math.round(avgQuiz * 0.4)}
+                              </p>
+                            </div>
+
+                            {/* Kehadiran */}
+                            <div className="bg-white border-2 border-black p-3 shadow-[2px_2px_0px_0px_#000] space-y-1">
+                              <div className="flex justify-between text-[11px] font-mono font-bold text-slate-500">
+                                <span>[02] PRESENSI (30%)</span>
+                              </div>
+                              <div className="text-xl font-heading font-black text-black">
+                                {hadirPct}%{" "}
+                                <span className="text-xs font-mono text-slate-500 font-normal">
+                                  ({hadirCount}/{totalPrtm} Sesi)
+                                </span>
+                              </div>
+                              <p className="text-[10px] font-mono text-slate-500">
+                                Poin: {Math.round(hadirPct * 0.3)}
+                              </p>
+                            </div>
+
+                            {/* Nilai Praktik Input */}
+                            <div className="bg-white border-2 border-black p-3 shadow-[2px_2px_0px_0px_#000] space-y-1">
+                              <div className="flex justify-between text-[11px] font-mono font-bold text-slate-500">
+                                <span>[03] PRAKTIK (30%)</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={nilaiPraktikInput}
+                                  onChange={(e) => setNilaiPraktikInput(e.target.value)}
+                                  className="w-20 px-2 py-1 border-2 border-black text-sm font-heading font-black bg-yellow-50 focus:bg-white outline-none"
+                                />
+                                <span className="text-[11px] font-mono text-slate-500">
+                                  Poin: {Math.round(nilaiPraktik * 0.3)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Calculated Result Banner & Action Button */}
+                          <div className="bg-white border-2 border-black p-4 shadow-[3px_3px_0px_0px_#000] flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-emerald-300 border-2 border-black flex items-center justify-center font-heading font-black text-2xl shadow-[2px_2px_0px_0px_#000]">
+                                {calculatedNilaiAkhir}
+                              </div>
+                              <div>
+                                <p className="font-mono text-xs font-bold text-slate-500">
+                                  HASIL KALKULASI NILAI AKHIR:
+                                </p>
+                                <p className="font-heading font-black text-base text-black">
+                                  Predikat:{" "}
+                                  <span className="text-emerald-700 underline">
+                                    &quot;{calculatedPredikat}&quot;
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => handleSimpanKelulusan(calculatedNilaiAkhir, calculatedPredikat)}
+                              disabled={isSavingKelulusan}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              <Award className="w-4 h-4" />
+                              <span>
+                                {isSavingKelulusan
+                                  ? "Menyimpan Kelulusan..."
+                                  : isAlreadyLulus
+                                  ? "Perbarui Nilai Kelulusan"
+                                  : "🎓 Tetapkan LULUS & Terbitkan Nilai"}
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -1215,6 +1617,16 @@ export default function DataSiswa() {
         <ResetPasswordModal
           siswa={selectedSiswa}
           onClose={() => setResetPwModal(false)}
+        />
+      )}
+
+      {/* ── Aktivasi Siswa Modal ── */}
+      {aktivasiModalOpen && activatingSiswa && (
+        <AktivasiSiswaModal
+          siswa={activatingSiswa}
+          kelasList={kelasList}
+          onClose={() => { setAktivasiModalOpen(false); setActivatingSiswa(null); }}
+          onActivated={handleAktivasiSuccess}
         />
       )}
     </div>

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSiswa } from "@/context/SiswaContext";
+import { resetPasswordSiswa } from "@/lib/siswaService";
+import Swal from "sweetalert2";
 import {
   LayoutDashboard,
   BookOpen,
@@ -13,9 +15,14 @@ import {
   Menu,
   X,
   User,
-  Sparkles,
+  Key,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
+  ChevronDown,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const navItems = [
   { name: "Beranda", href: "/siswa", icon: LayoutDashboard },
@@ -29,6 +36,37 @@ export default function SiswaNavbar() {
   const { currentSiswa, logout } = useSiswa();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // State untuk modal ganti kata sandi
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordBaru, setPasswordBaru] = useState("");
+  const [konfirmasiPassword, setKonfirmasiPassword] = useState("");
+  const [showPass1, setShowPass1] = useState(false);
+  const [showPass2, setShowPass2] = useState(false);
+  const [passError, setPassError] = useState("");
+  const [isUpdatingPass, setIsUpdatingPass] = useState(false);
+
+  // State untuk dropdown avatar akun
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef(null);
+
+  // Click outside listener untuk menutup dropdown avatar
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        avatarMenuRef.current &&
+        !avatarMenuRef.current.contains(event.target)
+      ) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    if (avatarMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [avatarMenuOpen]);
 
   useEffect(() => {
     if (mobileOpen) {
@@ -48,6 +86,46 @@ export default function SiswaNavbar() {
       .map((n) => n[0])
       .join("")
       .toUpperCase() ?? "?";
+
+  const handleGantiPassword = async (e) => {
+    e.preventDefault();
+    setPassError("");
+
+    if (!passwordBaru || passwordBaru.length < 6) {
+      setPassError("Kata sandi baru minimal 6 karakter.");
+      return;
+    }
+
+    if (passwordBaru !== konfirmasiPassword) {
+      setPassError("Konfirmasi kata sandi tidak cocok. Periksa kembali ya!");
+      return;
+    }
+
+    setIsUpdatingPass(true);
+    try {
+      const { error } = await resetPasswordSiswa(currentSiswa.id, passwordBaru);
+      if (error) {
+        setPassError("Gagal mengubah kata sandi: " + (error.message || "Terjadi kesalahan"));
+      } else {
+        setIsPasswordModalOpen(false);
+        setPasswordBaru("");
+        setKonfirmasiPassword("");
+        Swal.fire({
+          icon: "success",
+          title: "Kata Sandi Diperbarui! 🎉",
+          text: "Kata sandi kamu berhasil diganti. Gunakan kata sandi baru ini saat masuk berikutnya.",
+          customClass: {
+            popup: "border-3 border-black rounded-xl shadow-[6px_6px_0px_0px_#000]",
+            confirmButton: "bg-orange-500 border-2 border-black font-bold text-black rounded-lg",
+          },
+        });
+      }
+    } catch (err) {
+      setPassError("Terjadi kesalahan sistem saat mengganti kata sandi.");
+    } finally {
+      setIsUpdatingPass(false);
+    }
+  };
 
   return (
     <>
@@ -99,32 +177,111 @@ export default function SiswaNavbar() {
               })}
             </nav>
 
-            {/* Right: user badge + logout */}
-            <div className="flex items-center gap-2.5">
+            {/* Right: Avatar Dropdown for Tablet & Desktop, Hamburger for Mobile */}
+            <div className="flex items-center gap-2">
               {currentSiswa && (
-                <div className="hidden sm:flex items-center gap-2.5 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-1.5 rounded-lg">
-                  <div className="w-7 h-7 bg-cyan-300 border border-black flex items-center justify-center font-heading font-black text-xs text-black rounded shrink-0">
-                    {initials}
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-black text-black font-heading leading-tight truncate max-w-[120px] lg:max-w-[150px]">
-                      {currentSiswa.nama}
-                    </span>
-                    <span className="text-[10px] text-slate-600 font-bold leading-none mt-0.5">
-                      ID: {currentSiswa.id}
-                    </span>
-                  </div>
+                <div className="relative hidden sm:block" ref={avatarMenuRef}>
+                  {/* Avatar Button Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setAvatarMenuOpen((prev) => !prev)}
+                    className={`flex items-center gap-2.5 bg-white hover:bg-amber-100 border-2 border-black rounded-xl p-1.5 sm:px-2.5 sm:py-1.5 transition-all cursor-pointer select-none ${
+                      avatarMenuOpen
+                        ? "shadow-none translate-x-0.5 translate-y-0.5 bg-amber-200 ring-2 ring-black"
+                        : "shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#000]"
+                    }`}
+                    aria-expanded={avatarMenuOpen}
+                    aria-haspopup="true"
+                    title="Menu Akun & Pengaturan"
+                  >
+                    <div className="w-8 h-8 bg-cyan-300 border border-black flex items-center justify-center font-heading font-black text-xs text-black rounded-lg shrink-0 shadow-[1px_1px_0px_0px_#000]">
+                      {initials}
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-xs font-black text-black font-heading leading-tight truncate max-w-[100px] md:max-w-[130px]">
+                        {currentSiswa.nama}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-bold leading-none mt-0.5">
+                        ID: {currentSiswa.id}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-black transition-transform duration-200 shrink-0 ${
+                        avatarMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Dropdown Menu Popover */}
+                  {avatarMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+                      {/* Header Info Akun */}
+                      <div className="p-4 bg-[#FFFDF5] border-b-2 border-black">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 bg-cyan-300 border-2 border-black flex items-center justify-center font-heading font-black text-base text-black rounded-lg shrink-0 shadow-[2px_2px_0px_0px_#000]">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-heading font-black text-sm text-black truncate">
+                              {currentSiswa.nama}
+                            </p>
+                            <span className="inline-block font-mono text-[10px] font-bold bg-black text-amber-300 px-1.5 py-0.5 rounded mt-0.5">
+                              ID: {currentSiswa.id}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Extra Detail: Modul & Kelas */}
+                        <div className="mt-3 pt-2.5 border-t border-slate-200 text-xs space-y-1">
+                          <div className="flex items-center justify-between text-slate-600 font-medium">
+                            <span>Modul:</span>
+                            <strong className="text-black font-bold truncate max-w-[140px]">
+                              {currentSiswa.modul || "-"}
+                            </strong>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-600 font-medium">
+                            <span>Kelas:</span>
+                            <strong className="text-black font-bold">
+                              {currentSiswa.kelas || "-"}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu Actions */}
+                      <div className="p-2 space-y-1 bg-white">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAvatarMenuOpen(false);
+                            setIsPasswordModalOpen(true);
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-heading font-bold text-black hover:bg-yellow-200 rounded-lg transition-colors text-left cursor-pointer"
+                        >
+                          <div className="w-7 h-7 bg-amber-300 border border-black rounded flex items-center justify-center shrink-0">
+                            <Key className="w-3.5 h-3.5 text-black" />
+                          </div>
+                          <span>Ganti Kata Sandi</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAvatarMenuOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-heading font-bold text-rose-700 hover:bg-rose-100 rounded-lg transition-colors text-left cursor-pointer"
+                        >
+                          <div className="w-7 h-7 bg-rose-200 border border-black rounded flex items-center justify-center shrink-0">
+                            <LogOut className="w-3.5 h-3.5 text-rose-700" />
+                          </div>
+                          <span>Keluar dari Portal</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
-
-              <button
-                onClick={logout}
-                title="Keluar dari Portal"
-                className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white font-heading text-xs font-black border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all rounded-lg cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Keluar</span>
-              </button>
 
               {/* Mobile hamburger */}
               <button
@@ -138,6 +295,112 @@ export default function SiswaNavbar() {
           </div>
         </div>
       </header>
+
+      {/* ── Modal Ganti Password Mandiri ───────────────────── */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+            onClick={() => !isUpdatingPass && setIsPasswordModalOpen(false)}
+          />
+          <div className="relative bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-xl max-w-md w-full overflow-hidden z-10 animate-in zoom-in-95 duration-150">
+            {/* Header Modal */}
+            <div className="flex items-center justify-between px-4 py-3 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
+              <div className="flex items-center gap-2">
+                <Key className="w-4 h-4 text-amber-300" />
+                <span className="text-amber-300">Ganti Kata Sandi Kamu</span>
+              </div>
+              <button
+                onClick={() => setIsPasswordModalOpen(false)}
+                className="p-1 bg-white text-black border border-black hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-yellow-50 p-3 border-2 border-black rounded-lg">
+                <span>💡</span>
+                <span>Buat kata sandi baru yang mudah kamu ingat (minimal 6 huruf/angka).</span>
+              </div>
+
+              {passError && (
+                <div className="bg-rose-100 text-rose-950 p-3 border-2 border-black rounded-lg text-xs font-bold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{passError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleGantiPassword} className="space-y-4">
+                {/* Password Baru */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-black font-heading">
+                    Kata Sandi Baru
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPass1 ? "text" : "password"}
+                      value={passwordBaru}
+                      onChange={(e) => setPasswordBaru(e.target.value)}
+                      placeholder="Masukkan kata sandi baru"
+                      required
+                      className="w-full pr-10 pl-3 py-2.5 bg-white text-black font-medium text-sm border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] focus:bg-yellow-50 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass1(!showPass1)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-600 hover:text-black cursor-pointer"
+                    >
+                      {showPass1 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Konfirmasi Password */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-black font-heading">
+                    Ulangi Kata Sandi Baru
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPass2 ? "text" : "password"}
+                      value={konfirmasiPassword}
+                      onChange={(e) => setKonfirmasiPassword(e.target.value)}
+                      placeholder="Ketik ulang kata sandi baru"
+                      required
+                      className="w-full pr-10 pl-3 py-2.5 bg-white text-black font-medium text-sm border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] focus:bg-yellow-50 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass2(!showPass2)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-600 hover:text-black cursor-pointer"
+                    >
+                      {showPass2 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordModalOpen(false)}
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-black font-heading text-xs font-bold border-2 border-black rounded-lg transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUpdatingPass}
+                    className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-400 text-black font-heading text-xs font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isUpdatingPass ? "Menyimpan..." : "Simpan Sandi"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Drawer */}
       {mobileOpen && (
@@ -177,6 +440,17 @@ export default function SiswaNavbar() {
                   </p>
                 </div>
               </div>
+
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  setIsPasswordModalOpen(true);
+                }}
+                className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2 bg-white hover:bg-yellow-200 text-black font-heading text-xs font-bold border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] transition-colors"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Ganti Kata Sandi</span>
+              </button>
             </div>
 
             {/* Drawer nav links */}

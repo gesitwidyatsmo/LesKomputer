@@ -1,42 +1,113 @@
 import { supabase } from './supabase';
 
+/**
+ * Format string nomor WhatsApp ke format standar internasional (misal: 0812 -> 62812).
+ */
+export function normalizeWhatsAppNumber(rawNumber) {
+  if (!rawNumber) return "6280000000000";
+  let num = String(rawNumber).replace(/\D/g, "");
+  if (num.startsWith("0")) {
+    num = "62" + num.slice(1);
+  }
+  if (!num.startsWith("62") && num.length > 5) {
+    num = "62" + num;
+  }
+  return num || "6280000000000";
+}
+
+/**
+ * Membuat link wa.me dengan nomor dan pesan yang di-encode.
+ */
+export function formatWhatsAppUrl(rawNumber, message = "") {
+  const num = normalizeWhatsAppNumber(rawNumber);
+  const msg = encodeURIComponent(message || "");
+  return `https://wa.me/${num}${msg ? `?text=${msg}` : ""}`;
+}
+
+/**
+ * Format tampilan nomor telepon ramah baca (misal: +62 812-3456-7890).
+ */
+export function formatPhoneDisplay(rawNumber) {
+  const num = normalizeWhatsAppNumber(rawNumber);
+  if (num.startsWith("62")) {
+    const rest = num.slice(2);
+    if (rest.length >= 8) {
+      return `+62 ${rest.slice(0, 3)}-${rest.slice(3, 7)}-${rest.slice(7)}`;
+    }
+    return `+62 ${rest}`;
+  }
+  return `+${num}`;
+}
+
 export const DEFAULT_LANDING_CONFIG = {
+  // ⭐ PENGATURAN UMUM & KONTAK TERPUSAT (SINGLE SOURCE OF TRUTH & FOOTER)
+  general: {
+    is_visible: true,
+    content: {
+      whatsappNumber: "6280000000000", // SATU-SATUNYA INPUT NO. WA UNTUK SELURUH WEB
+      brandName: "GWA.TECH",
+      brandTagline: "// Gesit, Wawasan, Aplikatif",
+      brandDescription: "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.",
+      address: "Jl. Pendidikan No. 123, Kecamatan Ilmu, Kota Teknologi, Indonesia 12345",
+      workingHours: "Senin - Sabtu: 08.30 - 21.00 WIB",
+      copyright: "GWA TECH COURSE. HAK CIPTA DILINDUNGI.",
+      showStatusStrip: true,
+      showBrandInfo: true,
+      showProgramsCol: true,
+      showContactCol: true,
+      footerProgramsTitle: "PROGRAM MODUL",
+      footerPrograms: [
+        { isVisible: true, label: "Microsoft Word Master", link: "/#program" },
+        { isVisible: true, label: "Microsoft Excel Expert", link: "/#program" },
+        { isVisible: true, label: "Microsoft PowerPoint Pro", link: "/#program" },
+        { isVisible: true, label: "Paket Mahir 3-in-1 Kantor", link: "/#program" }
+      ]
+    }
+  },
   announcement: {
     is_visible: true,
     content: {
+      showBadge: true,
       batchStatus: "[BATCH_2026 // OPEN]",
       onlineText: "[ONLINE]",
       marqueeText1: "⚡ KUOTA TERBATAS: MAKSIMAL 5 SISWA / KELAS",
       marqueeText2: "1 SISWA 1 KOMPUTER — METODE PRAKTIK LANGSUNG DI TEMPAT",
       marqueeText3: "DAFTAR SEGERA >_",
+      showButton: true,
       buttonText: "CEK SLOT >",
-      whatsappNumber: "6280000000000",
       whatsappMessage: "Halo Admin GWA, saya ingin cek slot kelas terdekat."
     }
   },
   hero: {
     is_visible: true,
     content: {
+      showBadge: true,
       badgeText: "[⚡ METODE EKSKLUSIF 1-ON-5 MENTORING]",
       headlinePrefix: "Belajar Komputer",
       headlineSub: "Gak Pakai Rumit.",
       headlineHighlight: "Dari Nol Sampai Mahir.",
       description: "Kuasai Microsoft Word, Excel Logika & Kasir, dan PowerPoint Profesional dengan metode mentoring privat maksimal 5 orang. 1 Siswa 1 Unit Komputer — 100% praktik langsung studi kasus dunia kerja.",
+      showCtaWhatsapp: true,
       ctaWhatsappText: "Konsultasi via WhatsApp",
       ctaWhatsappMessage: "Halo Admin GWA, saya ingin konsultasi kursus komputer.",
+      showCtaSecondary: true,
       ctaSecondaryText: "Lihat 3 Modul Kursus",
-      ctaSecondaryLink: "#program",
+      ctaSecondaryLink: "/#program",
+      showTrustBadges: true,
       trustBadge1: "100% Praktik Nyata",
       trustBadge2: "Sertifikat Resmi",
       trustBadge3: "1 Siswa 1 PC Mandiri",
+      showFloatingBadges: true,
       floatingBadgeLeftTitle: "Total Alumni Lulus",
       floatingBadgeLeftValue: "500+ Siswa Mahir",
-      floatingBadgeRightText: "5 PC WORKSTATION SIAP"
+      floatingBadgeRightText: "5 PC WORKSTATION SIAP",
+      showSimulator: true
     }
   },
   values: {
     is_visible: true,
     content: {
+      showBadge: true,
       badgeText: "[FILOSOFI INTI GWA TECH]",
       titlePrefix: "Bukan Sekadar Belajar Mengetik.",
       titleHighlight: "Kami Membentuk Mindset Solutif.",
@@ -44,6 +115,7 @@ export const DEFAULT_LANDING_CONFIG = {
       items: [
         {
           id: "gesit",
+          isVisible: true,
           code: "SYS_VAL // 01",
           title: "Gesit",
           subtitle: "Shortcut & Efisiensi Waktu",
@@ -60,6 +132,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: "wawasan",
+          isVisible: true,
           code: "SYS_VAL // 02",
           title: "Wawasan",
           subtitle: "Logika Rumus & Problem Solving",
@@ -76,6 +149,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: "aplikatif",
+          isVisible: true,
           code: "SYS_VAL // 03",
           title: "Aplikatif",
           subtitle: "100% Studi Kasus Dunia Kerja",
@@ -96,6 +170,7 @@ export const DEFAULT_LANDING_CONFIG = {
   programs: {
     is_visible: true,
     content: {
+      showBadge: true,
       badgeText: "[CURRICULUM_MATRIX // 2026]",
       titlePrefix: "PILIH MODUL KEAHLIAN",
       titleHighlight: "SESUAI TARGET KARIR ANDA",
@@ -103,6 +178,7 @@ export const DEFAULT_LANDING_CONFIG = {
       items: [
         {
           id: "word",
+          isVisible: true,
           code: "MODUL_01 // WORD",
           title: "Microsoft Word Master",
           subtitle: "Dokumen Resmi, Surat Massal & Administrasi",
@@ -125,6 +201,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: "excel",
+          isVisible: true,
           code: "MODUL_02 // EXCEL",
           title: "Microsoft Excel Expert",
           subtitle: "Logika Rumus, Kasir & Analisis Data",
@@ -148,6 +225,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: "powerpoint",
+          isVisible: true,
           code: "MODUL_03 // PPT",
           title: "Microsoft PowerPoint Pro",
           subtitle: "Desain Presentasi Eksekutif & Animasi Visual",
@@ -168,6 +246,7 @@ export const DEFAULT_LANDING_CONFIG = {
           targetHasil: "Mampu merancang slide presentasi kelas eksekutif yang memukau audiens, rapi secara visual, dan memperkuat pesan presentasi."
         }
       ],
+      showPromoBanner: true,
       promoBadge: "🔥 PAKET KOMPLIT ALL-IN-ONE",
       promoTitle: "Paket Mahir Komputer Kantor (Word + Excel + PPT)",
       promoDesc: "Ambil 3 modul sekaligus untuk penguasaan total administrasi kantor & bisnis. Dapatkan diskon spesial, modul cetak eksklusif, serta garansi bimbingan sampai mahir!",
@@ -178,13 +257,16 @@ export const DEFAULT_LANDING_CONFIG = {
   fasilitas: {
     is_visible: true,
     content: {
+      showBadge: true,
       badgeText: "[LAB_ARCHITECTURE // PRIVATE_ROOM]",
       titlePrefix: "DENAH KELAS 5-WORKSTATION:",
       titleHighlight: "1 SISWA 1 UNIT KOMPUTER",
       description: "Kami menolak konsep kelas massal yang berisik dan tidak terarah. Di GWA Tech Course, setiap sesi hanya diisi 5 orang untuk menjamin bimbingan intensif dan pemahaman penuh.",
+      showWorkstations: true,
       pcStations: [
         {
           id: 1,
+          isVisible: true,
           name: "PC-01 // WORKSTATION",
           status: "TERSEDIA",
           isOnline: true,
@@ -193,6 +275,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: 2,
+          isVisible: true,
           name: "PC-02 // WORKSTATION",
           status: "TERSEDIA",
           isOnline: true,
@@ -201,6 +284,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: 3,
+          isVisible: true,
           name: "PC-03 // WORKSTATION",
           status: "TERISI (BATCH PAGI)",
           isOnline: false,
@@ -209,6 +293,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: 4,
+          isVisible: true,
           name: "PC-04 // WORKSTATION",
           status: "TERSEDIA",
           isOnline: true,
@@ -217,6 +302,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: 5,
+          isVisible: true,
           name: "PC-05 // WORKSTATION",
           status: "TERSEDIA",
           isOnline: true,
@@ -224,55 +310,64 @@ export const DEFAULT_LANDING_CONFIG = {
           session: "Shift Pagi / Sore / Malam"
         }
       ],
+      showFacilitiesList: true,
       facilities: [
         {
+          isVisible: true,
           title: "Maksimal 5 Siswa / Kelas",
           desc: "Suasana belajar privat & intensif. Mentor selalu standby di samping Anda untuk membimbing setiap kendala rumus dan tugas.",
           iconName: "Users",
           color: "bg-orange-300"
         },
         {
+          isVisible: true,
           title: "1 Siswa 1 Unit Komputer",
           desc: "Tidak perlu repot membawa laptop sendiri. Setiap siswa disediakan 1 workstation PC spesifikasi mumpuni siap pakai.",
           iconName: "Monitor",
           color: "bg-cyan-300"
         },
         {
+          isVisible: true,
           title: "Ruangan Ber-AC Dingin & Nyaman",
           desc: "Fasilitas ruang belajar ber-AC yang sejuk, bersih, bebas kebisingan, dan nyaman untuk konsentrasi belajar maksimal.",
           iconName: "AirVent",
           color: "bg-emerald-300"
         },
         {
+          isVisible: true,
           title: "Modul Cetak + Portal LMS 24/7",
           desc: "Dapatkan buku panduan fisik eksklusif serta akses akun portal siswa untuk ujian kuis mandiri & download bahan latihan.",
           iconName: "HardDrive",
           color: "bg-amber-300"
         },
         {
+          isVisible: true,
           title: "Free High-Speed WiFi Internet",
           desc: "Koneksi internet cepat untuk download data latihan, referensi riset dokumen, dan simulasi pengiriman email tugas kantor.",
           iconName: "Wifi",
           color: "bg-purple-300"
         },
         {
+          isVisible: true,
           title: "Garansi Bimbingan Sampai Bisa",
           desc: "Belum paham di pertemuan tertentu? Bebas konsultasi tambahan dengan mentor tanpa biaya sepeserpun sampai benar-benar mahir.",
           iconName: "ShieldCheck",
           color: "bg-rose-300"
         }
       ],
+      showStats: true,
       stats: [
-        { value: "500+", label: "Siswa Lulus Mahir", sub: "Tersebar di berbagai kantor & instansi" },
-        { value: "1 : 5", label: "Rasio Mentor Siswa", sub: "Maksimal 5 siswa per sesi pertemuan" },
-        { value: "98%", label: "Tingkat Kepuasan", sub: "Rekomendasi langsung dari alumni" },
-        { value: "100%", label: "Praktik Langsung", sub: "Bukan teori hafalan semata" }
+        { isVisible: true, value: "500+", label: "Siswa Lulus Mahir", sub: "Tersebar di berbagai kantor & instansi" },
+        { isVisible: true, value: "1 : 5", label: "Rasio Mentor Siswa", sub: "Maksimal 5 siswa per sesi pertemuan" },
+        { isVisible: true, value: "98%", label: "Tingkat Kepuasan", sub: "Rekomendasi langsung dari alumni" },
+        { isVisible: true, value: "100%", label: "Praktik Langsung", sub: "Bukan teori hafalan semata" }
       ]
     }
   },
   testimonials: {
     is_visible: true,
     content: {
+      showBadge: true,
       badgeText: "[TESTIMONIALS_LOG // VERIFIED_ALUMNI]",
       titlePrefix: "CERITA NYATA ALUMNI",
       titleHighlight: "YANG MAKIN PERCAYA DIRI BEKERJA",
@@ -280,6 +375,7 @@ export const DEFAULT_LANDING_CONFIG = {
       reviews: [
         {
           id: "LOG_01",
+          isVisible: true,
           name: "Rizky Firmansyah",
           role: "Staff Administrasi & Keuangan",
           company: "PT. Sarana Distribusi",
@@ -290,6 +386,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: "LOG_02",
+          isVisible: true,
           name: "Dini Anggraini",
           role: "Sekretaris & Operasional",
           company: "Klinik Utama Medika",
@@ -300,6 +397,7 @@ export const DEFAULT_LANDING_CONFIG = {
         },
         {
           id: "LOG_03",
+          isVisible: true,
           name: "Budi Santoso",
           role: "Fresh Graduate / Jobseeker",
           company: "Lolos Seleksi Admin Kantor",
@@ -314,32 +412,39 @@ export const DEFAULT_LANDING_CONFIG = {
   faq: {
     is_visible: true,
     content: {
+      showBadge: true,
       badgeText: "[KNOWLEDGE_BASE // FAQ]",
       titlePrefix: "PERTANYAAN UMUM",
       titleHighlight: "SEPUTAR KELAS & FASILITAS",
       description: "Punya pertanyaan sebelum mendaftar? Temukan jawabannya di bawah ini atau tanyakan langsung ke admin kami.",
       faqs: [
         {
+          isVisible: true,
           q: "Saya benar-benar awam dan belum pernah menyentuh komputer. Apakah bisa ikut?",
           a: "Tentu sangat bisa! Kurikulum kami dimulai dari cara penggunaan dasar, pengenalan keyboard shortcuts, hingga logika penggunaan software secara bertahap. Dengan konsep maksimal 5 siswa per sesi, mentor akan memandu Anda secara personal step-by-step tanpa perlu merasa malu atau tertinggal."
         },
         {
+          isVisible: true,
           q: "Apakah jadwal belajarnya fleksibel jika saya seorang pekerja atau mahasiswa?",
           a: "Ya! Kami menyediakan pilihan shift belajar yang fleksibel: Shift Pagi (08.30 - 10.30 WIB), Shift Siang (13.30 - 15.30 WIB), Shift Sore (16.00 - 18.00 WIB), dan Shift Malam (19.00 - 21.00 WIB). Anda juga bisa berkonsultasi untuk penyesuaian jadwal khusus."
         },
         {
+          isVisible: true,
           q: "Apakah saya perlu membawa laptop sendiri saat kelas berlangsung?",
           a: "Tidak perlu repot! Kami sudah menyediakan 5 unit komputer PC berspesifikasi tinggi lengkap dengan software Microsoft Office berlisensi di lab belajar ber-AC. Anda cukup datang dan fokus belajar."
         },
         {
+          isVisible: true,
           q: "Apakah lulusan akan mendapatkan sertifikat resmi?",
           a: "Ya! Setelah menyelesaikan modul dan lulus ujian proyek praktik, Anda akan menerima Sertifikat Fisik Resmi ber-QR Code serta E-Sertifikat Digital (PDF) berstempel resmi yang dapat dilampirkan untuk melamar kerja di perusahaan swasta, BUMN, maupun berkas instansi."
         },
         {
+          isVisible: true,
           q: "Bagaimana jika ada materi yang belum saya pahami setelah sesi selesai?",
           a: "Kami memberikan Garansi Bimbingan Sampai Bisa. Anda berhak mendapatkan sesi konsultasi & asistensi tambahan dengan mentor serta akses materi pada portal siswa secara gratis tanpa dipungut biaya tambahan."
         }
       ],
+      showHelpBox: true,
       helpBoxTitle: "Masih Ada Pertanyaan Lain?",
       helpBoxDesc: "Tim admin & mentor kami siap menjawab konsultasi kebutuhan belajar Anda.",
       helpBoxButtonText: "Chat Admin WhatsApp",
@@ -349,36 +454,34 @@ export const DEFAULT_LANDING_CONFIG = {
   cta_banner: {
     is_visible: true,
     content: {
+      showBadge: true,
       badgeText: "[SYS_COMMAND // INITIALIZE_ENROLLMENT]",
       titlePrefix: "SIAP MENJADI MAHIR",
       titleHighlight: "DAN PERCAYA DIRI BEKERJA?",
       description: "Slot 5 siswa per kelas sangat cepat penuh. Segera konsultasikan modul yang Anda butuhkan dan amankan jadwal kelas terbaik Anda bersama mentor kami hari ini.",
+      showBadges: true,
       badge1: "Bebas Biaya Pendaftaran",
       badge2: "Modul & Praktik Lengkap",
+      showButtonPrimary: true,
       buttonPrimaryText: "DAFTAR VIA WHATSAPP SEKARANG",
       buttonPrimaryMessage: "Halo Admin GWA, saya siap mendaftar kelas kursus komputer.",
+      showButtonSecondary: true,
       buttonSecondaryText: "[#] Eksplor Modul Kursus Lainnya",
-      buttonSecondaryLink: "#program"
+      buttonSecondaryLink: "/#program"
     }
   },
   floating_wa: {
     is_visible: true,
     content: {
+      showTooltip: true,
       tooltipText: "[ CHAT MENTOR GESIT >_ ]",
-      whatsappNumber: "6280000000000",
       whatsappMessage: "Halo Admin GWA Tech Course, saya ingin konsultasi jadwal dan program kursus."
     }
   },
   footer: {
     is_visible: true,
     content: {
-      brandName: "GWA.TECH",
-      brandTagline: "// Gesit, Wawasan, Aplikatif",
-      brandDescription: "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.",
-      address: "Jl. Pendidikan No. 123, Kecamatan Ilmu, Kota Teknologi, Indonesia 12345",
-      workingHours: "Senin - Sabtu: 08.30 - 21.00 WIB",
-      phone: "+62 800-0000-0000",
-      copyright: "GWA TECH COURSE. HAK CIPTA DILINDUNGI."
+      // Mengikuti pengaturan 'general' secara default
     }
   }
 };
@@ -411,6 +514,14 @@ export async function getLandingPageConfig() {
         };
       }
     });
+
+    // Sinkronisasi nomor WA terpusat jika ada data legacy di baris announcement/floating_wa
+    const globalWa = merged.general?.content?.whatsappNumber || 
+                     merged.announcement?.content?.whatsappNumber || 
+                     merged.floating_wa?.content?.whatsappNumber || 
+                     "6280000000000";
+
+    merged.general.content.whatsappNumber = globalWa;
 
     return { success: true, data: merged, isDefault: false };
   } catch (err) {

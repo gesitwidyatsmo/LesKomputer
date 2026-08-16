@@ -7,12 +7,15 @@
 --    Membuat record siswa baru dengan password di-hash menggunakan bcrypt (pgcrypto)
 --    Dipanggil oleh: tambahSiswa() di siswaService.js
 -- ============================================================
+-- Drop versi sebelumnya yang menggunakan UUID (jika ada) agar tidak terjadi konflik tipe
+DROP FUNCTION IF EXISTS buat_siswa_baru(TEXT, TEXT, DATE, TEXT, UUID, TEXT, TEXT, TEXT, TEXT);
+
 CREATE OR REPLACE FUNCTION buat_siswa_baru(
   p_id           TEXT,
   p_nama         TEXT,
   p_tanggal_lahir DATE,
   p_wa           TEXT,
-  p_kelas_id     UUID,   -- sesuaikan tipe dengan kolom kelas.id di tabel Anda
+  p_kelas_id     TEXT,   -- DIUBAH: Menggunakan TEXT karena ID kelas formatnya 'K-XXX'
   p_modul_id     TEXT,   -- sesuaikan tipe dengan kolom modul.id di tabel Anda
   p_status       TEXT DEFAULT 'Aktif',
   p_status_bayar TEXT DEFAULT 'Belum Lunas',

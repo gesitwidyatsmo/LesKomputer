@@ -3,6 +3,7 @@
 import { Star, Terminal } from "lucide-react";
 
 export default function TestimonialSection({ data }) {
+  const showBadge = data?.showBadge !== false;
   const badgeText = data?.badgeText || "[TESTIMONIALS_LOG // VERIFIED_ALUMNI]";
   const titlePrefix = data?.titlePrefix || "CERITA NYATA ALUMNI";
   const titleHighlight = data?.titleHighlight || "YANG MAKIN PERCAYA DIRI BEKERJA";
@@ -11,6 +12,7 @@ export default function TestimonialSection({ data }) {
   const defaultReviews = [
     {
       id: "LOG_01",
+      isVisible: true,
       name: "Rizky Firmansyah",
       role: "Staff Administrasi & Keuangan",
       company: "PT. Sarana Distribusi",
@@ -21,6 +23,7 @@ export default function TestimonialSection({ data }) {
     },
     {
       id: "LOG_02",
+      isVisible: true,
       name: "Dini Anggraini",
       role: "Sekretaris & Operasional",
       company: "Klinik Utama Medika",
@@ -31,6 +34,7 @@ export default function TestimonialSection({ data }) {
     },
     {
       id: "LOG_03",
+      isVisible: true,
       name: "Budi Santoso",
       role: "Fresh Graduate / Jobseeker",
       company: "Lolos Seleksi Admin Kantor",
@@ -41,7 +45,8 @@ export default function TestimonialSection({ data }) {
     }
   ];
 
-  const reviews = data?.reviews || defaultReviews;
+  const rawReviews = data?.reviews || defaultReviews;
+  const reviews = rawReviews.filter((r) => r.isVisible !== false);
 
   return (
     <section className="py-20 lg:py-28 bg-[#FFFDF5] bg-retro-dots border-b-3 border-black">
@@ -49,7 +54,7 @@ export default function TestimonialSection({ data }) {
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          {badgeText && (
+          {showBadge && badgeText && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-yellow-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
               <Terminal className="w-3.5 h-3.5" /> {badgeText}
             </div>

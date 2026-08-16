@@ -44,10 +44,10 @@ export async function tambahSiswa(siswaData) {
       p_nama: siswaData.nama,
       p_tanggal_lahir: siswaData.tanggal_lahir,
       p_wa: siswaData.wa,
-      p_kelas_id: siswaData.kelas_id,
+      p_kelas_id: siswaData.kelas_id || null,
       p_modul_id: siswaData.modul_id,
-      p_status: siswaData.status,
-      p_status_bayar: siswaData.status_bayar,
+      p_status: siswaData.status || 'Tidak Aktif',
+      p_status_bayar: siswaData.status_bayar || 'Belum Lunas',
       p_password: siswaData.password,
     });
 
@@ -56,22 +56,69 @@ export async function tambahSiswa(siswaData) {
 }
 
 /**
+ * Aktivasi siswa manual oleh Admin
+ */
+export async function aktivasiSiswa(id, { kelas_id, status_bayar = 'Belum Lunas' } = {}) {
+  const updatePayload = {
+    status: 'Aktif',
+    status_bayar: status_bayar,
+  };
+  if (kelas_id) {
+    updatePayload.kelas_id = kelas_id;
+  }
+
+  const { data, error } = await supabase
+    .from('siswa')
+    .update(updatePayload)
+    .eq('id', id)
+    .select('*, modul:modul_id(id, nama, total_pertemuan), kelas:kelas_id(id, nama)')
+    .single();
+
+  return { data, error };
+}
+
+/**
  * Edit data profil siswa (tidak mengubah password)
  */
 export async function editSiswa(id, siswaData) {
+  const updatePayload = {
+    nama: siswaData.nama,
+    tanggal_lahir: siswaData.tanggal_lahir,
+    wa: siswaData.wa,
+    kelas_id: siswaData.kelas_id,
+    modul_id: siswaData.modul_id,
+    status: siswaData.status,
+    status_bayar: siswaData.status_bayar,
+  };
+
+  if (siswaData.nilai_akhir !== undefined) updatePayload.nilai_akhir = siswaData.nilai_akhir;
+  if (siswaData.predikat !== undefined) updatePayload.predikat = siswaData.predikat;
+  if (siswaData.tanggal_lulus !== undefined) updatePayload.tanggal_lulus = siswaData.tanggal_lulus;
+
+  const { data, error } = await supabase
+    .from('siswa')
+    .update(updatePayload)
+    .eq('id', id)
+    .select('*, modul:modul_id(id, nama, total_pertemuan, icon), kelas:kelas_id(id, nama, jadwal, waktu, ruangan, mentor)')
+    .single();
+
+  return { data, error };
+}
+
+/**
+ * Simpan hasil penilaian kelulusan siswa (Nilai Akhir, Predikat, Tanggal Lulus, dan Status Lulus)
+ */
+export async function simpanKelulusanSiswa(id, { nilai_akhir, predikat, tanggal_lulus, status = "Lulus" }) {
   const { data, error } = await supabase
     .from('siswa')
     .update({
-      nama: siswaData.nama,
-      tanggal_lahir: siswaData.tanggal_lahir,
-      wa: siswaData.wa,
-      kelas_id: siswaData.kelas_id,
-      modul_id: siswaData.modul_id,
-      status: siswaData.status,
-      status_bayar: siswaData.status_bayar,
+      nilai_akhir: parseInt(nilai_akhir, 10),
+      predikat: predikat,
+      tanggal_lulus: tanggal_lulus || new Date().toISOString().split('T')[0],
+      status: status,
     })
     .eq('id', id)
-    .select('*, modul:modul_id(id, nama, total_pertemuan, icon), kelas:kelas_id(id, nama, jadwal, waktu, ruangan, mentor)')
+    .select('*, modul:modul_id(id, nama, total_pertemuan), kelas:kelas_id(id, nama)')
     .single();
 
   return { data, error };
@@ -119,6 +166,23 @@ export async function loginSiswa(idSiswa, password) {
   if (error || !data) {
     console.error("Fetch profile error:", error);
     return { success: false, message: 'Gagal mengambil data profil.' };
+  }
+
+  // Periksa apakah status siswa masih Tidak Aktif (menunggu aktivasi admin)
+  if (data.status === 'Tidak Aktif') {
+    return {
+      success: false,
+      isInactive: true,
+      data: { id: data.id, nama: data.nama, wa: data.wa },
+      message: 'Akun Anda belum aktif (Sedang menunggu verifikasi & aktivasi oleh Admin). Silakan konfirmasi ke Admin via WhatsApp untuk mengaktifkan akun Anda.'
+    };
+  }
+
+  if (data.status === 'Berhenti') {
+    return {
+      success: false,
+      message: 'Akun Anda dinonaktifkan (Status: Berhenti). Silakan hubungi Admin GWA Tech Course.'
+    };
   }
   
   // Format the data to match context structure expectations

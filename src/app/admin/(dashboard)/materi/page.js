@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import { getMateriByModul, upsertMateri, uploadPDF, deleteMateri, upsertLampiran, deleteLampiran } from '@/lib/materiService';
-import { getQuizByMateri, upsertQuiz, saveSoalPilihan, deleteQuiz } from '@/lib/quizService';
+import { getQuizByMateri, upsertQuiz, saveSoalPilihan, deleteQuiz, uploadQuizImage } from '@/lib/quizService';
 import { getSemuaModul, upsertModul, deleteModul, updateUrutanModul } from '@/lib/modulService';
-import { Plus, Edit2, Trash2, BookOpen, FileText, Brain, Upload, Loader2, X, Layers, ChevronRight, Save, GripVertical, AlertCircle, Package } from 'lucide-react';
+import { Plus, Edit2, Trash2, BookOpen, FileText, Brain, Upload, Loader2, X, Layers, ChevronRight, Save, GripVertical, AlertCircle, Package, Image as ImageIcon } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ClientPortal from '@/components/ClientPortal';
 
@@ -202,6 +202,7 @@ export default function ManajemenMateri() {
 		passing_score: 75,
 		soal: [],
 	});
+	const [uploadingImageState, setUploadingImageState] = useState({});
 
 	// ── Preview accordion state ──
 	const [expandedId, setExpandedId] = useState(null);
@@ -1072,12 +1073,13 @@ export default function ManajemenMateri() {
 																		...quizData.soal,
 																		{
 																			pertanyaan: '',
+																			gambar_url: '',
 																			penjelasan: '',
 																			pilihan: [
-																				{ teks: '', adalah_benar: true },
-																				{ teks: '', adalah_benar: false },
-																				{ teks: '', adalah_benar: false },
-																				{ teks: '', adalah_benar: false },
+																				{ teks: '', gambar_url: '', adalah_benar: true },
+																				{ teks: '', gambar_url: '', adalah_benar: false },
+																				{ teks: '', gambar_url: '', adalah_benar: false },
+																				{ teks: '', gambar_url: '', adalah_benar: false },
 																			],
 																		},
 																	],
@@ -1099,6 +1101,7 @@ export default function ManajemenMateri() {
 																	SOAL #{sIdx + 1}
 																</span>
 																<button
+																	type='button'
 																	onClick={() => setQuizData({ ...quizData, soal: quizData.soal.filter((_, i) => i !== sIdx) })}
 																	className='p-1 bg-rose-400 hover:bg-rose-300 text-black border border-black'>
 																	<Trash2 className='w-3.5 h-3.5' />
@@ -1116,33 +1119,133 @@ export default function ManajemenMateri() {
 																className='w-full border-2 border-black px-3 py-2 text-xs font-medium bg-yellow-50/50 focus:bg-yellow-50 focus:outline-none'
 															/>
 
+															{/* Question Image Section */}
+															<div className='flex items-center gap-2 flex-wrap'>
+																{s.gambar_url ? (
+																	<div className='relative inline-flex items-center gap-2 bg-yellow-100 border border-black p-1.5 rounded'>
+																		<img src={s.gambar_url} alt='Preview Soal' className='w-12 h-12 object-contain bg-white border border-black rounded' />
+																		<span className='text-[10px] font-mono text-slate-700 max-w-[200px] truncate'>{s.gambar_url}</span>
+																		<button
+																			type='button'
+																			onClick={() => {
+																				const ns = [...quizData.soal];
+																				ns[sIdx].gambar_url = '';
+																				setQuizData({ ...quizData, soal: ns });
+																			}}
+																			className='p-1 bg-rose-400 hover:bg-rose-300 text-black border border-black rounded cursor-pointer'
+																			title='Hapus Gambar Soal'>
+																			<X className='w-3 h-3' />
+																		</button>
+																	</div>
+																) : (
+																	<label className='inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-yellow-100 border border-black text-black font-mono text-[11px] font-bold rounded cursor-pointer shadow-[1px_1px_0px_0px_#000]'>
+																		<ImageIcon className='w-3.5 h-3.5 text-slate-700' />
+																		<span>+ Gambar Soal (Opsional)</span>
+																		<input
+																			type='file'
+																			accept='image/*'
+																			className='hidden'
+																			onChange={async (e) => {
+																				if (!e.target.files?.[0]) return;
+																				const file = e.target.files[0];
+																				setUploadingImageState((prev) => ({ ...prev, [`soal_${sIdx}`]: true }));
+																				const { url, error } = await uploadQuizImage(file);
+																				if (url) {
+																					const ns = [...quizData.soal];
+																					ns[sIdx].gambar_url = url;
+																					setQuizData({ ...quizData, soal: ns });
+																				} else {
+																					Swal.fire({ icon: 'error', title: 'Gagal Upload Gambar', text: error?.message || 'Error uploading image' });
+																				}
+																				setUploadingImageState((prev) => ({ ...prev, [`soal_${sIdx}`]: false }));
+																			}}
+																		/>
+																	</label>
+																)}
+																{uploadingImageState?.[`soal_${sIdx}`] && (
+																	<span className='text-[11px] font-mono text-orange-600 flex items-center gap-1'>
+																		<Loader2 className='w-3 h-3 animate-spin' /> Mengunggah gambar...
+																	</span>
+																)}
+															</div>
+
+															{/* Choices Section */}
 															<div className='grid grid-cols-1 sm:grid-cols-2 gap-2 pl-3 border-l-2 border-black'>
 																{s.pilihan?.map((pil, pIdx) => (
 																	<div
 																		key={pIdx}
-																		className={`flex items-center gap-2 p-1.5 border border-black ${pil.adalah_benar ? 'bg-emerald-100' : 'bg-slate-50'}`}>
-																		<input
-																			type='radio'
-																			name={`benar_${sIdx}`}
-																			checked={pil.adalah_benar}
-																			onChange={() => {
-																				const ns = [...quizData.soal];
-																				ns[sIdx].pilihan.forEach((p, i) => (p.adalah_benar = i === pIdx));
-																				setQuizData({ ...quizData, soal: ns });
-																			}}
-																			className='accent-black cursor-pointer'
-																		/>
-																		<input
-																			type='text'
-																			value={pil.teks}
-																			onChange={(e) => {
-																				const ns = [...quizData.soal];
-																				ns[sIdx].pilihan[pIdx].teks = e.target.value;
-																				setQuizData({ ...quizData, soal: ns });
-																			}}
-																			placeholder={`Pilihan ${['A', 'B', 'C', 'D'][pIdx] || pIdx + 1}`}
-																			className='flex-1 border border-black px-2 py-1 text-xs font-mono font-bold bg-white focus:outline-none'
-																		/>
+																		className={`flex flex-col gap-1.5 p-2 border border-black rounded ${pil.adalah_benar ? 'bg-emerald-100' : 'bg-slate-50'}`}>
+																		<div className='flex items-center gap-2'>
+																			<input
+																				type='radio'
+																				name={`benar_${sIdx}`}
+																				checked={pil.adalah_benar}
+																				onChange={() => {
+																					const ns = [...quizData.soal];
+																					ns[sIdx].pilihan.forEach((p, i) => (p.adalah_benar = i === pIdx));
+																					setQuizData({ ...quizData, soal: ns });
+																				}}
+																				className='accent-black cursor-pointer'
+																				title='Tandai jawaban benar'
+																			/>
+																			<input
+																				type='text'
+																				value={pil.teks}
+																				onChange={(e) => {
+																					const ns = [...quizData.soal];
+																					ns[sIdx].pilihan[pIdx].teks = e.target.value;
+																					setQuizData({ ...quizData, soal: ns });
+																				}}
+																				placeholder={`Pilihan ${['A', 'B', 'C', 'D'][pIdx] || pIdx + 1}`}
+																				className='flex-1 border border-black px-2 py-1 text-xs font-mono font-bold bg-white focus:outline-none'
+																			/>
+																			
+																			{/* Option Image Upload / Preview */}
+																			{pil.gambar_url ? (
+																				<div className='relative inline-flex items-center gap-1 bg-white border border-black p-0.5 rounded shrink-0'>
+																					<img src={pil.gambar_url} alt='Pilihan' className='w-6 h-6 object-contain rounded' />
+																					<button
+																						type='button'
+																						onClick={() => {
+																							const ns = [...quizData.soal];
+																							ns[sIdx].pilihan[pIdx].gambar_url = '';
+																							setQuizData({ ...quizData, soal: ns });
+																						}}
+																						className='text-rose-600 hover:text-rose-800 p-0.5 cursor-pointer'
+																						title='Hapus Gambar'>
+																						<X className='w-3 h-3' />
+																					</button>
+																				</div>
+																			) : (
+																				<label className='p-1 bg-white hover:bg-yellow-100 border border-black rounded cursor-pointer shrink-0' title='Upload Gambar Pilihan'>
+																					<ImageIcon className='w-3.5 h-3.5 text-slate-700' />
+																					<input
+																						type='file'
+																						accept='image/*'
+																						className='hidden'
+																						onChange={async (e) => {
+																							if (!e.target.files?.[0]) return;
+																							const file = e.target.files[0];
+																							setUploadingImageState((prev) => ({ ...prev, [`opt_${sIdx}_${pIdx}`]: true }));
+																							const { url, error } = await uploadQuizImage(file);
+																							if (url) {
+																								const ns = [...quizData.soal];
+																								ns[sIdx].pilihan[pIdx].gambar_url = url;
+																								setQuizData({ ...quizData, soal: ns });
+																							} else {
+																								Swal.fire({ icon: 'error', title: 'Gagal Upload Gambar', text: error?.message || 'Error uploading image' });
+																							}
+																							setUploadingImageState((prev) => ({ ...prev, [`opt_${sIdx}_${pIdx}`]: false }));
+																						}}
+																					/>
+																				</label>
+																			)}
+																		</div>
+																		{uploadingImageState?.[`opt_${sIdx}_${pIdx}`] && (
+																			<p className='text-[10px] font-mono text-orange-600 flex items-center gap-1'>
+																				<Loader2 className='w-2.5 h-2.5 animate-spin' /> Mengunggah gambar pilihan...
+																			</p>
+																		)}
 																	</div>
 																))}
 															</div>

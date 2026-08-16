@@ -2,15 +2,16 @@
 
 import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { formatWhatsAppUrl } from "@/lib/landingService";
 
-export default function WhatsAppButton({ data }) {
+export default function WhatsAppButton({ data, globalWhatsapp }) {
   const [isVisible, setIsVisible] = useState(false);
 
+  const showTooltip = data?.showTooltip !== false;
   const tooltipText = data?.tooltipText || "[ CHAT MENTOR GESIT >_ ]";
-  const whatsappNumber = data?.whatsappNumber || "6280000000000";
   const whatsappMessage = data?.whatsappMessage || "Halo Admin GWA Tech Course, saya ingin konsultasi jadwal dan program kursus.";
 
-  const waLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+  const waLink = formatWhatsAppUrl(globalWhatsapp, whatsappMessage);
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -34,7 +35,7 @@ export default function WhatsAppButton({ data }) {
       <div className="relative group flex items-center">
         
         {/* Retro Tooltip Bubble on Left */}
-        {tooltipText && (
+        {showTooltip && tooltipText && (
           <div className="absolute right-full mr-3 bg-black text-amber-300 border-2 border-black px-3 py-1.5 shadow-[3px_3px_0px_0px_#000] font-mono text-xs font-bold whitespace-nowrap pointer-events-none hidden md:flex items-center gap-2 group-hover:scale-105 transition-transform select-none">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>{tooltipText}</span>

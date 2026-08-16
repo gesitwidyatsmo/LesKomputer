@@ -19,10 +19,12 @@ import {
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { QRCodeCanvas } from "qrcode.react";
+import Swal from "sweetalert2";
 
 export default function NilaiPage() {
   const { currentSiswa } = useSiswa();
-  const [showSertifikat, setShowSertifikat] = useState(false);
+  const [showSertifikat, setShowSertifikat] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const certRef = useRef(null);
   const [expandedModul, setExpandedModul] = useState(null);
@@ -73,6 +75,26 @@ export default function NilaiPage() {
         scale: 2,
         useCORS: true,
         logging: false,
+        backgroundColor: "#FFFDF5",
+        onclone: (clonedDoc) => {
+          const elList = clonedDoc.querySelectorAll("*");
+          elList.forEach((el) => {
+            try {
+              const cs = window.getComputedStyle(el);
+              if (cs.backgroundColor && (cs.backgroundColor.includes("lab") || cs.backgroundColor.includes("oklch"))) {
+                el.style.backgroundColor = "#ffffff";
+              }
+              if (cs.color && (cs.color.includes("lab") || cs.color.includes("oklch"))) {
+                el.style.color = "#000000";
+              }
+              if (cs.borderColor && (cs.borderColor.includes("lab") || cs.borderColor.includes("oklch"))) {
+                el.style.borderColor = "#000000";
+              }
+            } catch (e) {
+              // ignore
+            }
+          });
+        },
       });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
@@ -84,8 +106,21 @@ export default function NilaiPage() {
       pdf.save(
         `Sertifikat_${(currentSiswa.nama || "Siswa").replace(/\s+/g, "_")}.pdf`
       );
+
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil Diunduh! 🎉",
+        text: "Sertifikat resmi kompetensi kamu telah berhasil disimpan.",
+        timer: 2500,
+        showConfirmButton: false,
+      });
     } catch (err) {
-      console.error(err);
+      console.error("Gagal cetak sertifikat:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Mengunduh",
+        text: "Terjadi kesalahan saat memproses sertifikat PDF: " + (err.message || ""),
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -170,11 +205,24 @@ export default function NilaiPage() {
 
           <div className="pt-2 border-t-2 border-black/20 flex flex-wrap gap-3">
             <button
+              onClick={generatePDF}
+              disabled={isGenerating}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white hover:bg-slate-800 font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              <span>{isGenerating ? "Menyiapkan PDF..." : "📥 Download PDF Sertifikat"}</span>
+            </button>
+
+            <button
               onClick={() => setShowSertifikat(!showSertifikat)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white hover:bg-slate-800 font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-white text-black hover:bg-yellow-100 font-heading text-xs sm:text-sm font-bold uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
             >
               {showSertifikat ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              <span>{showSertifikat ? "Tutup Pratinjau Sertifikat" : "🏆 Buka & Download Sertifikat"}</span>
+              <span>{showSertifikat ? "Sembunyikan Pratinjau" : "Buka Pratinjau Sertifikat"}</span>
             </button>
           </div>
         </div>
@@ -242,68 +290,103 @@ export default function NilaiPage() {
             <div className="min-w-[720px] transform scale-[0.7] sm:scale-80 md:scale-90 lg:scale-100 origin-top my-2">
               <div
                 ref={certRef}
-                className="w-[1122px] h-[793px] bg-white relative p-16 shadow-2xl border-8 border-black font-sans"
+                style={{
+                  width: "1122px",
+                  height: "793px",
+                  backgroundColor: "#FFFDF5",
+                  border: "8px solid #000000",
+                  color: "#000000",
+                  position: "relative",
+                  padding: "64px",
+                  boxSizing: "border-box",
+                  fontFamily: "sans-serif",
+                }}
+                className="shadow-2xl select-none"
               >
-                {/* Neobrutalist Double Corners */}
-                <div className="absolute top-0 left-0 w-24 h-24 border-t-8 border-l-8 border-orange-500" />
-                <div className="absolute top-0 right-0 w-24 h-24 border-t-8 border-r-8 border-orange-500" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 border-b-8 border-l-8 border-orange-500" />
-                <div className="absolute bottom-0 right-0 w-24 h-24 border-b-8 border-r-8 border-orange-500" />
+                {/* Inner border */}
+                <div style={{ position: "absolute", inset: "16px", border: "2px solid #000000", pointerEvents: "none" }} />
+
+                {/* Corner Decorations */}
+                <div style={{ position: "absolute", top: "24px", left: "24px", width: "64px", height: "64px", borderTop: "4px solid #FF6B00", borderLeft: "4px solid #FF6B00" }} />
+                <div style={{ position: "absolute", top: "24px", right: "24px", width: "64px", height: "64px", borderTop: "4px solid #FF6B00", borderRight: "4px solid #FF6B00" }} />
+                <div style={{ position: "absolute", bottom: "24px", left: "24px", width: "64px", height: "64px", borderBottom: "4px solid #FF6B00", borderLeft: "4px solid #FF6B00" }} />
+                <div style={{ position: "absolute", bottom: "24px", right: "24px", width: "64px", height: "64px", borderBottom: "4px solid #FF6B00", borderRight: "4px solid #FF6B00" }} />
 
                 {/* Header */}
-                <div className="text-center mb-10">
-                  <div className="w-16 h-16 mx-auto bg-amber-300 border-3 border-black shadow-[4px_4px_0px_0px_#000] flex items-center justify-center text-3xl mb-3 rounded-lg">
+                <div style={{ textAlign: "center", marginBottom: "40px" }}>
+                  <div style={{ width: "64px", height: "64px", margin: "0 auto 12px", backgroundColor: "#000000", color: "#FFFFFF", fontSize: "30px", fontWeight: "900", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #000000", boxShadow: "3px 3px 0px 0px #FF6B00" }}>
                     💻
                   </div>
-                  <h1 className="text-4xl font-heading font-black text-black tracking-wider uppercase">
+                  <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#000000", letterSpacing: "2px", textTransform: "uppercase", margin: "0" }}>
                     SERTIFIKAT KOMPETENSI KOMPUTER
                   </h1>
-                  <p className="font-mono text-sm font-bold text-slate-600 uppercase tracking-widest mt-1">
+                  <p style={{ fontSize: "13px", fontWeight: "700", color: "#334155", letterSpacing: "1.5px", marginTop: "4px", textTransform: "uppercase" }}>
                     GWA TECH COURSE — LEMBAGA KURSUS DAN PELATIHAN
                   </p>
-                  <div className="inline-block mt-2 px-3 py-0.5 bg-yellow-200 border-2 border-black font-mono text-xs font-bold rounded">
+                  <p style={{ fontSize: "12px", color: "#475569", marginTop: "8px", backgroundColor: "#FEF9C3", padding: "4px 12px", border: "1px solid #000000", display: "inline-block" }}>
                     NOMOR: {currentSiswa.id}/CERT/GWA/2026
-                  </div>
+                  </p>
                 </div>
 
                 {/* Body */}
-                <div className="text-center space-y-4 mb-10">
-                  <p className="text-sm uppercase text-slate-600 font-bold font-heading">
+                <div style={{ textAlign: "center", marginBottom: "40px" }}>
+                  <p style={{ fontSize: "13px", textTransform: "uppercase", color: "#475569", fontWeight: "700", marginBottom: "8px" }}>
                     Diberikan Kepada Siswa Berprestasi:
                   </p>
-                  <h2 className="text-4xl font-heading font-black text-black border-b-4 border-black inline-block px-12 pb-2 uppercase tracking-tight">
+                  <h2 style={{ fontSize: "36px", fontWeight: "900", color: "#000000", textTransform: "uppercase", borderBottom: "4px solid #000000", display: "inline-block", padding: "0 48px 4px", letterSpacing: "1px", margin: "0 0 16px" }}>
                     {currentSiswa.nama}
                   </h2>
-                  <p className="text-lg text-slate-800 max-w-3xl mx-auto leading-relaxed mt-4 font-medium">
+                  <p style={{ fontSize: "16px", color: "#1E293B", maxWidth: "720px", margin: "16px auto 0", lineHeight: "1.6", fontWeight: "500" }}>
                     Telah menyelesaikan program pelatihan komputer praktik nyata modul{" "}
-                    <strong className="text-black bg-yellow-300 px-1 border border-black rounded">
+                    <strong style={{ color: "#000000", backgroundColor: "#FEF08A", padding: "2px 6px", border: "1px solid #000000" }}>
                       {currentSiswa.modul}
                     </strong>{" "}
                     dan dinyatakan{" "}
-                    <strong className="text-emerald-700 font-black">LULUS</strong> dengan predikat{" "}
-                    <strong className="text-black">&quot;{predikatLulus}&quot;</strong> (Nilai Akhir:{" "}
+                    <strong style={{ color: "#047857", fontWeight: "900" }}>LULUS</strong> dengan predikat{" "}
+                    <strong>&quot;{predikatLulus}&quot;</strong> (Nilai Akhir:{" "}
                     {currentSiswa.nilaiAkhir || rata}).
                   </p>
                 </div>
 
-                {/* Footer Signatures */}
-                <div className="absolute bottom-14 left-24 text-center font-heading">
-                  <p className="text-xs font-bold text-slate-600 uppercase mb-16">
+                {/* Footer Signatures & QR Code Verification */}
+                <div style={{ position: "absolute", bottom: "48px", left: "80px", textAlign: "center" }}>
+                  <p style={{ fontSize: "12px", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "48px" }}>
                     Instruktur Pembimbing
                   </p>
-                  <div className="border-b-2 border-black w-48 mb-1" />
-                  <p className="font-black text-black text-sm">{mentorName}</p>
+                  <div style={{ borderBottom: "2px solid #000000", width: "180px", marginBottom: "4px" }} />
+                  <p style={{ fontSize: "14px", fontWeight: "900", textTransform: "uppercase", color: "#000000", margin: "0" }}>
+                    {mentorName}
+                  </p>
                 </div>
 
-                <div className="absolute bottom-14 right-24 text-center font-heading">
-                  <p className="text-xs font-bold text-slate-600 uppercase mb-1">
+                {/* QR Code Center Verification */}
+                <div style={{ position: "absolute", bottom: "32px", left: "50%", transform: "translateX(-50%)", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{ padding: "8px", backgroundColor: "#FFFFFF", border: "2px solid #000000", boxShadow: "2px 2px 0px 0px #000000" }}>
+                    <QRCodeCanvas
+                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/verifikasi?id=${currentSiswa.id}`}
+                      size={72}
+                      level="M"
+                    />
+                  </div>
+                  <span style={{ fontSize: "9px", fontWeight: "700", color: "#1E293B", marginTop: "4px", textTransform: "uppercase" }}>
+                    SCAN UNTUK VERIFIKASI
+                  </span>
+                  <span style={{ fontSize: "8px", color: "#64748B" }}>
+                    ID: {currentSiswa.id}
+                  </span>
+                </div>
+
+                <div style={{ position: "absolute", bottom: "48px", right: "80px", textAlign: "center" }}>
+                  <p style={{ fontSize: "12px", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
                     Tanggal Terbit: {tanggalLulusFormatted}
                   </p>
-                  <p className="text-xs font-bold text-slate-600 uppercase mb-12">
-                    Pimpinan Lembaga GWA
+                  <p style={{ fontSize: "10px", fontWeight: "700", color: "#047857", textTransform: "uppercase", marginBottom: "32px" }}>
+                    [OFFICIAL_VERIFIED ✓]
                   </p>
-                  <div className="border-b-2 border-black w-48 mb-1" />
-                  <p className="font-black text-black text-sm">Gesit Widi Atmoko, S.Kom</p>
+                  <div style={{ borderBottom: "2px solid #000000", width: "180px", marginBottom: "4px" }} />
+                  <p style={{ fontSize: "14px", fontWeight: "900", textTransform: "uppercase", color: "#000000", margin: "0" }}>
+                    Gesit Widi Atmoko, S.Kom
+                  </p>
                 </div>
               </div>
             </div>

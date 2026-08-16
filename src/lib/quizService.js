@@ -101,31 +101,63 @@ export async function saveSoalPilihan(quizId, soalList) {
     const soal = soalList[i];
     if (!soal) continue;
 
+    const soalPayload = {
+      quiz_id: quizId,
+      pertanyaan: soal.pertanyaan || "",
+      penjelasan: soal.penjelasan || "",
+      urutan: i,
+      poin: soal.poin || 10,
+    };
+    if (soal.gambar_url) {
+      soalPayload.gambar_url = soal.gambar_url;
+    }
+
     const { data: insertedSoal, error: errSoal } = await supabase
       .from('quiz_soal')
-      .insert({
-        quiz_id: quizId,
-        pertanyaan: soal.pertanyaan || "",
-        penjelasan: soal.penjelasan || "",
-        urutan: i,
-        poin: soal.poin || 10
-      })
+      .insert(soalPayload)
       .select()
       .single();
       
     if (errSoal) throw errSoal;
       
     if (insertedSoal && soal.pilihan && Array.isArray(soal.pilihan)) {
-      const pilihanData = soal.pilihan.map((pil, idx) => ({
-        soal_id: insertedSoal.id,
-        teks: pil?.teks || "",
-        adalah_benar: pil?.adalah_benar || false,
-        urutan: idx
-      }));
+      const pilihanData = soal.pilihan.map((pil, idx) => {
+        const pData = {
+          soal_id: insertedSoal.id,
+          teks: pil?.teks || "",
+          adalah_benar: pil?.adalah_benar || false,
+          urutan: idx,
+        };
+        if (pil?.gambar_url) {
+          pData.gambar_url = pil.gambar_url;
+        }
+        return pData;
+      });
       const { error: errPil } = await supabase.from('quiz_pilihan').insert(pilihanData);
       if (errPil) throw errPil;
     }
   }
   
   return { success: true };
+}
+
+// Upload quiz image helper
+export async function uploadQuizImage(file) {
+  const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const filePath = `quiz/${Date.now()}_${cleanName}`;
+  
+  const { data, error } = await supabase.storage
+    .from('materi-pdf')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+    
+  if (error) return { error, url: null };
+  
+  const { data: { publicUrl } } = supabase.storage
+    .from('materi-pdf')
+    .getPublicUrl(filePath);
+    
+  return { url: publicUrl, error: null };
 }

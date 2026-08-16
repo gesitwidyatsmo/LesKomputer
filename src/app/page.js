@@ -15,41 +15,74 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const { data: config } = await getLandingPageConfig();
+  const globalSettings = config.general?.content || {};
+  const globalWhatsapp = globalSettings.whatsappNumber || "6280000000000";
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FFFDF5] text-slate-950">
       {config.announcement?.is_visible !== false && (
-        <TopAnnouncementBar data={config.announcement?.content} />
+        <TopAnnouncementBar 
+          data={config.announcement?.content} 
+          globalWhatsapp={globalWhatsapp} 
+        />
       )}
-      <Navbar />
+      <Navbar 
+        globalWhatsapp={globalWhatsapp} 
+        brandName={globalSettings.brandName} 
+      />
       <main className="flex-1">
         {config.hero?.is_visible !== false && (
-          <HeroSection data={config.hero?.content} />
+          <HeroSection 
+            data={config.hero?.content} 
+            globalWhatsapp={globalWhatsapp} 
+          />
         )}
         {config.values?.is_visible !== false && (
-          <ValueProposition data={config.values?.content} />
+          <ValueProposition 
+            data={config.values?.content} 
+          />
         )}
         {config.programs?.is_visible !== false && (
-          <ProgramSection data={config.programs?.content} />
+          <ProgramSection 
+            data={config.programs?.content} 
+            globalWhatsapp={globalWhatsapp} 
+          />
         )}
         {config.fasilitas?.is_visible !== false && (
-          <FasilitasSection data={config.fasilitas?.content} />
+          <FasilitasSection 
+            data={config.fasilitas?.content} 
+            globalWhatsapp={globalWhatsapp} 
+          />
         )}
         {config.testimonials?.is_visible !== false && (
-          <TestimonialSection data={config.testimonials?.content} />
+          <TestimonialSection 
+            data={config.testimonials?.content} 
+          />
         )}
         {config.faq?.is_visible !== false && (
-          <FaqSection data={config.faq?.content} />
+          <FaqSection 
+            data={config.faq?.content} 
+            globalWhatsapp={globalWhatsapp} 
+          />
         )}
         {config.cta_banner?.is_visible !== false && (
-          <CtaBannerSection data={config.cta_banner?.content} />
+          <CtaBannerSection 
+            data={config.cta_banner?.content} 
+            globalWhatsapp={globalWhatsapp} 
+          />
         )}
       </main>
       {config.footer?.is_visible !== false && (
-        <Footer data={config.footer?.content} />
+        <Footer 
+          data={config.footer?.content} 
+          globalSettings={globalSettings} 
+        />
       )}
       {config.floating_wa?.is_visible !== false && (
-        <WhatsAppButton data={config.floating_wa?.content} />
+        <WhatsAppButton 
+          data={config.floating_wa?.content} 
+          globalWhatsapp={globalWhatsapp} 
+        />
       )}
     </div>
   );
