@@ -1,12 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { HelpCircle, ChevronDown, ChevronUp, Terminal, MessageCircle } from "lucide-react";
+import { HelpCircle, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 
-export default function FaqSection() {
+export default function FaqSection({ data }) {
   const [openIndex, setOpenIndex] = useState(0);
 
-  const faqs = [
+  const badgeText = data?.badgeText || "[KNOWLEDGE_BASE // FAQ]";
+  const titlePrefix = data?.titlePrefix || "PERTANYAAN UMUM";
+  const titleHighlight = data?.titleHighlight || "SEPUTAR KELAS & FASILITAS";
+  const description = data?.description || "Punya pertanyaan sebelum mendaftar? Temukan jawabannya di bawah ini atau tanyakan langsung ke admin kami.";
+
+  const helpBoxTitle = data?.helpBoxTitle || "Masih Ada Pertanyaan Lain?";
+  const helpBoxDesc = data?.helpBoxDesc || "Tim admin & mentor kami siap menjawab konsultasi kebutuhan belajar Anda.";
+  const helpBoxButtonText = data?.helpBoxButtonText || "Chat Admin WhatsApp";
+  const helpBoxWhatsappMessage = data?.helpBoxWhatsappMessage || "Halo Admin GWA, saya ingin tanya-tanya seputar kursus.";
+
+  const helpWaLink = `https://wa.me/6280000000000?text=${encodeURIComponent(helpBoxWhatsappMessage)}`;
+
+  const defaultFaqs = [
     {
       q: "Saya benar-benar awam dan belum pernah menyentuh komputer. Apakah bisa ikut?",
       a: "Tentu sangat bisa! Kurikulum kami dimulai dari cara penggunaan dasar, pengenalan keyboard shortcuts, hingga logika penggunaan software secara bertahap. Dengan konsep maksimal 5 siswa per sesi, mentor akan memandu Anda secara personal step-by-step tanpa perlu merasa malu atau tertinggal."
@@ -29,6 +41,8 @@ export default function FaqSection() {
     }
   ];
 
+  const faqs = data?.faqs || defaultFaqs;
+
   const toggleFaq = (idx) => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
@@ -39,20 +53,26 @@ export default function FaqSection() {
         
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-rose-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
-            <HelpCircle className="w-3.5 h-3.5" /> [KNOWLEDGE_BASE // FAQ]
-          </div>
+          {badgeText && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-rose-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
+              <HelpCircle className="w-3.5 h-3.5" /> {badgeText}
+            </div>
+          )}
           
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-black tracking-tight mb-4 uppercase">
-            PERTANYAAN UMUM <br />
-            <span className="bg-rose-300 px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[3px_3px_0px_0px_#000]">
-              SEPUTAR KELAS & FASILITAS
-            </span>
+            {titlePrefix} <br />
+            {titleHighlight && (
+              <span className="bg-rose-300 px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[3px_3px_0px_0px_#000]">
+                {titleHighlight}
+              </span>
+            )}
           </h2>
           
-          <p className="text-base sm:text-lg font-medium text-slate-700 mt-4 leading-relaxed">
-            Punya pertanyaan sebelum mendaftar? Temukan jawabannya di bawah ini atau tanyakan langsung ke admin kami.
-          </p>
+          {description && (
+            <p className="text-base sm:text-lg font-medium text-slate-700 mt-4 leading-relaxed">
+              {description}
+            </p>
+          )}
         </div>
 
         {/* Accordion List */}
@@ -92,25 +112,27 @@ export default function FaqSection() {
         </div>
 
         {/* Bottom Help Contact Box */}
-        <div className="mt-12 p-6 bg-cyan-100 border-3 border-black shadow-[4px_4px_0px_0px_#000] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h4 className="font-heading font-black text-lg text-black">
-              Masih Ada Pertanyaan Lain?
-            </h4>
-            <p className="text-sm font-medium text-slate-800">
-              Tim admin & mentor kami siap menjawab konsultasi kebutuhan belajar Anda.
-            </p>
+        {helpBoxTitle && (
+          <div className="mt-12 p-6 bg-cyan-100 border-3 border-black shadow-[4px_4px_0px_0px_#000] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 className="font-heading font-black text-lg text-black">
+                {helpBoxTitle}
+              </h4>
+              <p className="text-sm font-medium text-slate-800">
+                {helpBoxDesc}
+              </p>
+            </div>
+            <a
+              href={helpWaLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2.5 bg-black hover:bg-slate-800 text-white font-mono text-xs font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-2 whitespace-nowrap"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-400" />
+              <span>{helpBoxButtonText}</span>
+            </a>
           </div>
-          <a
-            href="https://wa.me/6280000000000?text=Halo%20Admin%20GWA,%20saya%20ingin%20tanya-tanya%20seputar%20kursus."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2.5 bg-black hover:bg-slate-800 text-white font-mono text-xs font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-2 whitespace-nowrap"
-          >
-            <MessageCircle className="w-4 h-4 text-emerald-400" />
-            <span>Chat Admin WhatsApp</span>
-          </a>
-        </div>
+        )}
 
       </div>
     </section>

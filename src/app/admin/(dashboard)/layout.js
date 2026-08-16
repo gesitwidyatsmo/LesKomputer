@@ -13,7 +13,8 @@ import {
   BookOpen,
   PanelLeftClose,
   PanelLeftOpen,
-  Loader2
+  Loader2,
+  LayoutTemplate
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -86,6 +87,7 @@ export default function AdminLayout({ children }) {
     { name: "Kelas & Jadwal", href: "/admin/kelas", icon: <Calendar className="w-4 h-4" /> },
     { name: "Kelola Materi", href: "/admin/materi", icon: <BookOpen className="w-4 h-4" /> },
     { name: "Sertifikat", href: "/admin/sertifikat", icon: <Award className="w-4 h-4" /> },
+    { name: "Kelola Beranda", href: "/admin/landing", icon: <LayoutTemplate className="w-4 h-4" /> },
   ];
 
   const SidebarContent = ({ isMobile }) => {

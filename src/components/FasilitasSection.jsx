@@ -4,23 +4,22 @@ import {
   Users, 
   AirVent, 
   Monitor, 
-  GraduationCap, 
-  Building, 
   Wifi, 
   ShieldCheck, 
-  Sparkles,
-  Terminal,
-  Cpu,
-  CheckCircle2,
-  HardDrive,
-  Clock
+  HardDrive, 
+  Cpu
 } from "lucide-react";
 import { useState } from "react";
 
-export default function FasilitasSection() {
+export default function FasilitasSection({ data }) {
   const [selectedPc, setSelectedPc] = useState(1);
 
-  const pcStations = [
+  const badgeText = data?.badgeText || "[LAB_ARCHITECTURE // PRIVATE_ROOM]";
+  const titlePrefix = data?.titlePrefix || "DENAH KELAS 5-WORKSTATION:";
+  const titleHighlight = data?.titleHighlight || "1 SISWA 1 UNIT KOMPUTER";
+  const description = data?.description || "Kami menolak konsep kelas massal yang berisik dan tidak terarah. Di GWA Tech Course, setiap sesi hanya diisi 5 orang untuk menjamin bimbingan intensif dan pemahaman penuh.";
+
+  const defaultPcStations = [
     {
       id: 1,
       name: "PC-01 // WORKSTATION",
@@ -73,7 +72,7 @@ export default function FasilitasSection() {
     }
   ];
 
-  const facilities = [
+  const defaultFacilities = [
     {
       title: "Maksimal 5 Siswa / Kelas",
       desc: "Suasana belajar privat & intensif. Mentor selalu standby di samping Anda untuk membimbing setiap kendala rumus dan tugas.",
@@ -112,14 +111,31 @@ export default function FasilitasSection() {
     }
   ];
 
-  const stats = [
+  const facilityIcons = [
+    <Users key="1" className="w-6 h-6 text-black" />,
+    <Monitor key="2" className="w-6 h-6 text-black" />,
+    <AirVent key="3" className="w-6 h-6 text-black" />,
+    <HardDrive key="4" className="w-6 h-6 text-black" />,
+    <Wifi key="5" className="w-6 h-6 text-black" />,
+    <ShieldCheck key="6" className="w-6 h-6 text-black" />
+  ];
+
+  const defaultStats = [
     { value: "500+", label: "Siswa Lulus Mahir", sub: "Tersebar di berbagai kantor & instansi" },
     { value: "1 : 5", label: "Rasio Mentor Siswa", sub: "Maksimal 5 siswa per sesi pertemuan" },
     { value: "98%", label: "Tingkat Kepuasan", sub: "Rekomendasi langsung dari alumni" },
     { value: "100%", label: "Praktik Langsung", sub: "Bukan teori hafalan semata" }
   ];
 
-  const currentStation = pcStations.find((pc) => pc.id === selectedPc);
+  const pcStations = data?.pcStations || defaultPcStations;
+  const rawFacilities = data?.facilities || defaultFacilities;
+  const facilities = rawFacilities.map((fac, idx) => ({
+    ...fac,
+    icon: facilityIcons[idx % facilityIcons.length]
+  }));
+  const stats = data?.stats || defaultStats;
+
+  const currentStation = pcStations.find((pc) => pc.id === selectedPc) || pcStations[0];
 
   return (
     <section id="fasilitas" className="py-20 lg:py-28 bg-[#FFFDF5] border-b-3 border-black">
@@ -127,20 +143,26 @@ export default function FasilitasSection() {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-purple-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
-            <Cpu className="w-3.5 h-3.5" /> [LAB_ARCHITECTURE // PRIVATE_ROOM]
-          </div>
+          {badgeText && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-purple-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
+              <Cpu className="w-3.5 h-3.5" /> {badgeText}
+            </div>
+          )}
           
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-black tracking-tight mb-4 uppercase">
-            DENAH KELAS 5-WORKSTATION: <br />
-            <span className="bg-purple-300 px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[3px_3px_0px_0px_#000]">
-              1 SISWA 1 UNIT KOMPUTER
-            </span>
+            {titlePrefix} <br />
+            {titleHighlight && (
+              <span className="bg-purple-300 px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[3px_3px_0px_0px_#000]">
+                {titleHighlight}
+              </span>
+            )}
           </h2>
           
-          <p className="text-base sm:text-lg font-medium text-slate-700 mt-4 leading-relaxed">
-            Kami menolak konsep kelas massal yang berisik dan tidak terarah. Di GWA Tech Course, setiap sesi hanya diisi 5 orang untuk menjamin bimbingan intensif dan pemahaman penuh.
-          </p>
+          {description && (
+            <p className="text-base sm:text-lg font-medium text-slate-700 mt-4 leading-relaxed">
+              {description}
+            </p>
+          )}
         </div>
 
         {/* 5-Workstation Interactive Seating Map */}
@@ -203,7 +225,7 @@ export default function FasilitasSection() {
                     </div>
 
                     <h4 className="font-heading font-black text-center text-sm mt-2">
-                      {pc.name.split(" ")[0]}
+                      {pc.name ? pc.name.split(" ")[0] : `PC-0${pc.id}`}
                     </h4>
                   </div>
 
@@ -222,7 +244,7 @@ export default function FasilitasSection() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="bg-black text-amber-300 px-2 py-0.5 font-bold uppercase text-[11px]">
-                      {currentStation.name}
+                      {currentStation.name || `PC-0${currentStation.id}`}
                     </span>
                     <span className={`px-2 py-0.5 font-bold uppercase text-[11px] border border-black ${
                       currentStation.isOnline ? "bg-emerald-300 text-black" : "bg-rose-300 text-black"
@@ -234,12 +256,12 @@ export default function FasilitasSection() {
                     Spesifikasi: <span className="font-normal text-slate-700">{currentStation.specs}</span>
                   </p>
                   <p className="text-slate-800 font-bold mt-0.5">
-                    Opsi Jadwal: <span className="font-normal text-slate-700">{currentStation.session}</span>
+                    Opsi Jadwal: <span className="font-normal text-slate-700">{currentStation.session || "Shift Pagi / Sore / Malam"}</span>
                   </p>
                 </div>
 
                 <a 
-                  href={`https://wa.me/6280000000000?text=Halo%20Admin%20GWA,%20saya%20ingin%20booking%20kursi%20komputer%20Slot%200${currentStation.id}%20(${currentStation.name}).`}
+                  href={`https://wa.me/6280000000000?text=Halo%20Admin%20GWA,%20saya%20ingin%20booking%20kursi%20komputer%20Slot%200${currentStation.id}%20(${encodeURIComponent(currentStation.name || "")}).`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-5 py-2.5 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all whitespace-nowrap self-start md:self-center flex items-center gap-2"
@@ -260,7 +282,7 @@ export default function FasilitasSection() {
               className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] p-6 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] transition-all"
             >
               <div className="flex items-start gap-4">
-                <div className={`${fac.color} w-12 h-12 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center shrink-0`}>
+                <div className={`${fac.color || "bg-orange-300"} w-12 h-12 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center shrink-0`}>
                   {fac.icon}
                 </div>
                 <div>
@@ -286,9 +308,11 @@ export default function FasilitasSection() {
               <div className="font-mono text-xs sm:text-sm font-black text-black uppercase mt-1">
                 {st.label}
               </div>
-              <p className="text-[11px] font-medium text-slate-900 mt-0.5 hidden sm:block">
-                {st.sub}
-              </p>
+              {st.sub && (
+                <p className="text-[11px] font-medium text-slate-900 mt-0.5 hidden sm:block">
+                  {st.sub}
+                </p>
+              )}
             </div>
           ))}
         </div>

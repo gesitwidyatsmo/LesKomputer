@@ -48,36 +48,32 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
   const zoomOut = () => setScale((s) => Math.max(s - 0.2, 0.5));
 
   return (
-    <div className="bg-white border-3 border-black shadow-[5px_5px_0px_0px_#000] overflow-hidden flex flex-col">
-      {/* Retro OS Window Bar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
+    <div className="bg-white border-3 border-black shadow-[5px_5px_0px_0px_#000] rounded-xl overflow-hidden flex flex-col">
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
         <div className="flex items-center gap-2 min-w-0 pr-2">
-          <div className="flex gap-1.5 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 border border-black inline-block"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-black inline-block"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black inline-block"></span>
-          </div>
+          <span>📄</span>
           <span className="tracking-wide truncate">
-            sys_materi_reader.exe // {fileName}
+            Pembaca Dokumen: {fileName}
           </span>
         </div>
-        <span className="text-[10px] text-emerald-400 font-mono shrink-0">
-          [PDF_200_OK]
+        <span className="text-[11px] text-emerald-400 font-mono shrink-0">
+          ● Siap Dibaca
         </span>
       </div>
 
       {/* Action Subheader */}
-      <div className="bg-[#FFFDF5] border-b-2 border-black px-4 py-2.5 flex flex-wrap gap-3 justify-between items-center">
+      <div className="bg-[#FFFDF5] border-b-2 border-black px-4 py-3 flex flex-wrap gap-3 justify-between items-center">
         <div className="flex items-center gap-2">
-          <span className="bg-rose-500 text-white font-mono text-[10px] font-black px-2 py-0.5 border border-black uppercase">
-            PDF_DOC
+          <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 border border-black rounded uppercase">
+            PDF
           </span>
-          <p className="text-xs font-heading font-black text-black truncate max-w-[200px] sm:max-w-xs">
+          <p className="text-xs sm:text-sm font-heading font-black text-black truncate max-w-[200px] sm:max-w-xs">
             {fileName}
           </p>
           {fileSize && (
-            <span className="text-[11px] font-mono font-bold text-slate-500">
-              [{fileSize} MB]
+            <span className="text-xs text-slate-500 font-bold">
+              ({fileSize} MB)
             </span>
           )}
         </div>
@@ -88,7 +84,7 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
             download={fileName}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-cyan-200 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-cyan-200 text-black text-xs font-bold uppercase border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer font-heading"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download</span>
@@ -97,10 +93,10 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
             href={fileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-amber-200 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-amber-200 text-black text-xs font-bold uppercase border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer font-heading"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span>Buka Tab Baru</span>
+            <span>Buka di Tab Baru</span>
           </a>
         </div>
       </div>
@@ -109,23 +105,23 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
       <div className="hidden sm:flex flex-col h-[520px]">
         {/* PDF Navigation Controls */}
         {!isError && (
-          <div className="bg-slate-900 text-white px-4 py-2 flex justify-between items-center text-xs font-mono border-b-2 border-black select-none">
+          <div className="bg-slate-900 text-white px-4 py-2 flex justify-between items-center text-xs font-heading border-b-2 border-black select-none">
             <div className="flex items-center gap-2">
               <button
                 onClick={previousPage}
                 disabled={pageNumber <= 1}
-                className="px-2 py-1 bg-black text-white border border-slate-700 hover:border-white disabled:opacity-30 transition-all cursor-pointer"
+                className="px-2.5 py-1 bg-black text-white border border-slate-600 rounded hover:border-white disabled:opacity-30 transition-all cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="bg-black px-2.5 py-1 border border-slate-700 font-bold">
-                HALAMAN {pageNumber || (numPages ? 1 : "--")} /{" "}
+              <span className="bg-black px-3 py-1 border border-slate-600 rounded font-bold">
+                Halaman {pageNumber || (numPages ? 1 : "--")} dari{" "}
                 {numPages || "--"}
               </span>
               <button
                 onClick={nextPage}
                 disabled={pageNumber >= numPages}
-                className="px-2 py-1 bg-black text-white border border-slate-700 hover:border-white disabled:opacity-30 transition-all cursor-pointer"
+                className="px-2.5 py-1 bg-black text-white border border-slate-600 rounded hover:border-white disabled:opacity-30 transition-all cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -134,18 +130,18 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
             <div className="flex items-center gap-2">
               <button
                 onClick={zoomOut}
-                className="p-1 bg-black border border-slate-700 hover:border-white transition-colors cursor-pointer"
-                title="Zoom Out"
+                className="p-1.5 bg-black border border-slate-600 rounded hover:border-white transition-colors cursor-pointer"
+                title="Perkecil"
               >
                 <ZoomOut className="w-4 h-4" />
               </button>
-              <span className="w-14 text-center font-bold bg-black py-0.5 border border-slate-700">
+              <span className="w-14 text-center font-bold bg-black py-0.5 border border-slate-600 rounded">
                 {Math.round(scale * 100)}%
               </span>
               <button
                 onClick={zoomIn}
-                className="p-1 bg-black border border-slate-700 hover:border-white transition-colors cursor-pointer"
-                title="Zoom In"
+                className="p-1.5 bg-black border border-slate-600 rounded hover:border-white transition-colors cursor-pointer"
+                title="Perbesar"
               >
                 <ZoomIn className="w-4 h-4" />
               </button>
@@ -156,21 +152,21 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
         {/* PDF Canvas Rendering */}
         <div className="flex-1 overflow-auto flex justify-center bg-slate-200 p-4 relative border-b-2 border-black">
           {isError ? (
-            <div className="flex flex-col items-center justify-center text-slate-800 h-full text-center p-6 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] m-4">
+            <div className="flex flex-col items-center justify-center text-slate-800 h-full text-center p-6 bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] m-4 max-w-md">
               <ExternalLink className="w-10 h-10 mb-2 text-slate-600" />
               <p className="font-heading font-black text-sm uppercase">
-                Tidak dapat merender PDF langsung
+                Pratinjau PDF Tidak Dapat Ditampilkan
               </p>
-              <p className="font-mono text-xs text-slate-600 mt-1 mb-4">
-                Gunakan tautan di bawah untuk membuka atau mengunduh file
+              <p className="text-xs text-slate-600 mt-1 mb-4 font-medium">
+                Kamu bisa langsung membuka atau mengunduh file ini melalui tombol di bawah:
               </p>
               <a
                 href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000]"
+                className="px-5 py-2.5 bg-orange-500 hover:bg-orange-400 text-black font-heading text-xs font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000]"
               >
-                &gt;_ Buka PDF di Tab Baru
+                Buka PDF di Tab Baru
               </a>
             </div>
           ) : (
@@ -179,8 +175,8 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               loading={
-                <div className="flex h-64 items-center justify-center font-mono text-xs font-bold text-black animate-pulse">
-                  &gt;_ Merender Dokumen PDF...
+                <div className="flex h-64 items-center justify-center text-xs font-bold text-black animate-pulse font-heading">
+                  Memuat dokumen materi... 📖
                 </div>
               }
               className="pdf-document"
@@ -190,7 +186,7 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
                 scale={scale}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
-                className="border-2 border-black shadow-[4px_4px_0px_0px_#000]"
+                className="border-2 border-black rounded shadow-[4px_4px_0px_0px_#000]"
               />
             </Document>
           )}
@@ -198,16 +194,16 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
       </div>
 
       {/* Mobile view fallback message */}
-      <div className="sm:hidden p-4 text-center bg-yellow-50 border-t-2 border-black font-mono text-xs text-slate-800 font-bold space-y-2">
-        <p>[MOBILE_VIEW] Layar terlalu kecil untuk preview PDF interaktif.</p>
+      <div className="sm:hidden p-4 text-center bg-yellow-50 border-t-2 border-black text-xs text-slate-800 font-bold space-y-2.5">
+        <p>Gunakan tombol di bawah untuk mengunduh dan membaca materi di HP kamu:</p>
         <a
           href={fileUrl}
           download={fileName}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] font-black uppercase"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-black border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-black uppercase font-heading"
         >
-          <Download className="w-3.5 h-3.5" /> Unduh Dokumen PDF
+          <Download className="w-4 h-4" /> Unduh Dokumen PDF
         </a>
       </div>
     </div>

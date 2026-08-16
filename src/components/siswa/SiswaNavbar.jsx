@@ -13,15 +13,16 @@ import {
   Menu,
   X,
   User,
+  Sparkles,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const navItems = [
   { name: "Beranda", href: "/siswa", icon: LayoutDashboard },
-  { name: "Materi", href: "/siswa/materi", icon: BookOpen },
-  { name: "Jadwal", href: "/siswa/jadwal", icon: Calendar },
-  { name: "Quiz", href: "/siswa/quiz", icon: Brain },
-  { name: "Nilai", href: "/siswa/nilai", icon: BarChart2 },
+  { name: "Materi Belajar", href: "/siswa/materi", icon: BookOpen },
+  { name: "Jadwal Kelas", href: "/siswa/jadwal", icon: Calendar },
+  { name: "Kuis Seru", href: "/siswa/quiz", icon: Brain },
+  { name: "Nilai & Sertifikat", href: "/siswa/nilai", icon: BarChart2 },
 ];
 
 export default function SiswaNavbar() {
@@ -52,24 +53,29 @@ export default function SiswaNavbar() {
     <>
       <header className="sticky top-0 z-40 bg-[#FFFDF5] border-b-3 border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo Neobrutalis */}
-            <Link href="/siswa" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 bg-black text-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center font-mono font-black text-sm group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 group-hover:shadow-[3px_3px_0px_0px_#000] transition-all">
-                &gt;_
+          <div className="flex items-center justify-between h-16 sm:h-20">
+            {/* Logo Neobrutalis Ramah */}
+            <Link href="/siswa" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] flex items-center justify-center text-xl group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 group-hover:shadow-[4px_4px_0px_0px_#000] transition-all rounded-lg">
+                💻
               </div>
               <div className="flex flex-col">
-                <span className="font-heading font-black text-slate-950 text-base leading-none">
-                  GWA<span className="text-orange-500">.</span>LMS
-                </span>
-                <span className="font-mono text-[10px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">
-                  Portal Siswa
+                <div className="flex items-center gap-1.5">
+                  <span className="font-heading font-black text-slate-950 text-base sm:text-lg leading-none">
+                    GWA<span className="text-orange-500">.</span>TECH
+                  </span>
+                  <span className="bg-orange-500 text-black text-[10px] font-black px-1.5 py-0.2 border border-black rounded shadow-[1px_1px_0px_0px_#000]">
+                    SISWA
+                  </span>
+                </div>
+                <span className="text-[11px] font-bold text-slate-600 mt-0.5">
+                  Ruang Belajar Komputer
                 </span>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1.5">
+            <nav className="hidden md:flex items-center gap-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -80,14 +86,14 @@ export default function SiswaNavbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-2 px-3 py-1.5 font-mono text-xs font-bold uppercase transition-all border-2 ${
+                    className={`flex items-center gap-2 px-3.5 py-2 font-heading text-xs font-bold rounded-lg transition-all border-2 ${
                       isActive
-                        ? "bg-orange-500 text-black border-black shadow-[2px_2px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
+                        ? "bg-orange-500 text-black border-black shadow-[3px_3px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
                         : "border-transparent text-slate-800 hover:bg-amber-300 hover:border-black hover:shadow-[2px_2px_0px_0px_#000]"
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5 text-black shrink-0" />
-                    {item.name}
+                    <Icon className="w-4 h-4 text-black shrink-0" />
+                    <span>{item.name}</span>
                   </Link>
                 );
               })}
@@ -96,16 +102,16 @@ export default function SiswaNavbar() {
             {/* Right: user badge + logout */}
             <div className="flex items-center gap-2.5">
               {currentSiswa && (
-                <div className="hidden sm:flex items-center gap-2 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 py-1">
-                  <div className="w-6 h-6 bg-cyan-300 border border-black flex items-center justify-center font-mono font-bold text-[11px] text-black shrink-0">
+                <div className="hidden sm:flex items-center gap-2.5 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-1.5 rounded-lg">
+                  <div className="w-7 h-7 bg-cyan-300 border border-black flex items-center justify-center font-heading font-black text-xs text-black rounded shrink-0">
                     {initials}
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-black font-heading leading-tight truncate max-w-[120px] lg:max-w-[160px]">
+                    <span className="text-xs font-black text-black font-heading leading-tight truncate max-w-[120px] lg:max-w-[150px]">
                       {currentSiswa.nama}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500 font-bold leading-none">
-                      [{currentSiswa.id}]
+                    <span className="text-[10px] text-slate-600 font-bold leading-none mt-0.5">
+                      ID: {currentSiswa.id}
                     </span>
                   </div>
                 </div>
@@ -114,15 +120,15 @@ export default function SiswaNavbar() {
               <button
                 onClick={logout}
                 title="Keluar dari Portal"
-                className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-rose-500 hover:bg-rose-600 text-white font-mono text-xs font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white font-heading text-xs font-black border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all rounded-lg cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>LOGOUT</span>
+                <span>Keluar</span>
               </button>
 
               {/* Mobile hamburger */}
               <button
-                className="md:hidden p-2 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] text-black hover:bg-amber-300 transition-colors cursor-pointer"
+                className="md:hidden p-2 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg text-black hover:bg-amber-300 transition-colors cursor-pointer"
                 onClick={() => setMobileOpen(true)}
                 aria-label="Buka Menu"
               >
@@ -144,13 +150,13 @@ export default function SiswaNavbar() {
             {/* Drawer header */}
             <div className="flex items-center justify-between px-4 py-3 bg-black text-white border-b-2 border-black select-none">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-amber-300">
-                  SYS_MENU // LMS
+                <span className="font-heading text-xs font-black text-amber-300">
+                  📱 Menu Belajar Siswa
                 </span>
               </div>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="p-1 bg-white text-black border border-black hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
+                className="p-1 bg-white text-black border border-black hover:bg-rose-500 hover:text-white transition-colors cursor-pointer rounded"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -159,22 +165,22 @@ export default function SiswaNavbar() {
             {/* User Profile in Drawer */}
             <div className="p-4 bg-amber-100 border-b-2 border-black">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-cyan-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center font-mono font-bold text-sm text-black">
+                <div className="w-10 h-10 bg-cyan-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center font-heading font-black text-sm text-black rounded-lg">
                   {initials}
                 </div>
                 <div className="min-w-0">
                   <p className="font-heading font-black text-black text-sm truncate">
                     {currentSiswa?.nama}
                   </p>
-                  <p className="font-mono text-xs font-bold text-slate-700">
-                    ID: {currentSiswa?.id}
+                  <p className="text-xs font-bold text-slate-700">
+                    Nomor Siswa: {currentSiswa?.id}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Drawer nav links */}
-            <nav className="flex-1 py-4 px-3 space-y-2 font-mono text-xs">
+            <nav className="flex-1 py-4 px-3 space-y-2 font-heading text-xs font-bold">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -186,14 +192,14 @@ export default function SiswaNavbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 border-2 border-black font-bold uppercase transition-all ${
+                    className={`flex items-center gap-3 px-3.5 py-3 border-2 border-black rounded-lg transition-all ${
                       isActive
                         ? "bg-orange-500 text-black shadow-[3px_3px_0px_0px_#000]"
                         : "bg-white text-black shadow-[2px_2px_0px_0px_#000] hover:bg-amber-200"
                     }`}
                   >
-                    <Icon className="w-4 h-4 text-black" />
-                    {item.name}
+                    <Icon className="w-4 h-4 text-black shrink-0" />
+                    <span>{item.name}</span>
                   </Link>
                 );
               })}
@@ -203,7 +209,7 @@ export default function SiswaNavbar() {
             <div className="p-4 border-t-2 border-black bg-white">
               <button
                 onClick={logout}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white font-mono text-xs font-bold uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white font-heading text-xs font-black border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 Keluar dari Portal

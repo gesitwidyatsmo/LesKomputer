@@ -4,29 +4,35 @@ import {
   FileText, 
   Table, 
   Presentation, 
-  X, 
-  CheckCircle, 
-  ArrowRight, 
-  Terminal, 
   Layers, 
   Clock, 
-  Award,
-  Sparkles,
   BookOpen
 } from "lucide-react";
 import { useState } from "react";
 
-export default function ProgramSection() {
+export default function ProgramSection({ data }) {
   const [activeModal, setActiveModal] = useState(null);
 
-  const programs = [
+  const badgeText = data?.badgeText || "[CURRICULUM_MATRIX // 2026]";
+  const titlePrefix = data?.titlePrefix || "PILIH MODUL KEAHLIAN";
+  const titleHighlight = data?.titleHighlight || "SESUAI TARGET KARIR ANDA";
+  const description = data?.description || "Setiap modul dirancang dari level dasar hingga mahir dengan kurikulum berbasis proyek nyata. Anda juga bisa mengambil paket lengkap 3-in-1 dengan potongan harga khusus.";
+
+  const promoBadge = data?.promoBadge || "🔥 PAKET KOMPLIT ALL-IN-ONE";
+  const promoTitle = data?.promoTitle || "Paket Mahir Komputer Kantor (Word + Excel + PPT)";
+  const promoDesc = data?.promoDesc || "Ambil 3 modul sekaligus untuk penguasaan total administrasi kantor & bisnis. Dapatkan diskon spesial, modul cetak eksklusif, serta garansi bimbingan sampai mahir!";
+  const promoButtonText = data?.promoButtonText || "KLAIM PROMO PAKET 3-IN-1";
+  const promoWhatsappMessage = data?.promoWhatsappMessage || "Halo Admin GWA, saya tertarik dengan Paket Komplit 3-in-1 (Word+Excel+PPT).";
+
+  const promoWaLink = `https://wa.me/6280000000000?text=${encodeURIComponent(promoWhatsappMessage)}`;
+
+  const defaultPrograms = [
     {
       id: "word",
       code: "MODUL_01 // WORD",
       title: "Microsoft Word Master",
       subtitle: "Dokumen Resmi, Surat Massal & Administrasi",
       desc: "Kuasai pembuatan surat dinas resmi, proposal berstandar, format penomoran halaman otomatis, Mail Merge 100+ surat dalam sekejap, dan tata letak dokumen profesional tanpa berantakan.",
-      icon: <FileText className="w-8 h-8 text-black" />,
       windowHeader: "01_ms_word_master.exe",
       badgeText: "ESENSIAL KANTOR",
       badgeColor: "bg-cyan-300 text-black",
@@ -49,7 +55,6 @@ export default function ProgramSection() {
       title: "Microsoft Excel Expert",
       subtitle: "Logika Rumus, Kasir & Analisis Data",
       desc: "Program paling favorit! Dari nol hingga menguasai logika rumus IF bercabang, VLOOKUP/XLOOKUP, sistem kasir toko, slip gaji, laporan keuangan bulanan, hingga Pivot Table dan grafik interaktif.",
-      icon: <Table className="w-8 h-8 text-black" />,
       windowHeader: "02_ms_excel_expert.exe",
       badgeText: "⭐ PALING DIMINATI",
       badgeColor: "bg-emerald-400 text-black",
@@ -73,7 +78,6 @@ export default function ProgramSection() {
       title: "Microsoft PowerPoint Pro",
       subtitle: "Desain Presentasi Eksekutif & Animasi Visual",
       desc: "Ubah presentasi membosankan jadi memukau dan profesional. Pelajari prinsip visual hierarchy, Master Slide, infografis visual, animasi transisi smooth (Morph), dan teknik penyampaian ide persuasif.",
-      icon: <Presentation className="w-8 h-8 text-black" />,
       windowHeader: "03_ms_powerpoint_pro.exe",
       badgeText: "VISUAL & PITCHING",
       badgeColor: "bg-amber-300 text-black",
@@ -91,6 +95,13 @@ export default function ProgramSection() {
     }
   ];
 
+  const iconMap = {
+    word: <FileText className="w-8 h-8 text-black" />,
+    excel: <Table className="w-8 h-8 text-black" />,
+    powerpoint: <Presentation className="w-8 h-8 text-black" />
+  };
+
+  const programs = data?.items || defaultPrograms;
   const currentProgram = programs.find((p) => p.id === activeModal);
 
   return (
@@ -99,20 +110,26 @@ export default function ProgramSection() {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-emerald-400 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
-            <Layers className="w-3.5 h-3.5" /> [CURRICULUM_MATRIX // 2026]
-          </div>
+          {badgeText && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-emerald-400 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
+              <Layers className="w-3.5 h-3.5" /> {badgeText}
+            </div>
+          )}
           
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-black tracking-tight mb-4 uppercase">
-            PILIH MODUL KEAHLIAN <br />
-            <span className="bg-emerald-300 px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[3px_3px_0px_0px_#000]">
-              SESUAI TARGET KARIR ANDA
-            </span>
+            {titlePrefix} <br />
+            {titleHighlight && (
+              <span className="bg-emerald-300 px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[3px_3px_0px_0px_#000]">
+                {titleHighlight}
+              </span>
+            )}
           </h2>
           
-          <p className="text-base sm:text-lg font-medium text-slate-700 mt-4 leading-relaxed">
-            Setiap modul dirancang dari level dasar hingga mahir dengan kurikulum berbasis proyek nyata. Anda juga bisa mengambil paket lengkap 3-in-1 dengan potongan harga khusus.
-          </p>
+          {description && (
+            <p className="text-base sm:text-lg font-medium text-slate-700 mt-4 leading-relaxed">
+              {description}
+            </p>
+          )}
         </div>
 
         {/* 3 Course Window Cards */}
@@ -120,7 +137,7 @@ export default function ProgramSection() {
           {programs.map((prog) => (
             <div 
               key={prog.id} 
-              className={`${prog.lightBg} border-3 border-black shadow-[6px_6px_0px_0px_#000] hover:shadow-[9px_9px_0px_0px_#000] hover:-translate-x-1 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group`}
+              className={`${prog.lightBg || "bg-[#ECFEFF]"} border-3 border-black shadow-[6px_6px_0px_0px_#000] hover:shadow-[9px_9px_0px_0px_#000] hover:-translate-x-1 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group`}
             >
               {/* Window Titlebar */}
               <div className="flex items-center justify-between px-3.5 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
@@ -130,7 +147,7 @@ export default function ProgramSection() {
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-black"></span>
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black"></span>
                   </div>
-                  <span className="text-[11px] text-amber-300 font-mono tracking-wide">{prog.windowHeader}</span>
+                  <span className="text-[11px] text-amber-300 font-mono tracking-wide">{prog.windowHeader || `${prog.id}.exe`}</span>
                 </div>
                 <span className="text-[10px] text-emerald-400 font-mono">[READY]</span>
               </div>
@@ -140,27 +157,31 @@ export default function ProgramSection() {
                 <div>
                   {/* Top Badge & Duration */}
                   <div className="flex items-start justify-between gap-2 mb-4">
-                    <span className={`font-mono text-[10px] font-black uppercase px-2 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] ${prog.badgeColor}`}>
-                      {prog.badgeText}
+                    <span className={`font-mono text-[10px] font-black uppercase px-2 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] ${prog.badgeColor || "bg-cyan-300 text-black"}`}>
+                      {prog.badgeText || "KURSUS"}
                     </span>
-                    <div className="flex items-center gap-1 font-mono text-[11px] font-bold text-slate-700 bg-white px-2 py-0.5 border border-black">
-                      <Clock className="w-3 h-3 text-black" />
-                      <span>{prog.duration.split(" ")[0]} Sesi</span>
-                    </div>
+                    {prog.duration && (
+                      <div className="flex items-center gap-1 font-mono text-[11px] font-bold text-slate-700 bg-white px-2 py-0.5 border border-black">
+                        <Clock className="w-3 h-3 text-black" />
+                        <span>{prog.duration.split(" ")[0]} Sesi</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Icon & Title */}
                   <div className="flex items-center gap-3 mb-4">
-                    <div className={`${prog.accentBg} w-12 h-12 border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] flex items-center justify-center shrink-0`}>
-                      {prog.icon}
+                    <div className={`${prog.accentBg || "bg-cyan-400"} w-12 h-12 border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] flex items-center justify-center shrink-0`}>
+                      {iconMap[prog.id] || <FileText className="w-8 h-8 text-black" />}
                     </div>
                     <div>
                       <h3 className="text-xl sm:text-2xl font-heading font-black text-black leading-tight">
                         {prog.title}
                       </h3>
-                      <p className="font-mono text-[11px] font-bold text-slate-600 uppercase">
-                        {prog.subtitle}
-                      </p>
+                      {prog.subtitle && (
+                        <p className="font-mono text-[11px] font-bold text-slate-600 uppercase">
+                          {prog.subtitle}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -170,16 +191,18 @@ export default function ProgramSection() {
                   </p>
 
                   {/* Hardware / Skill Chips */}
-                  <div className="flex flex-wrap gap-1.5 mb-6">
-                    {prog.tags.map((tag, idx) => (
-                      <span 
-                        key={idx} 
-                        className="font-mono text-[10px] font-bold bg-white text-black border border-black px-1.5 py-0.5 shadow-[1px_1px_0px_0px_#000]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  {prog.tags && (
+                    <div className="flex flex-wrap gap-1.5 mb-6">
+                      {prog.tags.map((tag, idx) => (
+                        <span 
+                          key={idx} 
+                          className="font-mono text-[10px] font-bold bg-white text-black border border-black px-1.5 py-0.5 shadow-[1px_1px_0px_0px_#000]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom Action Button */}
@@ -196,39 +219,43 @@ export default function ProgramSection() {
               </div>
 
               {/* Bottom Strip Accent */}
-              <div className={`h-2 border-t-2 border-black ${prog.accentBg}`}></div>
+              <div className={`h-2 border-t-2 border-black ${prog.accentBg || "bg-cyan-400"}`}></div>
             </div>
           ))}
         </div>
 
         {/* 3-in-1 Bundle Promo Card */}
-        <div className="mt-12 bg-amber-300 border-3 border-black shadow-[6px_6px_0px_0px_#000] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 bg-black text-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] flex items-center justify-center font-mono font-black text-2xl shrink-0 hidden sm:flex">
-              3-in-1
-            </div>
-            <div>
-              <div className="inline-block bg-black text-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase mb-1">
-                🔥 PAKET KOMPLIT ALL-IN-ONE
+        {promoTitle && (
+          <div className="mt-12 bg-amber-300 border-3 border-black shadow-[6px_6px_0px_0px_#000] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 bg-black text-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] flex items-center justify-center font-mono font-black text-2xl shrink-0 hidden sm:flex">
+                3-in-1
               </div>
-              <h3 className="text-2xl sm:text-3xl font-heading font-black text-black">
-                Paket Mahir Komputer Kantor (Word + Excel + PPT)
-              </h3>
-              <p className="text-sm font-bold text-slate-900 mt-1 max-w-2xl">
-                Ambil 3 modul sekaligus untuk penguasaan total administrasi kantor & bisnis. Dapatkan diskon spesial, modul cetak eksklusif, serta garansi bimbingan sampai mahir!
-              </p>
+              <div>
+                {promoBadge && (
+                  <div className="inline-block bg-black text-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase mb-1">
+                    {promoBadge}
+                  </div>
+                )}
+                <h3 className="text-2xl sm:text-3xl font-heading font-black text-black">
+                  {promoTitle}
+                </h3>
+                <p className="text-sm font-bold text-slate-900 mt-1 max-w-2xl">
+                  {promoDesc}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <a 
-            href="https://wa.me/6280000000000?text=Halo%20Admin%20GWA,%20saya%20tertarik%20dengan%20Paket%20Komplit%203-in-1%20(Word+Excel+PPT)."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3.5 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs sm:text-sm font-black uppercase border-2 border-black shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all whitespace-nowrap shrink-0 flex items-center gap-2"
-          >
-            <span>&gt;_</span> KLAIM PROMO PAKET 3-IN-1
-          </a>
-        </div>
+            <a 
+              href={promoWaLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3.5 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs sm:text-sm font-black uppercase border-2 border-black shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all whitespace-nowrap shrink-0 flex items-center gap-2"
+            >
+              <span>&gt;_</span> {promoButtonText}
+            </a>
+          </div>
+        )}
 
       </div>
 
@@ -283,33 +310,37 @@ export default function ProgramSection() {
               </div>
 
               {/* Target Outcome */}
-              <div className="p-4 bg-emerald-50 border-2 border-black shadow-[3px_3px_0px_0px_#000]">
-                <p className="font-mono text-xs font-bold text-emerald-800 uppercase mb-1">
-                  🎯 Target Kelulusan & Hasil Belajar:
-                </p>
-                <p className="text-sm font-medium text-slate-900">
-                  {currentProgram.targetHasil}
-                </p>
-              </div>
+              {currentProgram.targetHasil && (
+                <div className="p-4 bg-emerald-50 border-2 border-black shadow-[3px_3px_0px_0px_#000]">
+                  <p className="font-mono text-xs font-bold text-emerald-800 uppercase mb-1">
+                    🎯 Target Kelulusan & Hasil Belajar:
+                  </p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {currentProgram.targetHasil}
+                  </p>
+                </div>
+              )}
 
               {/* Syllabus Breakdown Table */}
-              <div>
-                <h4 className="font-mono text-xs font-black uppercase text-black mb-3">
-                  [SILABUS PER PERTEMUAN // PRAKTIK 100%]
-                </h4>
-                <div className="border-2 border-black divide-y-2 divide-black bg-white">
-                  {currentProgram.kurikulum.map((item, idx) => (
-                    <div key={idx} className="p-3 flex items-start gap-3 text-xs sm:text-sm">
-                      <span className="font-mono font-bold bg-black text-amber-300 px-2 py-0.5 text-[11px] shrink-0">
-                        {item.session}
-                      </span>
-                      <span className="font-medium text-slate-900 leading-snug">
-                        {item.topic}
-                      </span>
-                    </div>
-                  ))}
+              {currentProgram.kurikulum && (
+                <div>
+                  <h4 className="font-mono text-xs font-black uppercase text-black mb-3">
+                    [SILABUS PER PERTEMUAN // PRAKTIK 100%]
+                  </h4>
+                  <div className="border-2 border-black divide-y-2 divide-black bg-white">
+                    {currentProgram.kurikulum.map((item, idx) => (
+                      <div key={idx} className="p-3 flex items-start gap-3 text-xs sm:text-sm">
+                        <span className="font-mono font-bold bg-black text-amber-300 px-2 py-0.5 text-[11px] shrink-0">
+                          {item.session}
+                        </span>
+                        <span className="font-medium text-slate-900 leading-snug">
+                          {item.topic}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* CTA Action */}
               <div className="pt-2 flex flex-col sm:flex-row gap-3">

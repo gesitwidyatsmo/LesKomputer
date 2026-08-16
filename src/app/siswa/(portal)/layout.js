@@ -18,13 +18,13 @@ function PortalGuard({ children }) {
   if (isLoading || !currentSiswa) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFFDF5] bg-retro-dots p-4">
-        <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] p-6 max-w-sm w-full text-center space-y-3">
-          <div className="w-10 h-10 border-3 border-black border-t-orange-500 rounded-full animate-spin mx-auto" />
-          <div className="font-mono text-xs font-bold uppercase text-black">
-            &gt;_ Memuat Sesi Siswa...
+        <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl p-6 max-w-sm w-full text-center space-y-3">
+          <div className="w-12 h-12 border-4 border-black border-t-orange-500 rounded-full animate-spin mx-auto" />
+          <div className="font-heading font-black text-sm text-black">
+            Sedang membuka ruang belajarmu... 🚀
           </div>
-          <div className="text-[11px] font-mono text-slate-500">
-            [SYS_AUTHENTICATING // GWA_LMS]
+          <div className="text-xs text-slate-500 font-medium">
+            Tunggu sebentar ya!
           </div>
         </div>
       </div>
@@ -43,11 +43,11 @@ export default function PortalSiswaLayout({ children }) {
           <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             {children}
           </main>
-          <footer className="border-t-3 border-black bg-white py-4 px-4 text-center">
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 font-mono text-xs font-bold text-slate-700">
-              <span>© 2026 GWA TECH COURSE · PORTAL SISWA LMS</span>
-              <span className="bg-amber-300 text-black px-2 py-0.5 border border-black text-[10px]">
-                SYS_STATUS: 200_OK
+          <footer className="border-t-3 border-black bg-white py-4 px-4 text-center mt-6">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-bold text-slate-700 font-heading">
+              <span>© 2026 GWA Tech Course · Les Komputer Praktis & Menyenangkan</span>
+              <span className="bg-amber-300 text-black px-2.5 py-1 border border-black rounded-md text-[11px] shadow-[1px_1px_0px_0px_#000]">
+                ✨ Kelas Siap Belajar
               </span>
             </div>
           </footer>

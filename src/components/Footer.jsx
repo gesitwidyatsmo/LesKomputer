@@ -2,7 +2,15 @@
 
 import { MapPin, Clock, Phone, Terminal } from "lucide-react";
 
-export default function Footer() {
+export default function Footer({ data }) {
+  const brandName = data?.brandName || "GWA.TECH";
+  const brandTagline = data?.brandTagline || "// Gesit, Wawasan, Aplikatif";
+  const brandDescription = data?.brandDescription || "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.";
+  const address = data?.address || "Jl. Pendidikan No. 123, Kecamatan Ilmu, Kota Teknologi, Indonesia 12345";
+  const workingHours = data?.workingHours || "Senin - Sabtu: 08.30 - 21.00 WIB";
+  const phone = data?.phone || "+62 800-0000-0000";
+  const copyright = data?.copyright || "GWA TECH COURSE. HAK CIPTA DILINDUNGI.";
+
   return (
     <footer className="bg-black text-white border-t-3 border-black selection:bg-amber-300 selection:text-black">
       
@@ -34,14 +42,22 @@ export default function Footer() {
                 &gt;_
               </div>
               <span className="font-heading font-black text-2xl text-white tracking-tight">
-                GWA<span className="text-orange-500">.</span>TECH
+                {brandName.includes(".") ? (
+                  <>
+                    {brandName.split(".")[0]}<span className="text-orange-500">.</span>{brandName.split(".")[1]}
+                  </>
+                ) : (
+                  brandName
+                )}
               </span>
             </div>
-            <p className="font-mono text-xs font-bold text-amber-300 uppercase tracking-wider">
-              // Gesit, Wawasan, Aplikatif
-            </p>
+            {brandTagline && (
+              <p className="font-mono text-xs font-bold text-amber-300 uppercase tracking-wider">
+                {brandTagline}
+              </p>
+            )}
             <p className="text-sm text-slate-300 leading-relaxed font-medium max-w-sm">
-              Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.
+              {brandDescription}
             </p>
           </div>
 
@@ -80,18 +96,24 @@ export default function Footer() {
               <MapPin className="w-4 h-4 text-cyan-400" /> LOKASI & KONTAK
             </h4>
             <div className="space-y-3 text-slate-300">
-              <p className="leading-relaxed">
-                Jl. Pendidikan No. 123, Kecamatan Ilmu, Kota Teknologi, Indonesia 12345
-              </p>
+              {address && (
+                <p className="leading-relaxed">
+                  {address}
+                </p>
+              )}
               <div className="space-y-1.5 font-mono">
-                <p className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>Senin - Sabtu: 08.30 - 21.00 WIB</span>
-                </p>
-                <p className="flex items-center gap-2">
-                  <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>WhatsApp: +62 800-0000-0000</span>
-                </p>
+                {workingHours && (
+                  <p className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>{workingHours}</span>
+                  </p>
+                )}
+                {phone && (
+                  <p className="flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>WhatsApp: {phone}</span>
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -101,7 +123,7 @@ export default function Footer() {
         {/* Bottom Copyright & Disclaimer */}
         <div className="border-t-2 border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-mono text-slate-500">
           <p>
-            &copy; {new Date().getFullYear()} GWA TECH COURSE. HAK CIPTA DILINDUNGI.
+            &copy; {new Date().getFullYear()} {copyright}
           </p>
         </div>
 

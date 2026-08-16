@@ -13,10 +13,9 @@ import {
   Clock,
   Star,
   Award,
-  Terminal,
   MapPin,
-  User,
-  ExternalLink,
+  Sparkles,
+  Smile,
 } from "lucide-react";
 
 export default function SiswaDashboard() {
@@ -52,87 +51,79 @@ export default function SiswaDashboard() {
   const quickLinks = [
     {
       href: "/siswa/materi",
-      label: "Lanjutkan Materi",
+      label: "Buka Materi Belajar",
       icon: BookOpen,
-      desc: `Sesi Pertemuan Ke-${pertemuanSelesai + 1}`,
+      desc: `Lanjutkan materi pertemuan ke-${pertemuanSelesai + 1}`,
       bg: "bg-cyan-300 hover:bg-cyan-200",
-      tag: "#MODUL_READER",
+      badge: "Materi Baru",
+      badgeBg: "bg-cyan-100",
     },
     {
       href: "/siswa/quiz",
-      label: "Kerjakan Quiz",
+      label: "Main Kuis Seru",
       icon: Brain,
-      desc: "Uji Pemahaman & Latihan Mandiri",
+      desc: "Uji kemampuan kamu lewat kuis interaktif",
       bg: "bg-purple-300 hover:bg-purple-200",
-      tag: "#QUIZ_TERMINAL",
+      badge: "Kuis Pilihan",
+      badgeBg: "bg-purple-100",
     },
     {
       href: "/siswa/jadwal",
-      label: "Jadwal & Presensi",
+      label: "Jadwal & Kehadiran",
       icon: Calendar,
-      desc: `${currentSiswa.jadwal || "Senin & Rabu"} • ${
+      desc: `${currentSiswa.jadwal || "Senin & Rabu"} · Jam ${
         currentSiswa.waktu || "16.00"
       }`,
       bg: "bg-amber-300 hover:bg-amber-200",
-      tag: "#SCHEDULE_LOG",
+      badge: "Info Kelas",
+      badgeBg: "bg-amber-100",
     },
     {
       href: "/siswa/nilai",
-      label: "Rekap Nilai & Sertifikat",
+      label: "Piala & Sertifikat",
       icon: BarChart2,
-      desc: "Transkrip Kelulusan & E-Certificate",
+      desc: "Lihat hasil nilai dan sertifikat resmi kamu",
       bg: "bg-emerald-300 hover:bg-emerald-200",
-      tag: "#VERIFIED_CERT",
+      badge: "Prestasi",
+      badgeBg: "bg-emerald-100",
     },
   ];
 
-  // Hitung jumlah blok indikator retro (10 blok total)
-  const totalBlocks = 10;
-  const filledBlocks = Math.min(
-    totalBlocks,
-    Math.round((progress / 100) * totalBlocks)
-  );
-
   return (
     <div className="space-y-6">
-      {/* ── Sys-Status Header (Retro Window Box) ─────────────── */}
-      <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] overflow-hidden">
-        {/* Retro Window Bar */}
+      {/* ── Welcome Banner (Ramah & Hangat) ────────────────── */}
+      <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden">
+        {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
           <div className="flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 border border-black inline-block"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-black inline-block"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black inline-block"></span>
-            </div>
-            <span className="tracking-wide">sys_student_dashboard.exe</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>
+            <span className="font-heading text-xs font-bold text-amber-300">
+              Ruang Belajar Siswa
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-[10px] text-emerald-400 font-mono">[PORTAL_ACTIVE]</span>
-          </div>
+          <span className="text-[11px] text-emerald-400 font-bold font-mono">
+            ● Status: Aktif Belajar
+          </span>
         </div>
 
-        {/* Header Main Content */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-yellow-50 via-white to-orange-50/40">
+        {/* Banner Content */}
+        <div className="p-5 sm:p-7 bg-gradient-to-br from-yellow-50 via-white to-orange-50/50">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            {/* Left: User info */}
-            <div className="space-y-2.5">
+            {/* Left User Greeting */}
+            <div className="space-y-2 max-w-xl">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-black text-amber-300 font-mono text-[11px] font-bold uppercase border border-black">
-                  <Terminal className="w-3 h-3" /> USER_ONLINE
-                </span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cyan-200 text-black font-mono text-[11px] font-bold border border-black">
-                  ID: {currentSiswa.id}
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-300 text-black text-xs font-black border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000]">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-900" />
+                  ID Siswa: {currentSiswa.id}
                 </span>
                 <span
-                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase border border-black ${
+                  className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-black border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000] ${
                     currentSiswa.status === "Lulus"
                       ? "bg-emerald-300 text-black"
-                      : "bg-amber-300 text-black"
+                      : "bg-cyan-200 text-black"
                   }`}
                 >
-                  {currentSiswa.status === "Lulus" ? "🎓 STATUS: LULUS" : "⏳ STATUS: AKTIF BELAJAR"}
+                  {currentSiswa.status === "Lulus" ? "🎓 Sudah Lulus" : "🚀 Siswa Aktif"}
                 </span>
               </div>
 
@@ -140,40 +131,39 @@ export default function SiswaDashboard() {
                 <h1 className="text-2xl sm:text-3xl font-heading font-black text-black tracking-tight">
                   Halo, {currentSiswa.nama}! 👋
                 </h1>
-                <p className="font-mono text-xs sm:text-sm text-slate-700 font-bold mt-1">
-                  KELAS: <span className="text-orange-600 font-black">{currentSiswa.kelas}</span> · MODUL:{" "}
-                  <span className="text-slate-950 font-black">{currentSiswa.modul}</span>
+                <p className="text-sm sm:text-base font-medium text-slate-700 mt-1">
+                  Kamu sedang belajar modul{" "}
+                  <strong className="text-black bg-yellow-200 px-1.5 py-0.5 border border-black rounded">
+                    {currentSiswa.modul}
+                  </strong>{" "}
+                  di kelas <strong className="text-orange-600 font-bold">{currentSiswa.kelas}</strong>.
                 </p>
               </div>
             </div>
 
-            {/* Right: Retro Block Progress */}
-            <div className="w-full lg:w-80 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] p-4 shrink-0 space-y-2">
-              <div className="flex items-center justify-between font-mono text-xs font-bold text-black">
-                <span className="uppercase text-slate-600">PROGRESS_KURSUS</span>
-                <span className="bg-orange-500 text-black px-1.5 py-0.5 border border-black font-black">
+            {/* Right Progress Card */}
+            <div className="w-full lg:w-80 bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl p-4 shrink-0 space-y-2.5">
+              <div className="flex items-center justify-between font-heading font-bold text-xs">
+                <span className="text-slate-700">Kemajuan Belajarmu</span>
+                <span className="bg-orange-500 text-black px-2 py-0.5 border border-black rounded font-black text-xs">
                   {progress}%
                 </span>
               </div>
 
-              {/* Segmented retro blocks */}
-              <div className="grid grid-cols-10 gap-1 py-1">
-                {Array.from({ length: totalBlocks }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`h-4 border border-black ${
-                      idx < filledBlocks ? "bg-orange-500" : "bg-slate-100"
-                    }`}
-                  />
-                ))}
+              {/* Progress bar */}
+              <div className="w-full h-4 bg-slate-100 border-2 border-black rounded-full p-0.5 overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.max(5, progress)}%` }}
+                />
               </div>
 
-              <div className="flex items-center justify-between font-mono text-[11px] text-slate-600 font-bold">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-600">
                 <span>
-                  Selesai: {pertemuanSelesai}/{totalPertemuan} Sesi
+                  Sudah Selesai: {pertemuanSelesai} dari {totalPertemuan} Sesi
                 </span>
                 <span className="text-orange-600">
-                  {Math.max(0, totalPertemuan - pertemuanSelesai)} Sesi Tersisa
+                  {Math.max(0, totalPertemuan - pertemuanSelesai)} Sesi Lagi
                 </span>
               </div>
             </div>
@@ -181,39 +171,35 @@ export default function SiswaDashboard() {
         </div>
       </div>
 
-      {/* ── Metric Cards Row ───────────────────────────────── */}
+      {/* ── 4 Stat Cards (Sederhana & Mudah Dipahami) ──────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            metricCode: "SYS_METRIC // 01",
             label: "Pertemuan Selesai",
             value: `${pertemuanSelesai}/${totalPertemuan}`,
-            sub: `${progress}% Tercapai`,
+            sub: `${progress}% Selesai`,
             icon: CheckCircle2,
             stripColor: "bg-orange-500",
-            iconBg: "bg-orange-300",
+            iconBg: "bg-orange-200",
           },
           {
-            metricCode: "SYS_METRIC // 02",
-            label: "Rata-Rata Quiz",
+            label: "Rata-Rata Kuis",
             value: rataQuiz > 0 ? `${rataQuiz}` : "—",
-            sub: `${nilaiQuiz.length} Quiz Dikerjakan`,
+            sub: `${nilaiQuiz.length} Kuis Dikerjakan`,
             icon: Star,
             stripColor: "bg-amber-400",
-            iconBg: "bg-yellow-300",
+            iconBg: "bg-yellow-200",
           },
           {
-            metricCode: "SYS_METRIC // 03",
-            label: "Tingkat Kehadiran",
+            label: "Kehadiran Kelas",
             value: `${kehadiranPct}%`,
             sub: `${hadirCount} Kali Hadir`,
             icon: TrendingUp,
             stripColor: "bg-emerald-500",
-            iconBg: "bg-emerald-300",
+            iconBg: "bg-emerald-200",
           },
           {
-            metricCode: "SYS_METRIC // 04",
-            label: "Instruktur Kelas",
+            label: "Guru / Instruktur",
             value: (currentSiswa.mentor || "Instruktur GWA")
               .split(" ")
               .slice(0, 2)
@@ -221,24 +207,20 @@ export default function SiswaDashboard() {
             sub: currentSiswa.ruangan || "Lab Komputer",
             icon: Award,
             stripColor: "bg-purple-500",
-            iconBg: "bg-purple-300",
+            iconBg: "bg-purple-200",
           },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
             <div
               key={i}
-              className="p-4 sm:p-5 bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] flex flex-col justify-between relative overflow-hidden"
+              className="p-4 sm:p-5 bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl flex flex-col justify-between relative overflow-hidden"
             >
-              {/* Accent top strip */}
               <div className={`absolute top-0 left-0 right-0 h-1.5 ${stat.stripColor}`} />
 
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <span className="font-mono text-[10px] font-bold text-slate-500 uppercase">
-                    {stat.metricCode}
-                  </span>
-                  <p className="text-xs font-bold text-slate-700 uppercase mt-0.5 truncate">
+                  <p className="text-xs font-bold text-slate-600 uppercase mt-0.5 truncate">
                     {stat.label}
                   </p>
                   <h4 className="text-xl sm:text-2xl font-heading font-black text-black mt-1 truncate">
@@ -246,29 +228,27 @@ export default function SiswaDashboard() {
                   </h4>
                 </div>
                 <div
-                  className={`p-2 sm:p-2.5 ${stat.iconBg} border-2 border-black shadow-[2px_2px_0px_0px_#000] shrink-0`}
+                  className={`p-2.5 ${stat.iconBg} border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg shrink-0`}
                 >
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+                  <Icon className="w-5 h-5 text-black" />
                 </div>
               </div>
 
-              <div className="mt-3 pt-2.5 border-t-2 border-dashed border-slate-200 flex items-center justify-between text-[11px] font-mono font-bold text-slate-600">
+              <div className="mt-3 pt-2.5 border-t-2 border-dashed border-slate-200 flex items-center justify-between text-xs font-bold text-slate-500">
                 <span className="truncate">{stat.sub}</span>
-                <span className="text-slate-400">●</span>
+                <span>✨</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* ── Quick Action Grid ──────────────────────────────── */}
+      {/* ── 4 Big Chunky Action Cards (Paling Mudah Diakses) ── */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <span className="font-mono font-black text-black bg-amber-300 px-2 py-0.5 border border-black text-xs">
-            [NAV_DESK]
-          </span>
-          <h2 className="font-heading font-black text-lg text-black uppercase tracking-tight">
-            Menu Navigasi Utama Siswa
+          <span className="text-lg">🎯</span>
+          <h2 className="font-heading font-black text-lg text-black tracking-tight">
+            Pilihan Menu Belajar
           </h2>
         </div>
 
@@ -279,28 +259,28 @@ export default function SiswaDashboard() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`group p-5 border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex flex-col justify-between ${link.bg}`}
+                className={`group p-5 border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex flex-col justify-between ${link.bg}`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <div className="p-2.5 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000]">
-                      <Icon className="w-5 h-5 text-black" />
+                    <div className="p-3 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg">
+                      <Icon className="w-6 h-6 text-black" />
                     </div>
-                    <span className="font-mono text-[10px] font-bold bg-black text-white px-2 py-0.5">
-                      {link.tag}
+                    <span className="font-heading text-[11px] font-bold bg-white text-black px-2.5 py-0.5 border border-black rounded-full">
+                      {link.badge}
                     </span>
                   </div>
 
-                  <h3 className="font-heading font-black text-base text-black uppercase leading-tight group-hover:underline">
+                  <h3 className="font-heading font-black text-base text-black leading-snug group-hover:underline">
                     {link.label}
                   </h3>
-                  <p className="font-mono text-xs font-bold text-slate-800 mt-1">
+                  <p className="text-xs font-medium text-slate-800 mt-1 leading-relaxed">
                     {link.desc}
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-black/20 flex items-center justify-between font-mono text-xs font-black text-black">
-                  <span>BUKA MENU &gt;</span>
+                <div className="mt-4 pt-3 border-t border-black/20 flex items-center justify-between font-heading text-xs font-black text-black">
+                  <span>Buka Sekarang &gt;</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </Link>
@@ -309,48 +289,48 @@ export default function SiswaDashboard() {
         </div>
       </div>
 
-      {/* ── Bottom OS Window Row ───────────────────────────── */}
+      {/* ── Bottom Cards: Jadwal Rutin & Kuis Terakhir ──────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Jadwal Rutin Kelas */}
-        <div className="bg-white border-3 border-black shadow-[5px_5px_0px_0px_#000] overflow-hidden flex flex-col justify-between">
+        {/* Jadwal Belajar Kamu */}
+        <div className="bg-white border-3 border-black shadow-[5px_5px_0px_0px_#000] rounded-xl overflow-hidden flex flex-col justify-between">
           <div>
-            {/* Titlebar */}
-            <div className="flex items-center justify-between px-3 py-1.5 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
+            <div className="flex items-center justify-between px-4 py-2 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-cyan-400 inline-block"></span>
-                <span>sys_jadwal_rutin.exe</span>
+                <span>📅</span>
+                <span>Jadwal Belajar Kelas</span>
               </div>
-              <span className="text-[10px] text-cyan-300">[TIMETABLE]</span>
+              <span className="text-[11px] text-cyan-300">Lab Komputer GWA</span>
             </div>
 
             <div className="p-5 space-y-4">
-              <div className="p-4 bg-cyan-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] space-y-2">
+              <div className="p-4 bg-cyan-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold bg-cyan-200 px-2 py-0.5 border border-black">
-                    KELAS: {currentSiswa.kelas}
+                  <span className="text-xs font-bold bg-cyan-200 px-2.5 py-0.5 border border-black rounded">
+                    Kelas: {currentSiswa.kelas}
                   </span>
-                  <span className="font-mono text-xs font-bold text-slate-600">
-                    MODUL: {currentSiswa.modul}
+                  <span className="text-xs font-bold text-slate-700">
+                    Modul: {currentSiswa.modul}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs font-mono">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs font-medium text-slate-800">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-black shrink-0" />
+                    <Clock className="w-4 h-4 text-black shrink-0" />
                     <span>
-                      {currentSiswa.jadwal || "Senin & Rabu"} · {currentSiswa.waktu || "16.00 - 18.00"}
+                      {currentSiswa.jadwal || "Senin & Rabu"} · Jam{" "}
+                      {currentSiswa.waktu || "16.00 - 18.00"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-black shrink-0" />
-                    <span>{currentSiswa.ruangan || "Lab Komputer GWA (PC-Slot)"}</span>
+                    <MapPin className="w-4 h-4 text-black shrink-0" />
+                    <span>{currentSiswa.ruangan || "Lab Komputer (1 Siswa 1 PC)"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 border border-black font-mono text-xs flex items-center justify-between">
-                <span className="text-slate-600">Instruktur Pembimbing:</span>
-                <span className="font-bold text-black bg-white px-2 py-0.5 border border-black">
+              <div className="p-3 bg-slate-50 border border-black rounded-lg text-xs font-medium flex items-center justify-between">
+                <span className="text-slate-600">Guru / Instruktur Kamu:</span>
+                <span className="font-bold text-black bg-white px-2.5 py-0.5 border border-black rounded">
                   {currentSiswa.mentor || "Instruktur GWA"}
                 </span>
               </div>
@@ -360,43 +340,42 @@ export default function SiswaDashboard() {
           <div className="p-4 pt-0">
             <Link
               href="/siswa/jadwal"
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-amber-300 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-white hover:bg-amber-300 text-black font-heading text-xs font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
             >
-              <span>&gt;_ Buka Detail Jadwal & Kehadiran</span>
+              <span>Lihat Detail Jadwal & Kehadiran</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
 
-        {/* Nilai Quiz Terakhir */}
-        <div className="bg-white border-3 border-black shadow-[5px_5px_0px_0px_#000] overflow-hidden flex flex-col justify-between">
+        {/* Hasil Kuis Terakhir */}
+        <div className="bg-white border-3 border-black shadow-[5px_5px_0px_0px_#000] rounded-xl overflow-hidden flex flex-col justify-between">
           <div>
-            {/* Titlebar */}
-            <div className="flex items-center justify-between px-3 py-1.5 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
+            <div className="flex items-center justify-between px-4 py-2 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-yellow-400 inline-block"></span>
-                <span>sys_quiz_records.exe</span>
+                <span>⭐</span>
+                <span>Nilai Kuis Terakhir</span>
               </div>
-              <span className="text-[10px] text-amber-300">[RECORDS]</span>
+              <span className="text-[11px] text-amber-300">Hasil Latihan</span>
             </div>
 
             <div className="p-5">
               <div className="space-y-2.5">
                 {nilaiQuiz.length === 0 ? (
-                  <div className="text-center py-8 font-mono text-xs text-slate-500 border-2 border-dashed border-slate-300 p-4">
-                    [NO_RECORDS] Belum ada quiz yang dikerjakan.
+                  <div className="text-center py-8 text-xs text-slate-500 border-2 border-dashed border-slate-300 rounded-lg p-4 font-medium">
+                    Belum ada kuis yang kamu kerjakan. Yuk coba kuis pertamamu! 🎮
                   </div>
                 ) : (
                   nilaiQuiz.slice(0, 3).map((q, i) => (
                     <div
                       key={i}
-                      className="p-3 bg-[#FFFDF5] border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-between gap-3"
+                      className="p-3 bg-[#FFFDF5] border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg flex items-center justify-between gap-3"
                     >
                       <div className="min-w-0">
-                        <p className="font-heading font-black text-xs text-black uppercase truncate">
-                          {q.quiz?.judul || q.judul || `Quiz Pertemuan ${q.quiz?.materi?.pertemuan || i + 1}`}
+                        <p className="font-heading font-black text-xs sm:text-sm text-black truncate">
+                          {q.quiz?.judul || q.judul || `Kuis Pertemuan ${q.quiz?.materi?.pertemuan || i + 1}`}
                         </p>
-                        <p className="font-mono text-[10px] text-slate-600 font-bold mt-0.5">
+                        <p className="text-[11px] text-slate-600 font-medium mt-0.5">
                           {q.dikerjakan_pada
                             ? new Date(q.dikerjakan_pada).toLocaleDateString("id-ID")
                             : q.tanggal || "Terkini"}{" "}
@@ -405,7 +384,7 @@ export default function SiswaDashboard() {
                       </div>
 
                       <div
-                        className={`px-3 py-1 font-mono font-black text-xs border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 ${
+                        className={`px-3 py-1 font-heading font-black text-xs border-2 border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 ${
                           (q.nilai || 0) >= 80
                             ? "bg-emerald-300 text-black"
                             : (q.nilai || 0) >= 60
@@ -413,7 +392,7 @@ export default function SiswaDashboard() {
                             : "bg-rose-300 text-black"
                         }`}
                       >
-                        NILAI: {q.nilai}
+                        Nilai: {q.nilai}
                       </div>
                     </div>
                   ))
@@ -425,28 +404,28 @@ export default function SiswaDashboard() {
           <div className="p-4 pt-0">
             <Link
               href="/siswa/nilai"
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-emerald-300 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-white hover:bg-emerald-300 text-black font-heading text-xs font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
             >
-              <span>&gt;_ Buka Transkrip Nilai Lengkap</span>
+              <span>Buka Semua Nilai & Sertifikat</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ── Catatan Instruktur ─────────────────────────────── */}
+      {/* ── Catatan dari Guru / Instruktur ─────────────────── */}
       {currentSiswa.catatan && (
-        <div className="bg-yellow-100 border-3 border-black shadow-[4px_4px_0px_0px_#000] p-4 sm:p-5 flex items-start gap-3.5">
-          <div className="p-2 bg-amber-400 border-2 border-black shadow-[2px_2px_0px_0px_#000] shrink-0">
-            <Terminal className="w-5 h-5 text-black" />
+        <div className="bg-yellow-100 border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl p-4 sm:p-5 flex items-start gap-3.5">
+          <div className="p-2.5 bg-amber-400 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg shrink-0 text-xl">
+            💬
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-black bg-black text-yellow-300 px-2 py-0.5">
-                [NOTICE // INSTRUKTUR_LOG]
+              <span className="font-heading text-xs font-black bg-black text-yellow-300 px-2 py-0.5 rounded">
+                Pesan dari Guru
               </span>
-              <span className="font-mono text-xs font-bold text-slate-800">
-                Pesan Khusus Siswa
+              <span className="text-xs font-bold text-slate-800">
+                Catatan Belajar
               </span>
             </div>
             <p className="text-sm font-medium text-slate-900 mt-1.5 leading-relaxed">

@@ -1,10 +1,16 @@
 "use client";
 
-import { MessageCircle, Terminal } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function WhatsAppButton() {
+export default function WhatsAppButton({ data }) {
   const [isVisible, setIsVisible] = useState(false);
+
+  const tooltipText = data?.tooltipText || "[ CHAT MENTOR GESIT >_ ]";
+  const whatsappNumber = data?.whatsappNumber || "6280000000000";
+  const whatsappMessage = data?.whatsappMessage || "Halo Admin GWA Tech Course, saya ingin konsultasi jadwal dan program kursus.";
+
+  const waLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -28,14 +34,16 @@ export default function WhatsAppButton() {
       <div className="relative group flex items-center">
         
         {/* Retro Tooltip Bubble on Left */}
-        <div className="absolute right-full mr-3 bg-black text-amber-300 border-2 border-black px-3 py-1.5 shadow-[3px_3px_0px_0px_#000] font-mono text-xs font-bold whitespace-nowrap pointer-events-none hidden md:flex items-center gap-2 group-hover:scale-105 transition-transform select-none">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>[ CHAT MENTOR GESIT &gt;_ ]</span>
-        </div>
+        {tooltipText && (
+          <div className="absolute right-full mr-3 bg-black text-amber-300 border-2 border-black px-3 py-1.5 shadow-[3px_3px_0px_0px_#000] font-mono text-xs font-bold whitespace-nowrap pointer-events-none hidden md:flex items-center gap-2 group-hover:scale-105 transition-transform select-none">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>{tooltipText}</span>
+          </div>
+        )}
 
         {/* WhatsApp Tactical Neobrutalist Button */}
         <a
-          href="https://wa.me/6280000000000?text=Halo%20Admin%20GWA%20Tech%20Course,%20saya%20ingin%20konsultasi%20jadwal%20dan%20program%20kursus."
+          href={waLink}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center w-14 h-14 bg-emerald-400 hover:bg-emerald-300 text-black border-3 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[6px_6px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"

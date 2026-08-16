@@ -3,20 +3,35 @@
 import { useState } from "react";
 import { 
   ArrowRight, 
-  Terminal, 
   CheckCircle2, 
   Table, 
   FileText, 
   Presentation, 
   Award, 
-  Sparkles,
-  Zap,
   Cpu,
   MousePointerClick
 } from "lucide-react";
 
-export default function HeroSection() {
+export default function HeroSection({ data }) {
   const [activeTab, setActiveTab] = useState("excel");
+
+  const badgeText = data?.badgeText || "[⚡ METODE EKSKLUSIF 1-ON-5 MENTORING]";
+  const headlinePrefix = data?.headlinePrefix || "Belajar Komputer";
+  const headlineSub = data?.headlineSub || "Gak Pakai Rumit.";
+  const headlineHighlight = data?.headlineHighlight || "Dari Nol Sampai Mahir.";
+  const description = data?.description || "Kuasai Microsoft Word, Excel Logika & Kasir, dan PowerPoint Profesional dengan metode mentoring privat maksimal 5 orang. 1 Siswa 1 Unit Komputer — 100% praktik langsung studi kasus dunia kerja.";
+  const ctaWhatsappText = data?.ctaWhatsappText || "Konsultasi via WhatsApp";
+  const ctaWhatsappMessage = data?.ctaWhatsappMessage || "Halo Admin GWA, saya ingin konsultasi kursus komputer.";
+  const ctaSecondaryText = data?.ctaSecondaryText || "Lihat 3 Modul Kursus";
+  const ctaSecondaryLink = data?.ctaSecondaryLink || "#program";
+  const trustBadge1 = data?.trustBadge1 || "100% Praktik Nyata";
+  const trustBadge2 = data?.trustBadge2 || "Sertifikat Resmi";
+  const trustBadge3 = data?.trustBadge3 || "1 Siswa 1 PC Mandiri";
+  const floatingBadgeLeftTitle = data?.floatingBadgeLeftTitle || "Total Alumni Lulus";
+  const floatingBadgeLeftValue = data?.floatingBadgeLeftValue || "500+ Siswa Mahir";
+  const floatingBadgeRightText = data?.floatingBadgeRightText || "5 PC WORKSTATION SIAP";
+
+  const waLink = `https://wa.me/6280000000000?text=${encodeURIComponent(ctaWhatsappMessage)}`;
 
   return (
     <section id="beranda" className="relative pt-10 pb-20 lg:pt-16 lg:pb-28 bg-[#FFFDF5] bg-retro-dots overflow-hidden border-b-3 border-black">
@@ -35,62 +50,72 @@ export default function HeroSection() {
           <div className="lg:col-span-7 max-w-2xl">
             
             {/* Top Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] font-mono text-xs font-black uppercase text-black mb-6 tracking-wide">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-600 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-600"></span>
-              </span>
-              [⚡ METODE EKSKLUSIF 1-ON-5 MENTORING]
-            </div>
+            {badgeText && (
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] font-mono text-xs font-black uppercase text-black mb-6 tracking-wide">
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-600 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-600"></span>
+                </span>
+                {badgeText}
+              </div>
+            )}
             
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black text-black leading-[1.1] tracking-tight mb-6">
-              Belajar Komputer <br className="hidden sm:inline" />
-              Gak Pakai Rumit. <br />
-              <span className="bg-orange-500 text-black px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[4px_4px_0px_0px_#000] transform -rotate-1">
-                Dari Nol Sampai Mahir.
-              </span>
+              {headlinePrefix} <br className="hidden sm:inline" />
+              {headlineSub} <br />
+              {headlineHighlight && (
+                <span className="bg-orange-500 text-black px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[4px_4px_0px_0px_#000] transform -rotate-1">
+                  {headlineHighlight}
+                </span>
+              )}
             </h1>
             
             {/* Description */}
             <p className="text-base sm:text-lg font-medium text-slate-800 mb-8 leading-relaxed">
-              Kuasai <strong className="text-black font-bold">Microsoft Word, Excel Logika & Kasir, dan PowerPoint Profesional</strong> dengan metode mentoring privat maksimal 5 orang. 1 Siswa 1 Unit Komputer — 100% praktik langsung studi kasus dunia kerja.
+              {description}
             </p>
             
             {/* CTA Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-10">
               <a 
-                href="https://wa.me/6280000000000?text=Halo%20Admin%20GWA,%20saya%20ingin%20konsultasi%20kursus%20komputer." 
+                href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex justify-center items-center gap-2.5 px-7 py-4 text-sm sm:text-base font-mono font-black uppercase text-black bg-orange-500 hover:bg-orange-400 border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
               >
-                <span>&gt;_</span> Konsultasi via WhatsApp
+                <span>&gt;_</span> {ctaWhatsappText}
                 <ArrowRight className="w-5 h-5" />
               </a>
               
               <a 
-                href="#program" 
+                href={ctaSecondaryLink} 
                 className="inline-flex justify-center items-center gap-2 px-6 py-4 text-sm sm:text-base font-mono font-bold uppercase text-black bg-white hover:bg-cyan-100 border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
               >
-                <span>[#]</span> Lihat 3 Modul Kursus
+                <span>[#]</span> {ctaSecondaryText}
               </a>
             </div>
             
             {/* Trust Badges */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              <div className="flex items-center gap-2 px-3 py-2 bg-emerald-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-bold text-black">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>100% Praktik Nyata</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-2 bg-yellow-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-bold text-black">
-                <CheckCircle2 className="w-4 h-4 text-amber-700 shrink-0" />
-                <span>Sertifikat Resmi</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-2 bg-cyan-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-bold text-black">
-                <CheckCircle2 className="w-4 h-4 text-cyan-700 shrink-0" />
-                <span>1 Siswa 1 PC Mandiri</span>
-              </div>
+              {trustBadge1 && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-bold text-black">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                  <span>{trustBadge1}</span>
+                </div>
+              )}
+              {trustBadge2 && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-yellow-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-bold text-black">
+                  <CheckCircle2 className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>{trustBadge2}</span>
+                </div>
+              )}
+              {trustBadge3 && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-cyan-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-bold text-black">
+                  <CheckCircle2 className="w-4 h-4 text-cyan-700 shrink-0" />
+                  <span>{trustBadge3}</span>
+                </div>
+              )}
             </div>
 
           </div>
@@ -182,7 +207,7 @@ export default function HeroSection() {
                     </div>
 
                     <div className="bg-slate-900 text-emerald-400 p-2.5 border-2 border-black font-mono text-[11px] overflow-x-auto">
-                      <code>=IF(VLOOKUP(B2, TBL_HARGA, 3, 0) &gt; 500000, "DISKON_10%", "NORMAL")</code>
+                      <code>=IF(VLOOKUP(B2, TBL_HARGA, 3, 0) &gt; 500000, &quot;DISKON_10%&quot;, &quot;NORMAL&quot;)</code>
                     </div>
 
                     <div className="border-2 border-black overflow-hidden">
@@ -350,19 +375,23 @@ export default function HeroSection() {
             </div>
 
             {/* Floating Badge Bottom Left */}
-            <div className="absolute -bottom-5 -left-4 bg-yellow-300 border-2 border-black p-2.5 shadow-[4px_4px_0px_0px_#000] z-20 font-mono text-xs hidden sm:flex items-center gap-2">
-              <span className="text-base">🏆</span>
-              <div>
-                <p className="text-[10px] text-slate-800 font-bold uppercase">Total Alumni Lulus</p>
-                <p className="font-black text-black text-sm leading-none">500+ Siswa Mahir</p>
+            {floatingBadgeLeftTitle && (
+              <div className="absolute -bottom-5 -left-4 bg-yellow-300 border-2 border-black p-2.5 shadow-[4px_4px_0px_0px_#000] z-20 font-mono text-xs hidden sm:flex items-center gap-2">
+                <span className="text-base">🏆</span>
+                <div>
+                  <p className="text-[10px] text-slate-800 font-bold uppercase">{floatingBadgeLeftTitle}</p>
+                  <p className="font-black text-black text-sm leading-none">{floatingBadgeLeftValue}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Floating Badge Top Right */}
-            <div className="absolute -top-5 -right-3 bg-emerald-400 border-2 border-black p-2 shadow-[3px_3px_0px_0px_#000] z-20 font-mono text-[11px] hidden sm:flex items-center gap-1.5 text-black font-bold">
-              <Cpu className="w-3.5 h-3.5" />
-              <span>5 PC WORKSTATION SIAP</span>
-            </div>
+            {floatingBadgeRightText && (
+              <div className="absolute -top-5 -right-3 bg-emerald-400 border-2 border-black p-2 shadow-[3px_3px_0px_0px_#000] z-20 font-mono text-[11px] hidden sm:flex items-center gap-1.5 text-black font-bold">
+                <Cpu className="w-3.5 h-3.5" />
+                <span>{floatingBadgeRightText}</span>
+              </div>
+            )}
 
           </div>
           
