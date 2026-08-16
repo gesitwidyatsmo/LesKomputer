@@ -1,0 +1,120 @@
+"use client";
+
+import { MessageSquare, Star, Terminal, CheckCircle2, User } from "lucide-react";
+
+export default function TestimonialSection() {
+  const reviews = [
+    {
+      id: "LOG_01",
+      name: "Rizky Firmansyah",
+      role: "Staff Administrasi & Keuangan",
+      company: "PT. Sarana Distribusi",
+      course: "Microsoft Excel Expert",
+      rating: 5,
+      comment: "Sebelumnya tiap kali bikin laporan rekap penjualan akhir bulan selalu lembur sampai malam karena rumus error melulu. Setelah ikut kelas Excel di GWA, diajarin logika VLOOKUP dan Pivot Table langsung pakai contoh kasus kantor. Sekarang laporan beres cuma 15 menit!",
+      badge: "LULUS GRADE A"
+    },
+    {
+      id: "LOG_02",
+      name: "Dini Anggraini",
+      role: "Sekretaris & Operasional",
+      company: "Klinik Utama Medika",
+      course: "Paket Mahir 3-in-1 (Word, Excel, PPT)",
+      rating: 5,
+      comment: "Belajar di sini bener-bener privat! Karena 1 kelas cuma 5 orang, mentornya sabar banget ngebimbing dari nol. Yang tadinya gak paham Mail Merge buat cetak ratusan surat undangan, sekarang jadi tugas paling gampang.",
+      badge: "ALUMNI 2026"
+    },
+    {
+      id: "LOG_03",
+      name: "Budi Santoso",
+      role: "Fresh Graduate / Jobseeker",
+      company: "Lolos Seleksi Admin Kantor",
+      course: "Microsoft Office Terpadu",
+      rating: 5,
+      comment: "Sertifikat dari GWA sangat membantu pas tes praktik kerja di perusahaan swasta. Soal tes praktik Excel dan Word mirip banget sama studi kasus yang diajarkan pas kursus. Sangat aplikatif dan recommended!",
+      badge: "BERHASIL DITERIMA KERJA"
+    }
+  ];
+
+  return (
+    <section className="py-20 lg:py-28 bg-[#FFFDF5] bg-retro-dots border-b-3 border-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-black text-yellow-300 font-mono text-xs font-bold uppercase border-2 border-black shadow-[2.5px_2.5px_0px_0px_#000] mb-4">
+            <Terminal className="w-3.5 h-3.5" /> [TESTIMONIALS_LOG // VERIFIED_ALUMNI]
+          </div>
+          
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-black tracking-tight mb-4 uppercase">
+            CERITA NYATA ALUMNI <br />
+            <span className="bg-yellow-300 px-2 py-0.5 border-2 border-black inline-block mt-1 shadow-[3px_3px_0px_0px_#000]">
+              YANG MAKIN PERCAYA DIRI BEKERJA
+            </span>
+          </h2>
+          
+          <p className="text-base sm:text-lg font-medium text-slate-700 mt-4 leading-relaxed">
+            Ratusan siswa dari berbagai latar belakang telah merasakan peningkatan efisiensi kerja setelah belajar di GWA Tech Course.
+          </p>
+        </div>
+
+        {/* Testimonial Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {reviews.map((rev) => (
+            <div 
+              key={rev.id}
+              className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] hover:shadow-[9px_9px_0px_0px_#000] hover:-translate-x-1 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden"
+            >
+              {/* Window Header */}
+              <div className="flex items-center justify-between px-3.5 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
+                <span className="text-amber-300">{rev.id} // FEEDBACK.LOG</span>
+                <span className="text-emerald-400 text-[10px]">★ VERIFIED</span>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
+                <div>
+                  {/* Rating Stars */}
+                  <div className="flex items-center gap-1 text-amber-500 mb-4">
+                    {[...Array(rev.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-amber-400 text-black stroke-[1.5]" />
+                    ))}
+                    <span className="font-mono text-xs font-bold text-black ml-1.5">5.0 / 5.0</span>
+                  </div>
+
+                  {/* Comment */}
+                  <p className="text-sm font-medium text-slate-800 leading-relaxed italic mb-6">
+                    &ldquo;{rev.comment}&rdquo;
+                  </p>
+                </div>
+
+                {/* Author Info */}
+                <div className="pt-4 border-t-2 border-black/15">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <h4 className="font-heading font-black text-base text-black">
+                      {rev.name}
+                    </h4>
+                    <span className="font-mono text-[10px] font-black uppercase bg-emerald-100 text-emerald-900 border border-black px-1.5 py-0.5">
+                      {rev.badge}
+                    </span>
+                  </div>
+                  <p className="font-mono text-[11px] font-bold text-slate-600">
+                    {rev.role} — {rev.company}
+                  </p>
+                  <p className="font-mono text-[10px] text-orange-600 font-bold mt-1">
+                    Modul: {rev.course}
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Bottom Strip */}
+              <div className="h-1.5 bg-yellow-400 border-t-2 border-black"></div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  );
+}

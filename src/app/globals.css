@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Brand Colors */
+  --color-neo-black: #0F172A;
+  --color-neo-white: #FFFFFF;
+  --color-neo-bg: #FFFDF5;
+  
+  --color-primary: #1E3A8A;
+  --color-secondary: #FF6B00;
+
+  --color-neo-orange: #FF6B00;
+  --color-neo-amber: #FACC15;
+  --color-neo-cyan: #06B6D4;
+  --color-neo-emerald: #10B981;
+  --color-neo-purple: #8B5CF6;
+  --color-neo-rose: #F43F5E;
+
+  /* Typography */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-heading: var(--font-poppins), system-ui, sans-serif;
+  --font-mono: var(--font-mono), 'JetBrains Mono', 'Space Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  overflow-x: clip;
+  background-color: #FFFDF5;
+  color: #0F172A;
+}
+
+html {
+  overflow-x: clip;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Custom Neobrutalism Utilities */
+@layer utilities {
+  .neo-border {
+    border: 2px solid #000000;
+  }
+  
+  .neo-border-thick {
+    border: 3px solid #000000;
+  }
+
+  .neo-shadow-xs {
+    box-shadow: 1.5px 1.5px 0px 0px #000000;
+  }
+
+  .neo-shadow-sm {
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+  
+  .neo-shadow {
+    box-shadow: 4px 4px 0px 0px #000000;
+  }
+
+  .neo-shadow-lg {
+    box-shadow: 6px 6px 0px 0px #000000;
+  }
+
+  .neo-shadow-xl {
+    box-shadow: 8px 8px 0px 0px #000000;
+  }
+
+  .neo-box {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    box-shadow: 4px 4px 0px 0px #000000;
+  }
+  
+  .neo-box-sm {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+
+  .neo-box-lg {
+    background-color: #ffffff;
+    border: 3px solid #000000;
+    box-shadow: 6px 6px 0px 0px #000000;
+  }
+
+  .neo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid #000000;
+    box-shadow: 3px 3px 0px 0px #000000;
+    transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .neo-btn:hover {
+    transform: translate(-1.5px, -1.5px);
+    box-shadow: 5px 5px 0px 0px #000000;
+  }
+
+  .neo-btn:active {
+    transform: translate(1.5px, 1.5px);
+    box-shadow: 0px 0px 0px 0px #000000;
+  }
+
+  .neo-btn-interactive {
+    transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
+    user-select: none;
+  }
+  .neo-btn-interactive:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px 0px #000000;
+  }
+  .neo-btn-interactive:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px 0px #000000;
+  }
+}
+
+/* Retro Grid Background Pattern */
+.bg-retro-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+
+.bg-retro-dots {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* SweetAlert2 Modal Z-Index Overlap Fix */
+.swal2-container {
+  z-index: 100000 !important;
+}
+
+
