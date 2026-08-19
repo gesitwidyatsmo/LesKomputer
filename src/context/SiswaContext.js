@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { loginSiswa, getKehadiranSiswa } from "@/lib/siswaService";
 import { getAksesSiswa } from "@/lib/materiService";
 import { getQuizHasilSiswa } from "@/lib/quizService";
+import { getGamificationState, addXp, unlockBadge } from "@/lib/gamificationService";
 
 // ── Context ─────────────────────────────────────────────────────────────────
 const SiswaContext = createContext(null);
@@ -13,6 +14,12 @@ export function SiswaProvider({ children }) {
   const router = useRouter();
   const [currentSiswa, setCurrentSiswa] = useState(null);
   const [aksesMateri, setAksesMateri] = useState({}); // map of materi_id -> status
+  const [gamification, setGamification] = useState({
+    xp: 0,
+    badges: [],
+    history: [],
+    levelInfo: null,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   // Restore session dari sessionStorage saat mount
@@ -22,8 +29,9 @@ export function SiswaProvider({ children }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         setCurrentSiswa(parsed);
-        // Refresh akses materi saat reload
+        // Refresh akses materi & gamifikasi saat reload
         refreshAkses(parsed.id);
+        refreshGamification(parsed.id);
       }
     } catch {
       // ignore
@@ -31,6 +39,30 @@ export function SiswaProvider({ children }) {
       setIsLoading(false);
     }
   }, []);
+
+  const refreshGamification = (siswaId) => {
+    const state = getGamificationState(siswaId);
+    setGamification(state);
+    return state;
+  };
+
+  const awardXp = (amount, reason) => {
+    const siswaId = currentSiswa?.id || "guest";
+    const updated = addXp(siswaId, amount, reason);
+    if (updated) {
+      setGamification(updated);
+    }
+    return updated;
+  };
+
+  const triggerUnlockBadge = (badgeId) => {
+    const siswaId = currentSiswa?.id || "guest";
+    const updated = unlockBadge(siswaId, badgeId);
+    if (updated) {
+      setGamification(updated);
+    }
+    return updated;
+  };
 
   const refreshAkses = async (siswaId, existingSiswaData = null) => {
     // 1. Fetch Akses
@@ -63,6 +95,9 @@ export function SiswaProvider({ children }) {
         sessionStorage.setItem("gwa_siswa_session", JSON.stringify(updated));
         return updated;
     });
+
+    // Also refresh gamification
+    refreshGamification(siswaId);
   };
 
   const login = async (idSiswa, password) => {
@@ -72,6 +107,7 @@ export function SiswaProvider({ children }) {
       setCurrentSiswa(data);
       sessionStorage.setItem("gwa_siswa_session", JSON.stringify(data));
       await refreshAkses(data.id, data);
+      refreshGamification(data.id);
       return { success: true };
     }
     
@@ -86,7 +122,20 @@ export function SiswaProvider({ children }) {
   };
 
   return (
-    <SiswaContext.Provider value={{ currentSiswa, aksesMateri, refreshAkses, login, logout, isLoading }}>
+    <SiswaContext.Provider
+      value={{
+        currentSiswa,
+        aksesMateri,
+        gamification,
+        awardXp,
+        triggerUnlockBadge,
+        refreshGamification,
+        refreshAkses,
+        login,
+        logout,
+        isLoading,
+      }}
+    >
       {children}
     </SiswaContext.Provider>
   );

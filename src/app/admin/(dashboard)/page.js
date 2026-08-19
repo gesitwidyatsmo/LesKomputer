@@ -35,7 +35,6 @@ export default function DashboardOverview() {
 
   const stats = [
     { 
-      metric: "SYS_METRIC // 01", 
       name: "Siswa Aktif", 
       value: dashboardStats.totalSiswaAktif, 
       sub: "Peserta Kursus", 
@@ -44,7 +43,6 @@ export default function DashboardOverview() {
       accentColor: "bg-cyan-500" 
     },
     { 
-      metric: "SYS_METRIC // 02", 
       name: "Kelas Berjalan", 
       value: dashboardStats.totalKelasAktif, 
       sub: "Slot Lab Aktif", 
@@ -53,7 +51,6 @@ export default function DashboardOverview() {
       accentColor: "bg-orange-500" 
     },
     { 
-      metric: "SYS_METRIC // 03", 
       name: "Siswa Lulus", 
       value: dashboardStats.totalSiswaLulus, 
       sub: "Telah Bersertifikat", 
@@ -62,7 +59,6 @@ export default function DashboardOverview() {
       accentColor: "bg-emerald-500" 
     },
     { 
-      metric: "SYS_METRIC // 04", 
       name: "Tingkat Kehadiran", 
       value: "94.8%", 
       sub: "Bulan Berjalan", 
@@ -120,9 +116,6 @@ export default function DashboardOverview() {
             
             <div className="flex items-start justify-between mt-1">
               <div>
-                <span className="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                  {stat.metric}
-                </span>
                 <p className="text-xs font-bold text-slate-700 uppercase mt-0.5">{stat.name}</p>
                 <h4 className="text-3xl font-heading font-black text-black mt-1">
                   {stat.value}

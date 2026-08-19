@@ -17,13 +17,14 @@ import {
   EyeOff,
   Sparkles,
 } from "lucide-react";
+import { BADGES } from "@/lib/gamificationService";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { QRCodeCanvas } from "qrcode.react";
 import Swal from "sweetalert2";
 
 export default function NilaiPage() {
-  const { currentSiswa } = useSiswa();
+  const { currentSiswa, gamification } = useSiswa();
   const [showSertifikat, setShowSertifikat] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const certRef = useRef(null);
@@ -554,6 +555,67 @@ export default function NilaiPage() {
               })}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Galeri Lencana & Prestasi (Badges Showcase) ─────── */}
+      <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-black text-white font-heading text-xs font-bold border-b-2 border-black select-none">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-300">🏅</span>
+            <span className="text-amber-300 uppercase tracking-wide">Galeri Lencana &amp; Pencapaian Siswa</span>
+          </div>
+          <span className="text-[11px] font-mono text-emerald-400 font-bold">
+            {gamification?.badges?.length || 0} dari {BADGES.length} Terbuka
+          </span>
+        </div>
+
+        <div className="p-5 sm:p-6 bg-[#FFFDF5] space-y-5">
+          <div>
+            <h3 className="font-heading font-black text-base text-black">
+              Koleksi Lencana Belajarmu
+            </h3>
+            <p className="text-xs text-slate-600 font-medium mt-0.5">
+              Setiap aktivitas belajar, menyelesaikan misi praktik, dan kuis akan membuka lencana khusus serta memberikan bonus XP!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {BADGES.map((badge) => {
+              const isUnlocked = gamification?.badges?.includes(badge.id);
+              return (
+                <div
+                  key={badge.id}
+                  className={`p-4 border-2 border-black rounded-xl flex items-start gap-3.5 transition-all ${
+                    isUnlocked
+                      ? `${badge.color} shadow-[3px_3px_0px_0px_#000]`
+                      : "bg-slate-100/70 border-dashed opacity-50"
+                  }`}
+                >
+                  <div className="text-3xl shrink-0 p-2 bg-white/80 border-2 border-black rounded-xl shadow-[1.5px_1.5px_0px_0px_#000]">
+                    {badge.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-heading font-black text-sm text-black">
+                        {badge.title}
+                      </h4>
+                      <span
+                        className={`text-[9px] font-bold px-1.5 py-0.2 rounded border border-black font-heading ${
+                          isUnlocked ? "bg-black text-emerald-300" : "bg-slate-200 text-slate-600"
+                        }`}
+                      >
+                        {isUnlocked ? "DIRAIH ✓" : "TERKUNCI 🔒"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700 font-medium mt-1 leading-snug">
+                      {badge.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

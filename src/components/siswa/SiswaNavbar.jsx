@@ -21,6 +21,10 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronDown,
+  Sparkles,
+  Zap,
+  Award,
+  Star,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
@@ -33,7 +37,7 @@ const navItems = [
 ];
 
 export default function SiswaNavbar() {
-  const { currentSiswa, logout } = useSiswa();
+  const { currentSiswa, logout, gamification } = useSiswa();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -177,8 +181,23 @@ export default function SiswaNavbar() {
               })}
             </nav>
 
-            {/* Right: Avatar Dropdown for Tablet & Desktop, Hamburger for Mobile */}
-            <div className="flex items-center gap-2">
+            {/* Right: Gamification Pill + Avatar Dropdown for Tablet & Desktop, Hamburger for Mobile */}
+            <div className="flex items-center gap-2.5">
+              {/* Gamification Level & XP Pill */}
+              {currentSiswa && gamification?.levelInfo && (
+                <Link
+                  href="/siswa"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-300 hover:bg-yellow-200 border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] text-black font-heading font-black text-xs transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer"
+                  title={`Level ${gamification.levelInfo.level}: ${gamification.levelInfo.title} (${gamification.xp} XP)`}
+                >
+                  <span className="text-sm">{gamification.levelInfo.icon}</span>
+                  <span>Lv.{gamification.levelInfo.level}</span>
+                  <span className="bg-black text-amber-300 text-[10px] px-1.5 py-0.2 rounded font-mono">
+                    {gamification.xp} XP
+                  </span>
+                </Link>
+              )}
+
               {currentSiswa && (
                 <div className="relative hidden sm:block" ref={avatarMenuRef}>
                   {/* Avatar Button Trigger */}
@@ -214,7 +233,7 @@ export default function SiswaNavbar() {
 
                   {/* Dropdown Menu Popover */}
                   {avatarMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute right-0 mt-2 w-72 bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
                       {/* Header Info Akun */}
                       <div className="p-4 bg-[#FFFDF5] border-b-2 border-black">
                         <div className="flex items-center gap-3">
@@ -231,8 +250,33 @@ export default function SiswaNavbar() {
                           </div>
                         </div>
 
+                        {/* Gamification Level Progress Box in Avatar Popover */}
+                        {gamification?.levelInfo && (
+                          <div className="mt-3 p-2.5 bg-amber-100/70 border-2 border-black rounded-lg space-y-1.5">
+                            <div className="flex items-center justify-between text-xs font-heading font-bold">
+                              <span className="flex items-center gap-1 text-black">
+                                <span>{gamification.levelInfo.icon}</span>
+                                <span>Level {gamification.levelInfo.level}: {gamification.levelInfo.title}</span>
+                              </span>
+                              <span className="font-mono text-[11px] bg-white px-1.5 border border-black rounded font-black">
+                                {gamification.xp} XP
+                              </span>
+                            </div>
+                            <div className="w-full h-2.5 bg-white border border-black rounded-full overflow-hidden p-0.5">
+                              <div
+                                className="h-full bg-orange-500 rounded-full transition-all"
+                                style={{ width: `${Math.max(8, gamification.levelInfo.progressPct)}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-[10px] font-medium text-slate-600">
+                              <span>Progres Level</span>
+                              <span>{gamification.levelInfo.xpToNext > 0 ? `${gamification.levelInfo.xpToNext} XP ke Lv.${gamification.levelInfo.level + 1}` : 'Level Maksimal 🏆'}</span>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Extra Detail: Modul & Kelas */}
-                        <div className="mt-3 pt-2.5 border-t border-slate-200 text-xs space-y-1">
+                        <div className="mt-3 pt-2 border-t border-slate-200 text-xs space-y-1">
                           <div className="flex items-center justify-between text-slate-600 font-medium">
                             <span>Modul:</span>
                             <strong className="text-black font-bold truncate max-w-[140px]">
@@ -428,7 +472,7 @@ export default function SiswaNavbar() {
             {/* User Profile in Drawer */}
             <div className="p-4 bg-amber-100 border-b-2 border-black">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-cyan-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center font-heading font-black text-sm text-black rounded-lg">
+                <div className="w-10 h-10 bg-cyan-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center font-heading font-black text-sm text-black rounded-lg shrink-0">
                   {initials}
                 </div>
                 <div className="min-w-0">
@@ -440,6 +484,18 @@ export default function SiswaNavbar() {
                   </p>
                 </div>
               </div>
+
+              {gamification?.levelInfo && (
+                <div className="mt-3 p-2 bg-white border border-black rounded-lg flex items-center justify-between text-xs font-bold">
+                  <span className="flex items-center gap-1 text-black font-heading">
+                    <span>{gamification.levelInfo.icon}</span>
+                    <span>Lv.{gamification.levelInfo.level} {gamification.levelInfo.title}</span>
+                  </span>
+                  <span className="bg-amber-300 text-black px-1.5 py-0.5 border border-black rounded font-mono text-[11px] font-black">
+                    {gamification.xp} XP
+                  </span>
+                </div>
+              )}
 
               <button
                 onClick={() => {

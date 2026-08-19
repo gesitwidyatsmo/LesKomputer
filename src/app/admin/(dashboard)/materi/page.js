@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
-import { getMateriByModul, upsertMateri, uploadPDF, deleteMateri, upsertLampiran, deleteLampiran } from '@/lib/materiService';
+import { getMateriByModul, upsertMateri, uploadPDF, uploadBahanLatihan, deleteMateri, upsertLampiran, deleteLampiran } from '@/lib/materiService';
 import { getQuizByMateri, upsertQuiz, saveSoalPilihan, deleteQuiz, uploadQuizImage } from '@/lib/quizService';
 import { getSemuaModul, upsertModul, deleteModul, updateUrutanModul } from '@/lib/modulService';
 import { Plus, Edit2, Trash2, BookOpen, FileText, Brain, Upload, Loader2, X, Layers, ChevronRight, Save, GripVertical, AlertCircle, Package, Image as ImageIcon } from 'lucide-react';
@@ -209,6 +209,10 @@ export default function ManajemenMateri() {
 		topik: [],
 		tips: '',
 		durasi: '2 jam',
+		video_url: '',
+		misi_praktik: [],
+		bahan_latihan: [],
+		kartu_pintar: [],
 	});
 	const [uploadFile, setUploadFile] = useState(null);
 	const [lampiranAwal, setLampiranAwal] = useState([]);
@@ -220,6 +224,7 @@ export default function ManajemenMateri() {
 		soal: [],
 	});
 	const [uploadingImageState, setUploadingImageState] = useState({});
+	const [isUploadingBahan, setIsUploadingBahan] = useState(false);
 
 	// ── Preview accordion state ──
 	const [expandedId, setExpandedId] = useState(null);
@@ -324,6 +329,10 @@ export default function ManajemenMateri() {
 			topik: [],
 			tips: '',
 			durasi: '2 jam',
+			video_url: '',
+			misi_praktik: [],
+			bahan_latihan: [],
+			kartu_pintar: [],
 		});
 		setLampiranAwal([]);
 		setQuizData({ id: null, judul: `Quiz Pertemuan ${materiList.length + 1}`, durasi_menit: 0, passing_score: 75, soal: [] });
@@ -342,6 +351,10 @@ export default function ManajemenMateri() {
 			topik: Array.isArray(materi.topik) ? materi.topik : JSON.parse(materi.topik || '[]'),
 			tips: materi.tips || '',
 			durasi: materi.durasi || '2 jam',
+			video_url: materi.video_url || '',
+			misi_praktik: Array.isArray(materi.misi_praktik) ? materi.misi_praktik : JSON.parse(materi.misi_praktik || '[]'),
+			bahan_latihan: Array.isArray(materi.bahan_latihan) ? materi.bahan_latihan : JSON.parse(materi.bahan_latihan || '[]'),
+			kartu_pintar: Array.isArray(materi.kartu_pintar) ? materi.kartu_pintar : JSON.parse(materi.kartu_pintar || '[]'),
 		});
 		setLampiranAwal(materi.lampiran || []);
 		if (materi.tipe_konten !== 'materi_saja') {
@@ -364,6 +377,10 @@ export default function ManajemenMateri() {
 				tips: editData.tips,
 				tipe_konten: editData.tipe_konten,
 				durasi: editData.durasi,
+				video_url: editData.video_url || '',
+				misi_praktik: editData.misi_praktik || [],
+				bahan_latihan: editData.bahan_latihan || [],
+				kartu_pintar: editData.kartu_pintar || [],
 			};
 			if (editData.id) materiPayload.id = editData.id;
 
@@ -411,6 +428,44 @@ export default function ManajemenMateri() {
 			Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menyimpan materi: ' + errMsg });
 		}
 		setIsSaving(false);
+	};
+
+	const handleUploadBahanFiles = async (e) => {
+		const files = Array.from(e.target.files || []);
+		if (files.length === 0) return;
+		setIsUploadingBahan(true);
+		try {
+			const modulName = selectedModul?.nama || 'modul';
+			const uploadedItems = [];
+			for (const file of files) {
+				const res = await uploadBahanLatihan(file, modulName);
+				if (res.error) {
+					Swal.fire({
+						title: 'Gagal Upload',
+						text: `File ${file.name} gagal diunggah: ${res.error.message}`,
+						icon: 'error',
+					});
+				} else {
+					uploadedItems.push({
+						nama_file: res.nama_file,
+						url_file: res.url_file,
+						ukuran_mb: res.ukuran_mb,
+					});
+				}
+			}
+			if (uploadedItems.length > 0) {
+				setEditData((prev) => ({
+					...prev,
+					bahan_latihan: [...(prev.bahan_latihan || []), ...uploadedItems],
+				}));
+			}
+		} catch (err) {
+			console.error(err);
+			Swal.fire('Error', 'Terjadi kesalahan saat mengunggah berkas.', 'error');
+		} finally {
+			setIsUploadingBahan(false);
+			e.target.value = '';
+		}
 	};
 
 	const handleDelete = async (id) => {
@@ -692,6 +747,33 @@ export default function ManajemenMateri() {
 													return [];
 												}
 											})();
+									const misiArr = Array.isArray(materi.misi_praktik)
+										? materi.misi_praktik
+										: (() => {
+												try {
+													return JSON.parse(materi.misi_praktik || '[]');
+												} catch {
+													return [];
+												}
+											})();
+									const bahanArr = Array.isArray(materi.bahan_latihan)
+										? materi.bahan_latihan
+										: (() => {
+												try {
+													return JSON.parse(materi.bahan_latihan || '[]');
+												} catch {
+													return [];
+												}
+											})();
+									const kartuArr = Array.isArray(materi.kartu_pintar)
+										? materi.kartu_pintar
+										: (() => {
+												try {
+													return JSON.parse(materi.kartu_pintar || '[]');
+												} catch {
+													return [];
+												}
+											})();
 
 									return (
 										<div
@@ -722,6 +804,26 @@ export default function ManajemenMateri() {
 														{materi.lampiran?.length > 0 && (
 															<span className='inline-flex items-center text-slate-800 font-bold gap-1 bg-yellow-100 px-1.5 border border-black'>
 																<FileText className='w-3 h-3' /> {materi.lampiran.length} PDF
+															</span>
+														)}
+														{materi.video_url && (
+															<span className='inline-flex items-center text-slate-800 font-bold gap-1 bg-rose-100 px-1.5 border border-black'>
+																🎬 Video
+															</span>
+														)}
+														{misiArr.length > 0 && (
+															<span className='inline-flex items-center text-slate-800 font-bold gap-1 bg-emerald-100 px-1.5 border border-black'>
+																🎯 {misiArr.length} Misi
+															</span>
+														)}
+														{bahanArr.length > 0 && (
+															<span className='inline-flex items-center text-slate-800 font-bold gap-1 bg-yellow-300 text-black px-1.5 border border-black'>
+																📁 {bahanArr.length} Bahan
+															</span>
+														)}
+														{kartuArr.length > 0 && (
+															<span className='inline-flex items-center text-slate-800 font-bold gap-1 bg-purple-200 text-black px-1.5 border border-black'>
+																🃏 {kartuArr.length} Kartu
 															</span>
 														)}
 													</div>
@@ -821,7 +923,70 @@ export default function ManajemenMateri() {
 																)}
 															</div>
 														)}
-														{!materi.deskripsi && topikArr.length === 0 && !materi.tips && !materi.lampiran?.length && materi.tipe_konten === 'materi_saja' && (
+														{materi.video_url && (
+															<div className='bg-rose-50 border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
+																<p className='font-mono text-[10px] font-bold text-rose-700 uppercase tracking-wider mb-1'>🎬 [VIDEO_TUTORIAL]</p>
+																<a
+																	href={materi.video_url}
+																	target='_blank'
+																	rel='noreferrer'
+																	className='text-xs font-mono text-blue-700 font-bold underline truncate block'>
+																	{materi.video_url}
+																</a>
+															</div>
+														)}
+														{misiArr.length > 0 && (
+															<div className='bg-emerald-50 border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
+																<p className='font-mono text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-2'>🎯 [MISI_PRAKTIK_SISWA] ({misiArr.length} Langkah)</p>
+																<ul className='space-y-1.5'>
+																	{misiArr.map((m, i) => (
+																		<li
+																			key={i}
+																			className='flex items-start gap-2 text-xs font-mono font-bold text-slate-800'>
+																			<span className='mt-0.5 w-4 h-4 bg-emerald-300 text-black border border-black flex items-center justify-center text-[10px] font-black shrink-0'>
+																				{i + 1}
+																			</span>
+																			{m}
+																		</li>
+																	))}
+																</ul>
+															</div>
+														)}
+														{bahanArr.length > 0 && (
+															<div className='bg-yellow-50 border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
+																<p className='font-mono text-[10px] font-bold text-black uppercase tracking-wider mb-2'>📁 [BAHAN_LATIHAN] ({bahanArr.length} File)</p>
+																<div className='space-y-1.5'>
+																	{bahanArr.map((b, i) => (
+																		<a
+																			key={i}
+																			href={b.url_file}
+																			target='_blank'
+																			rel='noreferrer'
+																			className='flex items-center justify-between text-xs font-mono font-bold text-black bg-white hover:bg-yellow-200 border border-black px-2.5 py-1.5 shadow-[1px_1px_0px_0px_#000] transition-colors'>
+																			<span className='truncate'>{b.nama_file || `Bahan #${i + 1}`}</span>
+																			{b.ukuran_mb && <span className='text-[10px] text-slate-600 shrink-0'>{b.ukuran_mb} MB</span>}
+																		</a>
+																	))}
+																</div>
+															</div>
+														)}
+														{kartuArr.length > 0 && (
+															<div className='bg-purple-50 border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
+																<p className='font-mono text-[10px] font-bold text-purple-900 uppercase tracking-wider mb-2'>🃏 [KARTU_PINTAR] ({kartuArr.length} Kartu)</p>
+																<div className='space-y-1.5'>
+																	{kartuArr.map((k, i) => (
+																		<div key={i} className='bg-white border border-black p-2 text-xs font-mono'>
+																			<div className='flex justify-between items-center font-bold text-black mb-1'>
+																				<span className='truncate'>{k.depan}</span>
+																				{k.shortcut && <span className='bg-black text-amber-300 px-1 text-[10px] rounded shrink-0'>{k.shortcut}</span>}
+																			</div>
+																			<p className='text-slate-600 text-[11px]'>{k.belakang}</p>
+																		</div>
+																	))}
+																</div>
+															</div>
+														)}
+														{!materi.deskripsi && topikArr.length === 0 && !materi.tips && !materi.lampiran?.length && !materi.video_url && misiArr.length === 0 && bahanArr.length === 0 && kartuArr.length === 0 && materi.tipe_konten === 'materi_saja' && (
 															<div className='md:col-span-2 text-center py-4 font-mono text-slate-400 text-xs italic'>Konten belum diisi. Klik Edit untuk mulai mengisi materi.</div>
 														)}
 													</div>
@@ -1014,6 +1179,273 @@ export default function ManajemenMateri() {
 												placeholder='Shortcut keyboard penting, tips efisiensi kerja...'
 												className='w-full border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-2 text-sm bg-white focus:bg-yellow-50 focus:outline-none font-mono text-xs'
 											/>
+										</div>
+
+										<div>
+											<label className='block font-mono text-xs font-bold uppercase text-black mb-1'>🎬 [VIDEO] Link Video Tutorial Singkat (YouTube / Loom)</label>
+											<input
+												type='text'
+												value={editData.video_url || ''}
+												onChange={(e) => setEditData({ ...editData, video_url: e.target.value })}
+												placeholder='https://www.youtube.com/watch?v=... atau https://youtu.be/...'
+												className='w-full border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-2 text-xs font-mono font-bold bg-white focus:bg-yellow-50 focus:outline-none'
+											/>
+											<p className='font-mono text-[10px] text-slate-500 mt-1'>Masukkan link video YouTube atau Loom untuk demonstrasi praktik materi ini.</p>
+										</div>
+
+										<div>
+											<div className='flex justify-between items-center mb-1'>
+												<label className='font-mono text-xs font-bold uppercase text-black'>🎯 [QUEST] Misi Praktik Hari Ini (Checklist Interaktif)</label>
+												<button
+													type='button'
+													onClick={() => setEditData({ ...editData, misi_praktik: [...(editData.misi_praktik || []), ''] })}
+													className='px-2 py-0.5 bg-emerald-400 hover:bg-emerald-300 text-black font-mono text-[10px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] cursor-pointer'>
+													+ Tambah Misi
+												</button>
+											</div>
+											{(editData.misi_praktik || []).map((m, i) => (
+												<div
+													key={i}
+													className='flex gap-2 mb-2'>
+													<input
+														type='text'
+														value={m}
+														onChange={(e) => {
+															const nm = [...(editData.misi_praktik || [])];
+															nm[i] = e.target.value;
+															setEditData({ ...editData, misi_praktik: nm });
+														}}
+														placeholder={`Langkah misi #${i + 1} (cth: Buka MS Word dan buat tabel 3x3)`}
+														className='flex-1 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] px-3 py-1.5 text-xs font-mono font-bold bg-white focus:bg-emerald-50 focus:outline-none'
+													/>
+													<button
+														type='button'
+														onClick={() => setEditData({ ...editData, misi_praktik: editData.misi_praktik.filter((_, idx) => idx !== i) })}
+														className='p-1.5 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] transition-colors cursor-pointer'>
+														<X className='w-3.5 h-3.5' />
+													</button>
+												</div>
+											))}
+											<p className='font-mono text-[10px] text-slate-500 mt-1'>Checklist langkah tantangan praktik yang akan dicentang siswa di aplikasi komputernya.</p>
+										</div>
+
+										{/* ── Bahan Latihan Siap Pakai (Direct Upload & External Links) ── */}
+										<div className='p-3.5 bg-yellow-50 border-2 border-black rounded shadow-[2px_2px_0px_0px_#000] space-y-3'>
+											<div className='flex flex-wrap justify-between items-center gap-2'>
+												<div>
+													<label className='font-mono text-xs font-bold uppercase text-black block'>📁 [STARTER_FILES] Bahan Latihan Siap Pakai</label>
+													<p className='font-mono text-[10px] text-slate-600'>Unggah file mentahan (.xlsx, .docx, .pptx, .zip, gambar) untuk dikerjakan siswa.</p>
+												</div>
+
+												<div className='flex items-center gap-2'>
+													{/* Direct File Upload Input */}
+													<label className={`inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-400 hover:bg-yellow-300 text-black font-mono text-[11px] font-bold uppercase border border-black shadow-[1.5px_1.5px_0px_0px_#000] cursor-pointer active:translate-x-0.5 active:translate-y-0.5 transition-all ${isUploadingBahan ? 'opacity-50 pointer-events-none' : ''}`}>
+														{isUploadingBahan ? <Loader2 className='w-3.5 h-3.5 animate-spin' /> : <Upload className='w-3.5 h-3.5' />}
+														<span>{isUploadingBahan ? 'Mengunggah...' : '📎 Unggah Berkas'}</span>
+														<input
+															type='file'
+															multiple
+															accept='.xlsx,.xls,.docx,.doc,.pptx,.ppt,.zip,.rar,.pdf,.png,.jpg,.jpeg,.csv'
+															onChange={handleUploadBahanFiles}
+															disabled={isUploadingBahan}
+															className='hidden'
+														/>
+													</label>
+
+													{/* Manual Link Button */}
+													<button
+														type='button'
+														onClick={() =>
+															setEditData({
+																...editData,
+																bahan_latihan: [...(editData.bahan_latihan || []), { nama_file: '', url_file: '', ukuran_mb: '' }],
+															})
+														}
+														className='px-2 py-1 bg-white hover:bg-yellow-100 text-black font-mono text-[10px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] cursor-pointer'>
+														+ Link Manual
+													</button>
+												</div>
+											</div>
+
+											{/* File List */}
+											{(editData.bahan_latihan || []).length === 0 ? (
+												<div className='p-3 bg-white border border-dashed border-black/40 text-center font-mono text-xs text-slate-500'>
+													Belum ada bahan latihan. Klik <strong>📎 Unggah Berkas</strong> untuk memilih file langsung dari komputermu (nama, ukuran &amp; link akan terisi otomatis).
+												</div>
+											) : (
+												<div className='space-y-2'>
+													{(editData.bahan_latihan || []).map((file, i) => (
+														<div
+															key={i}
+															className='p-2.5 bg-white border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] space-y-1.5'>
+															<div className='flex gap-2 items-center'>
+																<div className='p-1 bg-yellow-300 border border-black text-black font-mono text-[10px] font-bold shrink-0'>
+																	#{i + 1}
+																</div>
+																<input
+																	type='text'
+																	value={file.nama_file || ''}
+																	onChange={(e) => {
+																		const nb = [...(editData.bahan_latihan || [])];
+																		nb[i].nama_file = e.target.value;
+																		setEditData({ ...editData, bahan_latihan: nb });
+																	}}
+																	placeholder='Nama file (cth: Latihan_Excel_P3.xlsx)'
+																	className='flex-1 border border-black px-2 py-1 text-xs font-mono font-bold bg-yellow-50/50 focus:bg-yellow-100 focus:outline-none'
+																/>
+																<div className='flex items-center gap-1 shrink-0'>
+																	<input
+																		type='text'
+																		value={file.ukuran_mb || ''}
+																		onChange={(e) => {
+																			const nb = [...(editData.bahan_latihan || [])];
+																			nb[i].ukuran_mb = e.target.value;
+																			setEditData({ ...editData, bahan_latihan: nb });
+																		}}
+																		placeholder='Ukuran'
+																		className='w-16 border border-black px-1.5 py-1 text-xs font-mono font-bold bg-white text-center focus:outline-none'
+																	/>
+																	<span className='font-mono text-[10px] font-bold text-slate-600'>MB</span>
+																</div>
+																<button
+																	type='button'
+																	onClick={() =>
+																		setEditData({
+																			...editData,
+																			bahan_latihan: editData.bahan_latihan.filter((_, idx) => idx !== i),
+																		})
+																	}
+																	className='p-1.5 bg-rose-400 hover:bg-rose-300 text-black border border-black shadow-[1px_1px_0px_0px_#000] transition-colors cursor-pointer'
+																	title='Hapus bahan ini'>
+																	<X className='w-3.5 h-3.5' />
+																</button>
+															</div>
+															<div className='flex gap-2 items-center'>
+																<input
+																	type='text'
+																	value={file.url_file || ''}
+																	onChange={(e) => {
+																		const nb = [...(editData.bahan_latihan || [])];
+																		nb[i].url_file = e.target.value;
+																		setEditData({ ...editData, bahan_latihan: nb });
+																	}}
+																	placeholder='URL unduhan publik file'
+																	className='flex-1 border border-black px-2 py-0.5 text-[11px] font-mono bg-slate-50 focus:bg-white focus:outline-none'
+																/>
+																{file.url_file && (
+																	<a
+																		href={file.url_file}
+																		target='_blank'
+																		rel='noreferrer'
+																		className='px-2 py-0.5 bg-cyan-200 hover:bg-cyan-300 border border-black font-mono text-[10px] font-bold text-black shrink-0'>
+																		Tes Unduh ↗
+																	</a>
+																)}
+															</div>
+														</div>
+													))}
+												</div>
+											)}
+										</div>
+
+										{/* ── Kartu Pintar Shortcut & Istilah ── */}
+										<div>
+											<div className='flex justify-between items-center mb-1'>
+												<label className='font-mono text-xs font-bold uppercase text-black'>🃏 [FLASHCARDS] Kartu Pintar Shortcut &amp; Istilah</label>
+												<button
+													type='button'
+													onClick={() =>
+														setEditData({
+															...editData,
+															kartu_pintar: [
+																...(editData.kartu_pintar || []),
+																{ depan: '', belakang: '', shortcut: '', tips: '' },
+															],
+														})
+													}
+													className='px-2 py-0.5 bg-purple-400 hover:bg-purple-300 text-black font-mono text-[10px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] cursor-pointer'>
+													+ Tambah Kartu
+												</button>
+											</div>
+											{(editData.kartu_pintar || []).map((k, i) => (
+												<div
+													key={i}
+													className='p-3 bg-purple-50 border-2 border-black mb-2 space-y-2'>
+													<div className='flex justify-between items-center'>
+														<span className='font-mono text-[10px] font-bold uppercase text-purple-900'>Kartu #{i + 1}</span>
+														<button
+															type='button'
+															onClick={() =>
+																setEditData({
+																	...editData,
+																	kartu_pintar: editData.kartu_pintar.filter((_, idx) => idx !== i),
+																})
+															}
+															className='p-1 bg-rose-400 hover:bg-rose-300 text-black border border-black shadow-[1px_1px_0px_0px_#000] transition-colors cursor-pointer'>
+															<X className='w-3 h-3' />
+														</button>
+													</div>
+													<div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+														<div>
+															<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Sisi Depan (Pertanyaan / Istilah)</label>
+															<input
+																type='text'
+																value={k.depan || ''}
+																onChange={(e) => {
+																	const nk = [...(editData.kartu_pintar || [])];
+																	nk[i].depan = e.target.value;
+																	setEditData({ ...editData, kartu_pintar: nk });
+																}}
+																placeholder='cth: Cara membatalkan perintah terakhir (Undo)?'
+																className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+															/>
+														</div>
+														<div>
+															<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Shortcut Keyboard (jika ada)</label>
+															<input
+																type='text'
+																value={k.shortcut || ''}
+																onChange={(e) => {
+																	const nk = [...(editData.kartu_pintar || [])];
+																	nk[i].shortcut = e.target.value;
+																	setEditData({ ...editData, kartu_pintar: nk });
+																}}
+																placeholder='cth: Ctrl + Z atau Alt + F4'
+																className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+															/>
+														</div>
+													</div>
+													<div>
+														<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Sisi Belakang (Kunci / Penjelasan)</label>
+														<input
+															type='text'
+															value={k.belakang || ''}
+															onChange={(e) => {
+																const nk = [...(editData.kartu_pintar || [])];
+																nk[i].belakang = e.target.value;
+																setEditData({ ...editData, kartu_pintar: nk });
+															}}
+															placeholder='cth: Mengembalikan isi dokumen ke kondisi sebelum diedit'
+															className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+														/>
+													</div>
+													<div>
+														<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Tips Tambahan (Opsional)</label>
+														<input
+															type='text'
+															value={k.tips || ''}
+															onChange={(e) => {
+																const nk = [...(editData.kartu_pintar || [])];
+																nk[i].tips = e.target.value;
+																setEditData({ ...editData, kartu_pintar: nk });
+															}}
+															placeholder='cth: Tekan berulang kali untuk membatalkan beberapa langkah'
+															className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+														/>
+													</div>
+												</div>
+											))}
+											<p className='font-mono text-[10px] text-slate-500 mt-1'>Kartu 3D interaktif yang bisa dibolak-balik siswa untuk melatih daya ingat tombol shortcut.</p>
 										</div>
 									</div>
 								)}

@@ -120,6 +120,30 @@ export async function uploadPDF(file, modul, fileName) {
   };
 }
 
+export async function uploadBahanLatihan(file, modulName = "bahan") {
+  const cleanName = (file.name || "bahan_latihan").replace(/[^a-zA-Z0-9._-]/g, "_");
+  const filePath = `bahan-latihan/${modulName}/${Date.now()}_${cleanName}`;
+
+  const { data, error } = await supabase.storage
+    .from('materi-pdf')
+    .upload(filePath, file, { upsert: true });
+
+  if (error) return { error };
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('materi-pdf')
+    .getPublicUrl(filePath);
+
+  const ukuranMB = (file.size / (1024 * 1024)).toFixed(1);
+
+  return {
+    nama_file: file.name,
+    url_file: publicUrl,
+    ukuran_mb: ukuranMB === "0.0" ? "0.1" : ukuranMB,
+    path: data.path,
+  };
+}
+
 export async function deletePDF(path) {
   const { error } = await supabase.storage
     .from('materi-pdf')
