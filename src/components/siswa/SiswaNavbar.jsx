@@ -25,6 +25,7 @@ import {
   Zap,
   Award,
   Star,
+  Mouse,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
@@ -33,6 +34,7 @@ const navItems = [
   { name: "Materi Belajar", href: "/siswa/materi", icon: BookOpen },
   { name: "Jadwal Kelas", href: "/siswa/jadwal", icon: Calendar },
   { name: "Kuis Seru", href: "/siswa/quiz", icon: Brain },
+  { name: "Latihan Mouse", href: "/siswa/latihan-mouse", icon: Mouse },
   { name: "Nilai & Sertifikat", href: "/siswa/nilai", icon: BarChart2 },
 ];
 

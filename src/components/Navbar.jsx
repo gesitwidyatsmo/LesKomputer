@@ -70,6 +70,12 @@ export default function Navbar({ globalWhatsapp, brandName }) {
             >
               FAQ
             </Link>
+            <Link 
+              href="/latihan-mouse" 
+              className="px-3 py-1.5 font-mono text-xs font-bold text-slate-900 uppercase bg-amber-200 hover:bg-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] transition-all"
+            >
+              🖱️ Latihan Mouse
+            </Link>
           </nav>
 
           {/* Right Action CTA */}
@@ -134,6 +140,13 @@ export default function Navbar({ globalWhatsapp, brandName }) {
               onClick={() => setIsOpen(false)}
             >
               FAQ
+            </Link>
+            <Link 
+              href="/latihan-mouse" 
+              className="block px-3 py-2.5 bg-amber-200 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-bold text-black uppercase hover:bg-amber-300"
+              onClick={() => setIsOpen(false)}
+            >
+              🖱️ Latihan Mouse
             </Link>
 
             <div className="pt-2 space-y-2">

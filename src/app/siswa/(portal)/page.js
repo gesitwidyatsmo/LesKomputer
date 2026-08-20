@@ -17,6 +17,7 @@ import {
   Sparkles,
   Smile,
   Zap,
+  Mouse,
 } from "lucide-react";
 
 export default function SiswaDashboard() {
@@ -67,6 +68,15 @@ export default function SiswaDashboard() {
       bg: "bg-purple-300 hover:bg-purple-200",
       badge: "Kuis Pilihan",
       badgeBg: "bg-purple-100",
+    },
+    {
+      href: "/siswa/latihan-mouse",
+      label: "Latihan Mouse",
+      icon: Mouse,
+      desc: "Latih ketangkasan kursor & kelincahan jari tangan",
+      bg: "bg-rose-300 hover:bg-rose-200",
+      badge: "Mini Game",
+      badgeBg: "bg-rose-100",
     },
     {
       href: "/siswa/jadwal",
