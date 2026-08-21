@@ -26,22 +26,49 @@ import {
   Award,
   Star,
   Mouse,
+  Keyboard,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
-const navItems = [
+const mainNavItems = [
   { name: "Beranda", href: "/siswa", icon: LayoutDashboard },
   { name: "Materi Belajar", href: "/siswa/materi", icon: BookOpen },
   { name: "Jadwal Kelas", href: "/siswa/jadwal", icon: Calendar },
-  { name: "Kuis Seru", href: "/siswa/quiz", icon: Brain },
-  { name: "Latihan Mouse", href: "/siswa/latihan-mouse", icon: Mouse },
-  { name: "Nilai & Sertifikat", href: "/siswa/nilai", icon: BarChart2 },
+];
+
+const latihanDropdownItems = [
+  {
+    name: "Kuis Seru",
+    href: "/siswa/quiz",
+    icon: Brain,
+    desc: "Uji pemahaman materi kursus",
+    color: "bg-purple-300",
+  },
+  {
+    name: "Latihan Mouse",
+    href: "/siswa/latihan-mouse",
+    icon: Mouse,
+    desc: "Latihan klik, drag & koordinasi",
+    color: "bg-amber-300",
+  },
+  {
+    name: "Latihan Mengetik",
+    href: "/siswa/latihan-mengetik",
+    icon: Keyboard,
+    desc: "Latihan 10 jari & akurasi WPM",
+    color: "bg-cyan-300",
+  },
 ];
 
 export default function SiswaNavbar() {
   const { currentSiswa, logout, gamification } = useSiswa();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isLatihanActive =
+    pathname.startsWith("/siswa/quiz") ||
+    pathname.startsWith("/siswa/latihan-mouse") ||
+    pathname.startsWith("/siswa/latihan-mengetik");
 
   // State untuk modal ganti kata sandi
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -52,11 +79,14 @@ export default function SiswaNavbar() {
   const [passError, setPassError] = useState("");
   const [isUpdatingPass, setIsUpdatingPass] = useState(false);
 
-  // State untuk dropdown avatar akun
+  // State untuk dropdown avatar akun & dropdown kuis/latihan
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef(null);
 
-  // Click outside listener untuk menutup dropdown avatar
+  const [latihanMenuOpen, setLatihanMenuOpen] = useState(false);
+  const latihanMenuRef = useRef(null);
+
+  // Click outside listener untuk menutup dropdown
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -65,14 +95,20 @@ export default function SiswaNavbar() {
       ) {
         setAvatarMenuOpen(false);
       }
+      if (
+        latihanMenuRef.current &&
+        !latihanMenuRef.current.contains(event.target)
+      ) {
+        setLatihanMenuOpen(false);
+      }
     }
-    if (avatarMenuOpen) {
+    if (avatarMenuOpen || latihanMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [avatarMenuOpen]);
+  }, [avatarMenuOpen, latihanMenuOpen]);
 
   useEffect(() => {
     if (mobileOpen) {
@@ -159,8 +195,8 @@ export default function SiswaNavbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-2">
-              {navItems.map((item) => {
+            <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
+              {mainNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
                   item.href === "/siswa"
@@ -181,72 +217,114 @@ export default function SiswaNavbar() {
                   </Link>
                 );
               })}
+
+              {/* Dropdown Kuis & Latihan */}
+              <div className="relative" ref={latihanMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setLatihanMenuOpen((prev) => !prev)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 font-heading text-xs font-bold rounded-lg transition-all border-2 cursor-pointer select-none ${
+                    isLatihanActive || latihanMenuOpen
+                      ? "bg-orange-500 text-black border-black shadow-[3px_3px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
+                      : "border-transparent text-slate-800 hover:bg-amber-300 hover:border-black hover:shadow-[2px_2px_0px_0px_#000]"
+                  }`}
+                  aria-expanded={latihanMenuOpen}
+                  aria-haspopup="true"
+                >
+                  <Brain className="w-4 h-4 text-black shrink-0" />
+                  <span>Kuis &amp; Latihan</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-black transition-transform duration-200 ${
+                      latihanMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Popover Dropdown Kuis & Latihan */}
+                {latihanMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-64 bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden z-50 p-2 space-y-1.5 animate-in fade-in zoom-in-95 duration-150">
+                    {latihanDropdownItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname.startsWith(item.href);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setLatihanMenuOpen(false)}
+                          className={`flex items-center gap-3 p-2.5 rounded-lg border-2 border-black transition-all ${
+                            isActive
+                              ? `${item.color} shadow-[2px_2px_0px_0px_#000] translate-x-0.5 translate-y-0.5`
+                              : "bg-white hover:bg-yellow-100 shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                          }`}
+                        >
+                          <div
+                            className={`w-8 h-8 ${item.color} border border-black rounded-lg flex items-center justify-center shrink-0 shadow-[1px_1px_0px_0px_#000]`}
+                          >
+                            <Icon className="w-4 h-4 text-black" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-heading font-black text-xs text-black leading-snug">
+                              {item.name}
+                            </p>
+                            <p className="text-[10px] text-slate-600 font-medium truncate">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Nilai & Sertifikat */}
+              <Link
+                href="/siswa/nilai"
+                className={`flex items-center gap-2 px-3.5 py-2 font-heading text-xs font-bold rounded-lg transition-all border-2 ${
+                  pathname.startsWith("/siswa/nilai")
+                    ? "bg-orange-500 text-black border-black shadow-[3px_3px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
+                    : "border-transparent text-slate-800 hover:bg-amber-300 hover:border-black hover:shadow-[2px_2px_0px_0px_#000]"
+                }`}
+              >
+                <BarChart2 className="w-4 h-4 text-black shrink-0" />
+                <span>Nilai &amp; Sertifikat</span>
+              </Link>
             </nav>
 
-            {/* Right: Gamification Pill + Avatar Dropdown for Tablet & Desktop, Hamburger for Mobile */}
+            {/* Right: Avatar Dropdown for Tablet & Desktop, Hamburger for Mobile */}
             <div className="flex items-center gap-2.5">
-              {/* Gamification Level & XP Pill */}
-              {currentSiswa && gamification?.levelInfo && (
-                <Link
-                  href="/siswa"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-300 hover:bg-yellow-200 border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] text-black font-heading font-black text-xs transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer"
-                  title={`Level ${gamification.levelInfo.level}: ${gamification.levelInfo.title} (${gamification.xp} XP)`}
-                >
-                  <span className="text-sm">{gamification.levelInfo.icon}</span>
-                  <span>Lv.{gamification.levelInfo.level}</span>
-                  <span className="bg-black text-amber-300 text-[10px] px-1.5 py-0.2 rounded font-mono">
-                    {gamification.xp} XP
-                  </span>
-                </Link>
-              )}
-
               {currentSiswa && (
-                <div className="relative hidden sm:block" ref={avatarMenuRef}>
-                  {/* Avatar Button Trigger */}
+                <div className="relative" ref={avatarMenuRef}>
+                  {/* Avatar Button Trigger - Compact Avatar Icon */}
                   <button
                     type="button"
                     onClick={() => setAvatarMenuOpen((prev) => !prev)}
-                    className={`flex items-center gap-2.5 bg-white hover:bg-amber-100 border-2 border-black rounded-xl p-1.5 sm:px-2.5 sm:py-1.5 transition-all cursor-pointer select-none ${
+                    className={`w-9 h-9 sm:w-10 sm:h-10 bg-cyan-300 hover:bg-cyan-200 border-2 border-black rounded-xl flex items-center justify-center font-heading font-black text-xs sm:text-sm text-black transition-all cursor-pointer select-none ${
                       avatarMenuOpen
-                        ? "shadow-none translate-x-0.5 translate-y-0.5 bg-amber-200 ring-2 ring-black"
+                        ? "shadow-none translate-x-0.5 translate-y-0.5 bg-amber-300 ring-2 ring-black"
                         : "shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#000]"
                     }`}
                     aria-expanded={avatarMenuOpen}
                     aria-haspopup="true"
-                    title="Menu Akun & Pengaturan"
+                    title={`Akun: ${currentSiswa.nama} (Klik untuk info & pengaturan)`}
                   >
-                    <div className="w-8 h-8 bg-cyan-300 border border-black flex items-center justify-center font-heading font-black text-xs text-black rounded-lg shrink-0 shadow-[1px_1px_0px_0px_#000]">
-                      {initials}
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-xs font-black text-black font-heading leading-tight truncate max-w-[100px] md:max-w-[130px]">
-                        {currentSiswa.nama}
-                      </span>
-                      <span className="text-[10px] text-slate-500 font-bold leading-none mt-0.5">
-                        ID: {currentSiswa.id}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      className={`w-4 h-4 text-black transition-transform duration-200 shrink-0 ${
-                        avatarMenuOpen ? "rotate-180" : ""
-                      }`}
-                    />
+                    {initials}
                   </button>
 
                   {/* Dropdown Menu Popover */}
                   {avatarMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
                       {/* Header Info Akun */}
                       <div className="p-4 bg-[#FFFDF5] border-b-2 border-black">
                         <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 bg-cyan-300 border-2 border-black flex items-center justify-center font-heading font-black text-base text-black rounded-lg shrink-0 shadow-[2px_2px_0px_0px_#000]">
+                          <div className="w-12 h-12 bg-cyan-300 border-2 border-black flex items-center justify-center font-heading font-black text-base text-black rounded-xl shrink-0 shadow-[2px_2px_0px_0px_#000]">
                             {initials}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-heading font-black text-sm text-black truncate">
+                            <p className="font-heading font-black text-base text-black truncate">
                               {currentSiswa.nama}
                             </p>
-                            <span className="inline-block font-mono text-[10px] font-bold bg-black text-amber-300 px-1.5 py-0.5 rounded mt-0.5">
+                            <span className="inline-block font-mono text-[11px] font-bold bg-black text-amber-300 px-2 py-0.5 rounded mt-1">
                               ID: {currentSiswa.id}
                             </span>
                           </div>
@@ -254,23 +332,23 @@ export default function SiswaNavbar() {
 
                         {/* Gamification Level Progress Box in Avatar Popover */}
                         {gamification?.levelInfo && (
-                          <div className="mt-3 p-2.5 bg-amber-100/70 border-2 border-black rounded-lg space-y-1.5">
-                            <div className="flex items-center justify-between text-xs font-heading font-bold">
-                              <span className="flex items-center gap-1 text-black">
+                          <div className="mt-3 p-3 bg-[#FFF9E5] border-2 border-black rounded-xl space-y-2">
+                            <div className="flex items-center justify-between text-xs font-heading font-black">
+                              <span className="flex items-center gap-1.5 text-black">
                                 <span>{gamification.levelInfo.icon}</span>
                                 <span>Level {gamification.levelInfo.level}: {gamification.levelInfo.title}</span>
                               </span>
-                              <span className="font-mono text-[11px] bg-white px-1.5 border border-black rounded font-black">
+                              <span className="font-mono text-xs font-bold bg-white px-2 py-0.5 border border-black rounded text-black shadow-[1px_1px_0px_0px_#000]">
                                 {gamification.xp} XP
                               </span>
                             </div>
-                            <div className="w-full h-2.5 bg-white border border-black rounded-full overflow-hidden p-0.5">
+                            <div className="w-full h-3 bg-white border border-black rounded-full overflow-hidden p-0.5">
                               <div
-                                className="h-full bg-orange-500 rounded-full transition-all"
+                                className="h-full bg-orange-500 rounded-full transition-all duration-300"
                                 style={{ width: `${Math.max(8, gamification.levelInfo.progressPct)}%` }}
                               />
                             </div>
-                            <div className="flex justify-between text-[10px] font-medium text-slate-600">
+                            <div className="flex justify-between text-[11px] font-medium text-slate-700">
                               <span>Progres Level</span>
                               <span>{gamification.levelInfo.xpToNext > 0 ? `${gamification.levelInfo.xpToNext} XP ke Lv.${gamification.levelInfo.level + 1}` : 'Level Maksimal 🏆'}</span>
                             </div>
@@ -278,16 +356,16 @@ export default function SiswaNavbar() {
                         )}
 
                         {/* Extra Detail: Modul & Kelas */}
-                        <div className="mt-3 pt-2 border-t border-slate-200 text-xs space-y-1">
+                        <div className="mt-3 pt-2.5 border-t border-slate-200 text-xs space-y-1.5">
                           <div className="flex items-center justify-between text-slate-600 font-medium">
                             <span>Modul:</span>
-                            <strong className="text-black font-bold truncate max-w-[140px]">
+                            <strong className="text-black font-bold uppercase truncate max-w-[170px]">
                               {currentSiswa.modul || "-"}
                             </strong>
                           </div>
                           <div className="flex items-center justify-between text-slate-600 font-medium">
                             <span>Kelas:</span>
-                            <strong className="text-black font-bold">
+                            <strong className="text-black font-bold truncate max-w-[170px]">
                               {currentSiswa.kelas || "-"}
                             </strong>
                           </div>
@@ -295,17 +373,17 @@ export default function SiswaNavbar() {
                       </div>
 
                       {/* Menu Actions */}
-                      <div className="p-2 space-y-1 bg-white">
+                      <div className="p-3 space-y-2 bg-white">
                         <button
                           type="button"
                           onClick={() => {
                             setAvatarMenuOpen(false);
                             setIsPasswordModalOpen(true);
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-heading font-bold text-black hover:bg-yellow-200 rounded-lg transition-colors text-left cursor-pointer"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-heading font-black text-black hover:bg-yellow-200 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-left cursor-pointer"
                         >
-                          <div className="w-7 h-7 bg-amber-300 border border-black rounded flex items-center justify-center shrink-0">
-                            <Key className="w-3.5 h-3.5 text-black" />
+                          <div className="w-7 h-7 bg-amber-300 border border-black rounded-lg flex items-center justify-center shrink-0">
+                            <Key className="w-4 h-4 text-black" />
                           </div>
                           <span>Ganti Kata Sandi</span>
                         </button>
@@ -316,10 +394,10 @@ export default function SiswaNavbar() {
                             setAvatarMenuOpen(false);
                             logout();
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-heading font-bold text-rose-700 hover:bg-rose-100 rounded-lg transition-colors text-left cursor-pointer"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-heading font-black text-rose-700 hover:bg-rose-100 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-left cursor-pointer"
                         >
-                          <div className="w-7 h-7 bg-rose-200 border border-black rounded flex items-center justify-center shrink-0">
-                            <LogOut className="w-3.5 h-3.5 text-rose-700" />
+                          <div className="w-7 h-7 bg-rose-200 border border-black rounded-lg flex items-center justify-center shrink-0">
+                            <LogOut className="w-4 h-4 text-rose-700" />
                           </div>
                           <span>Keluar dari Portal</span>
                         </button>
@@ -512,8 +590,8 @@ export default function SiswaNavbar() {
             </div>
 
             {/* Drawer nav links */}
-            <nav className="flex-1 py-4 px-3 space-y-2 font-heading text-xs font-bold">
-              {navItems.map((item) => {
+            <nav className="flex-1 py-4 px-3 space-y-2 font-heading text-xs font-bold overflow-y-auto">
+              {mainNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
                   item.href === "/siswa"
@@ -535,6 +613,49 @@ export default function SiswaNavbar() {
                   </Link>
                 );
               })}
+
+              {/* Kuis & Latihan Section Group in Mobile */}
+              <div className="pt-2 border-t-2 border-dashed border-black/30 space-y-1.5">
+                <span className="font-heading text-[10px] font-black uppercase text-slate-500 px-1 block">
+                  🎮 Kuis &amp; Latihan
+                </span>
+                {latihanDropdownItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 border-2 border-black rounded-lg transition-all text-xs ${
+                        isActive
+                          ? `${item.color} text-black shadow-[2px_2px_0px_0px_#000]`
+                          : "bg-white text-black shadow-[2px_2px_0px_0px_#000] hover:bg-amber-100"
+                      }`}
+                    >
+                      <div
+                        className={`w-6 h-6 ${item.color} border border-black rounded flex items-center justify-center shrink-0`}
+                      >
+                        <Icon className="w-3.5 h-3.5 text-black" />
+                      </div>
+                      <span className="font-bold">{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <Link
+                href="/siswa/nilai"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-3.5 py-3 border-2 border-black rounded-lg transition-all ${
+                  pathname.startsWith("/siswa/nilai")
+                    ? "bg-orange-500 text-black shadow-[3px_3px_0px_0px_#000]"
+                    : "bg-white text-black shadow-[2px_2px_0px_0px_#000] hover:bg-amber-200"
+                }`}
+              >
+                <BarChart2 className="w-4 h-4 text-black shrink-0" />
+                <span>Nilai &amp; Sertifikat</span>
+              </Link>
             </nav>
 
             {/* Drawer footer / logout */}

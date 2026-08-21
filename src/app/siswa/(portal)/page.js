@@ -18,6 +18,7 @@ import {
   Smile,
   Zap,
   Mouse,
+  Keyboard,
 } from "lucide-react";
 
 export default function SiswaDashboard() {
@@ -38,15 +39,13 @@ export default function SiswaDashboard() {
   const rataQuiz =
     nilaiQuiz.length > 0
       ? Math.round(
-          nilaiQuiz.reduce((a, b) => a + (b.nilai || 0), 0) /
+          nilaiQuiz.reduce((acc, curr) => acc + (curr.nilai || 0), 0) /
             nilaiQuiz.length
         )
       : 0;
   const hadirCount = kehadiran.filter((k) => k.status === "Hadir").length;
   const kehadiranPct =
-    kehadiran.length > 0
-      ? Math.round((hadirCount / kehadiran.length) * 100)
-      : totalPertemuan > 0
+    totalPertemuan > 0
       ? Math.round((hadirCount / totalPertemuan) * 100)
       : 0;
 
@@ -77,6 +76,15 @@ export default function SiswaDashboard() {
       bg: "bg-rose-300 hover:bg-rose-200",
       badge: "Mini Game",
       badgeBg: "bg-rose-100",
+    },
+    {
+      href: "/siswa/latihan-mengetik",
+      label: "Latihan Mengetik",
+      icon: Keyboard,
+      desc: "Latih kecepatan 10 jari & akurasi mengetik",
+      bg: "bg-orange-300 hover:bg-orange-200",
+      badge: "Touch Typing",
+      badgeBg: "bg-orange-100",
     },
     {
       href: "/siswa/jadwal",
@@ -358,7 +366,7 @@ export default function SiswaDashboard() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {quickLinks.map((link) => {
             const Icon = link.icon;
             return (

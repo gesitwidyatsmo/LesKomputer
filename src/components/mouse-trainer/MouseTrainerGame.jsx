@@ -26,8 +26,10 @@ import {
   Move,
   FileCode,
   FolderDown,
-  Compass
+  Compass,
+  X
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 // Stage definitions
 const STAGES = [
@@ -323,6 +325,31 @@ export default function MouseTrainerGame() {
       spawnTarget();
     }, 50);
   }, [currentStageId, targetCount, spawnTarget]);
+
+  // Handle closing victory modal with confirmation
+  const handleCloseVictory = async () => {
+    const res = await Swal.fire({
+      title: "Tutup & Reset Latihan?",
+      text: "Jika kamu menutup jendela skor ini, latihan tahap ini akan direset kembali dari awal.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Tutup & Reset",
+      cancelButtonText: "Batal",
+      customClass: {
+        popup: "border-3 border-black rounded-2xl shadow-[6px_6px_0px_0px_#000] font-sans bg-white",
+        title: "font-heading font-black text-black text-lg sm:text-xl",
+        htmlContainer: "text-xs sm:text-sm font-medium text-slate-700",
+        confirmButton: "bg-orange-500 hover:bg-orange-600 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] px-4 py-2.5 cursor-pointer ml-2",
+        cancelButton: "bg-slate-200 hover:bg-slate-300 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] px-4 py-2.5 cursor-pointer mr-2",
+      },
+      buttonsStyling: false,
+    });
+
+    if (res.isConfirmed) {
+      setIsFinished(false);
+      resetGame(currentStageId);
+    }
+  };
 
   // Initialize position on mount or resize
   useEffect(() => {
@@ -1137,8 +1164,23 @@ export default function MouseTrainerGame() {
 
         {/* ── STAGE COMPLETED MODAL (Victory Dialog) ────────────────── */}
         {isFinished && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-            <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_#000] rounded-2xl max-w-md w-full p-6 sm:p-7 text-center space-y-5 animate-in zoom-in-95 duration-200">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) handleCloseVictory();
+            }}
+          >
+            <div className="relative bg-white border-4 border-black shadow-[10px_10px_0px_0px_#000] rounded-2xl max-w-md w-full p-6 sm:p-7 text-center space-y-5 animate-in zoom-in-95 duration-200">
+              {/* Close / Dismiss Button with Warning Confirmation */}
+              <button
+                type="button"
+                onClick={handleCloseVictory}
+                className="absolute top-3.5 right-3.5 w-8 h-8 bg-white hover:bg-rose-500 hover:text-white text-black border-2 border-black rounded-lg flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer z-10"
+                title="Tutup & Reset Latihan"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
               {/* Trophy Icon */}
               <div className="w-16 h-16 bg-amber-300 border-3 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_#000] -rotate-3">
                 <Trophy className="w-9 h-9 text-black animate-bounce" />
