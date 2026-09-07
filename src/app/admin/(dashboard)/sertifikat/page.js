@@ -23,10 +23,15 @@ export default function Sertifikat() {
       setIsLoading(true);
       const { data: lulusData } = await getLulusanSiswa();
       if (lulusData) {
-        const formattedLulus = lulusData.map(s => ({
-             ...s,
-             tanggalLulus: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
-        }));
+        const formattedLulus = lulusData.map(s => {
+          const rawDate = s.tanggal_lulus || s.tanggalLulus;
+          const dateObj = rawDate ? new Date(rawDate) : new Date();
+          const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
+          return {
+            ...s,
+            tanggalLulus: validDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+          };
+        });
         setSiswaLulus(formattedLulus);
       }
       
@@ -334,7 +339,7 @@ export default function Sertifikat() {
                       <div style={{ position: 'absolute', bottom: '32px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ padding: '8px', backgroundColor: '#FFFFFF', border: '2px solid #000000', boxShadow: '2px 2px 0px 0px #000000' }}>
                           <QRCodeCanvas
-                            value={`${typeof window !== "undefined" ? window.location.origin : ""}/verifikasi?id=${selectedSiswa.id}`}
+                            value={`${process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== "undefined" ? window.location.origin : "")}/verifikasi?id=${selectedSiswa.id}`}
                             size={72}
                             level="M"
                           />

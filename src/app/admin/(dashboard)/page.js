@@ -252,7 +252,7 @@ export default function DashboardOverview() {
                     <h4 className="font-heading font-bold text-sm text-black">{jadwal.nama}</h4>
                   </div>
                   <div className="text-xs font-mono text-slate-700 flex justify-between items-center mt-2 pt-2 border-t border-dashed border-slate-300">
-                    <span className="font-semibold">{jadwal.jadwal} // {jadwal.waktu}</span>
+                    <span className="font-semibold">{jadwal.jadwal} {"//"} {jadwal.waktu}</span>
                     <span className="flex items-center gap-1 font-bold text-orange-600">
                       <span className="w-1.5 h-1.5 bg-orange-500 inline-block"></span>
                       {jadwal.mentor || 'Mentor'}

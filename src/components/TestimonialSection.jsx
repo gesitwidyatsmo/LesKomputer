@@ -85,7 +85,7 @@ export default function TestimonialSection({ data }) {
             >
               {/* Window Header */}
               <div className="flex items-center justify-between px-3.5 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none">
-                <span className="text-amber-300">{rev.id || `LOG_0${idx+1}`} // FEEDBACK.LOG</span>
+                <span className="text-amber-300">{rev.id || `LOG_0${idx+1}`} {"//"} FEEDBACK.LOG</span>
                 <span className="text-emerald-400 text-[10px]">★ VERIFIED</span>
               </div>
 

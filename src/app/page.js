@@ -24,6 +24,7 @@ export default async function Home() {
         <TopAnnouncementBar 
           data={config.announcement?.content} 
           globalWhatsapp={globalWhatsapp} 
+          globalSettings={globalSettings}
         />
       )}
       <Navbar 
@@ -35,6 +36,7 @@ export default async function Home() {
           <HeroSection 
             data={config.hero?.content} 
             globalWhatsapp={globalWhatsapp} 
+            globalSettings={globalSettings}
           />
         )}
         {config.values?.is_visible !== false && (
@@ -52,6 +54,7 @@ export default async function Home() {
           <FasilitasSection 
             data={config.fasilitas?.content} 
             globalWhatsapp={globalWhatsapp} 
+            globalSettings={globalSettings}
           />
         )}
         {config.testimonials?.is_visible !== false && (
@@ -63,12 +66,14 @@ export default async function Home() {
           <FaqSection 
             data={config.faq?.content} 
             globalWhatsapp={globalWhatsapp} 
+            globalSettings={globalSettings}
           />
         )}
         {config.cta_banner?.is_visible !== false && (
           <CtaBannerSection 
             data={config.cta_banner?.content} 
             globalWhatsapp={globalWhatsapp} 
+            globalSettings={globalSettings}
           />
         )}
       </main>

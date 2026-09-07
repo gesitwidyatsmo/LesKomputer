@@ -117,11 +117,6 @@ export default function LoginPage() {
                 {isLoading ? "Memproses Autentikasi..." : "Masuk Sistem Admin"}
               </button>
             </div>
-            
-            <div className="p-3 bg-yellow-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] text-center text-xs font-mono text-slate-800">
-              <span>Demo Login: </span>
-              <span className="font-bold bg-white px-1.5 py-0.5 border border-black">admin</span> / <span className="font-bold bg-white px-1.5 py-0.5 border border-black">admin123</span>
-            </div>
           </form>
         </div>
       </div>

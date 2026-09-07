@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import confetti from "canvas-confetti";
 import {
   Keyboard,
@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import SvgVirtualKeyboard from "./SvgVirtualKeyboard";
 import Swal from "sweetalert2";
+import { useSiswa } from "@/context/SiswaContext";
 
 // Curriculum Lessons (Progressive Lessons from Home Row to Real Indonesian Words)
 const LESSONS = [
@@ -270,51 +271,77 @@ function getHandSvgPath(char) {
   const c = char.toLowerCase();
 
   // Left Hand
-  if (c === "a") return "/tangan/kiri/kelingking_a.svg";
+  if (c === "1") return "/tangan/kiri/kelingking_1.svg";
   if (c === "q") return "/tangan/kiri/kelingking_q.svg";
-  if (c === "s") return "/tangan/kiri/manis_s.svg";
+  if (c === "a") return "/tangan/kiri/kelingking_a.svg";
+  if (c === "z") return "/tangan/kiri/kelingking_z.svg";
+
+  if (c === "2") return "/tangan/kiri/manis_2.svg";
   if (c === "w") return "/tangan/kiri/manis_w.svg";
+  if (c === "s") return "/tangan/kiri/manis_s.svg";
   if (c === "x") return "/tangan/kiri/manis_x.svg";
-  if (c === "d") return "/tangan/kiri/tengah_d.svg";
+
+  if (c === "3") return "/tangan/kiri/tengah_3.svg";
   if (c === "e") return "/tangan/kiri/tengah_e.svg";
+  if (c === "d") return "/tangan/kiri/tengah_d.svg";
   if (c === "c") return "/tangan/kiri/tengah_c.svg";
-  if (c === "f") return "/tangan/kiri/telunjuk_f.svg";
+
+  if (c === "4") return "/tangan/kiri/telunjuk_4.svg";
+  if (c === "5") return "/tangan/kiri/telunjuk_5.svg";
   if (c === "r") return "/tangan/kiri/telunjuk_r.svg";
   if (c === "t") return "/tangan/kiri/telunjuk_t.svg";
+  if (c === "f") return "/tangan/kiri/telunjuk_f.svg";
   if (c === "g") return "/tangan/kiri/telunjuk_g.svg";
   if (c === "v") return "/tangan/kiri/telunjuk_v.svg";
+  if (c === "b") return "/tangan/kiri/telunjuk_b.svg";
+
+  // Thumbs
+  if (c === " " || c === "space") return "/tangan/kanan/jempol_spasi.svg";
 
   // Right Hand
-  if (c === " " || c === "space") return "/tangan/kanan/jempol_spasi.svg";
-  if (c === "j") return "/tangan/kanan/telunjuk_j.svg";
-  if (c === "u") return "/tangan/kanan/telunjuk_u.svg";
+  if (c === "6") return "/tangan/kanan/telunjuk_6.svg";
+  if (c === "7") return "/tangan/kanan/telunjuk_7.svg";
   if (c === "y") return "/tangan/kanan/telunjuk_y.svg";
+  if (c === "u") return "/tangan/kanan/telunjuk_u.svg";
   if (c === "h") return "/tangan/kanan/telunjuk_h.svg";
-  if (c === "n" || c === "m") return "/tangan/kanan/telunjuk_m.svg";
-  if (c === "k") return "/tangan/kanan/tengah_k.svg";
+  if (c === "j") return "/tangan/kanan/telunjuk_j.svg";
+  if (c === "n") return "/tangan/kanan/telunjuk_n.svg";
+  if (c === "m") return "/tangan/kanan/telunjuk_m.svg";
+
+  if (c === "8") return "/tangan/kanan/tengah_8.svg";
   if (c === "i") return "/tangan/kanan/tengah_i.svg";
+  if (c === "k") return "/tangan/kanan/tengah_k.svg";
   if (c === ",") return "/tangan/kanan/tengah_comma.svg";
-  if (c === "l") return "/tangan/kanan/manis_l.svg";
+
+  if (c === "9") return "/tangan/kanan/manis_9.svg";
   if (c === "o") return "/tangan/kanan/manis_o.svg";
+  if (c === "l") return "/tangan/kanan/manis_l.svg";
   if (c === ".") return "/tangan/kanan/manis_titik.svg";
-  if (c === ";") return "/tangan/kanan/kelingking_semicolon.svg";
+
+  if (c === "0") return "/tangan/kanan/kelingking_0.svg";
+  if (c === "-") return "/tangan/kanan/kelingking_-.svg";
+  if (c === "=") return "/tangan/kanan/kelingking_=.svg";
   if (c === "p") return "/tangan/kanan/kelingking_p.svg";
+  if (c === "[") return "/tangan/kanan/kelingking_[.svg";
+  if (c === "]") return "/tangan/kanan/kelingking_].svg";
+  if (c === ";") return "/tangan/kanan/kelingking_semicolon.svg";
+  if (c === "'") return "/tangan/kanan/kelingking_petiksatu.svg";
+  if (c === "/") return "/tangan/kanan/kelingking_garismiring.svg";
   if (c === "enter" || c === "\n") return "/tangan/kanan/kelingking_enter.svg";
 
+  // Shift & specials
+  if (["!", "@", "#", "$", "%"].includes(char)) return "/tangan/kombinasi/shift kanan/telunjuk_$.svg";
+  if (["^", "&", "*", "(", ")", "_", "+", "{", "}", ":", '"', "<", ">", "?"].includes(char)) return "/tangan/kombinasi/shift kiri/kelingking_+.svg";
+
   // Fallbacks
-  if (["1", "z", "tab", "capslock", "shift", "`"].includes(c)) return "/tangan/kiri/kelingking_a.svg";
-  if (["2"].includes(c)) return "/tangan/kiri/manis_s.svg";
-  if (["3"].includes(c)) return "/tangan/kiri/tengah_d.svg";
-  if (["4", "5", "b"].includes(c)) return "/tangan/kiri/telunjuk_f.svg";
-  if (["6", "7"].includes(c)) return "/tangan/kanan/telunjuk_j.svg";
-  if (["8"].includes(c)) return "/tangan/kanan/tengah_k.svg";
-  if (["9"].includes(c)) return "/tangan/kanan/manis_l.svg";
-  if (["0", "-", "=", "[", "]", "\\", "'", "/"].includes(c)) return "/tangan/kanan/kelingking_semicolon.svg";
+  if (["tab", "capslock", "shift", "`", "~"].includes(c)) return "/tangan/kiri/kelingking_a.svg";
+  if (["\\", "|"].includes(c)) return "/tangan/kanan/kelingking_semicolon.svg";
 
   return "/tangan/kanan/telunjuk_j.svg";
 }
 
 export default function TypingTrainerGame() {
+  const siswaCtx = useSiswa();
   const [currentLevelId, setCurrentLevelId] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userInput, setUserInput] = useState("");
@@ -331,6 +358,7 @@ export default function TypingTrainerGame() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [hasErrorOnCurrentChar, setHasErrorOnCurrentChar] = useState(false);
+  const [awardedXpInfo, setAwardedXpInfo] = useState(null);
 
   // Floating effects
   const [popups, setPopups] = useState([]);
@@ -344,6 +372,55 @@ export default function TypingTrainerGame() {
   const targetText = lesson.text;
   const currentChar = targetText[currentIndex] || "";
   const activeFinger = getFingerForKey(currentChar);
+  const activeFingerInfo = FINGER_COLORS[activeFinger] || FINGER_COLORS.thumb;
+
+  // Split targetText into lines of characters (each line ~ chars that fit in one visual row)
+  // We tokenize words + their following space so that 100% of characters (and spaces) keep their exact index in targetText.
+  const CHARS_PER_LINE = 32;
+  const textLines = useMemo(() => {
+    const tokens = [];
+    let currentToken = [];
+
+    for (let i = 0; i < targetText.length; i++) {
+      const char = targetText[i];
+      const isSpace = char === " ";
+      currentToken.push({ char, index: i, isSpace });
+
+      if (isSpace || i === targetText.length - 1) {
+        tokens.push(currentToken);
+        currentToken = [];
+      }
+    }
+
+    const lines = [];
+    let currentLine = [];
+    let currentLen = 0;
+
+    tokens.forEach((token) => {
+      // If adding this token exceeds CHARS_PER_LINE and line is not empty, wrap to next line
+      if (currentLine.length > 0 && currentLen + token.length > CHARS_PER_LINE) {
+        lines.push(currentLine);
+        currentLine = [];
+        currentLen = 0;
+      }
+      currentLine.push(...token);
+      currentLen += token.length;
+    });
+
+    if (currentLine.length > 0) {
+      lines.push(currentLine);
+    }
+
+    return lines;
+  }, [targetText]);
+
+  // Which line index contains the current active character?
+  const activeLineIndex = useMemo(() => {
+    for (let li = 0; li < textLines.length; li++) {
+      if (textLines[li].some((c) => c.index === currentIndex)) return li;
+    }
+    return 0;
+  }, [textLines, currentIndex]);
 
   // Focus input automatically
   const focusInput = () => {
@@ -364,6 +441,7 @@ export default function TypingTrainerGame() {
     setElapsedTime(0);
     setIsFinished(false);
     setHasErrorOnCurrentChar(false);
+    setAwardedXpInfo(null);
 
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     setTimeout(() => {
@@ -396,18 +474,102 @@ export default function TypingTrainerGame() {
     }
   };
 
-  // Fullscreen toggle
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+  // Fullscreen toggle with real browser F11 Fullscreen API
+  const toggleFullscreen = async () => {
+    try {
+      const isCurrentlyFs = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+
+      if (!isCurrentlyFs && !isFullscreen) {
+        // Request true browser fullscreen (mirip pencet F11)
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+          await docEl.webkitRequestFullscreen();
+        } else if (docEl.mozRequestFullScreen) {
+          await docEl.mozRequestFullScreen();
+        } else if (docEl.msRequestFullscreen) {
+          await docEl.msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      } else {
+        // Exit true browser fullscreen
+        if (
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement
+        ) {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            await document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            await document.msExitFullscreen();
+          }
+        }
+        setIsFullscreen(false);
+      }
+    } catch (err) {
+      // Fallback if browser policy restricts fullscreen API
+      setIsFullscreen((prev) => !prev);
+    }
     setTimeout(() => {
       focusInput();
     }, 100);
   };
 
+  // Sync state if user presses F11 or Esc natively in browser
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isNowFs = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      setIsFullscreen(isNowFs);
+      setTimeout(() => {
+        focusInput();
+      }, 50);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
+  }, []);
+
   // Listen to Escape key to exit fullscreen
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && isFullscreen) {
+        if (
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement
+        ) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
         setIsFullscreen(false);
       }
     };
@@ -442,6 +604,19 @@ export default function TypingTrainerGame() {
   const handleKeyDown = useCallback((e) => {
     if (isFinished) return;
 
+    // If modal dialog is open (SweetAlert) or user is in another input/textarea, ignore
+    if (typeof document !== "undefined") {
+      if (document.querySelector(".swal2-container")) return;
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA") &&
+        activeEl !== hiddenInputRef.current
+      ) {
+        return;
+      }
+    }
+
     // Ignore modifier standalone keys
     if (["Alt", "Control", "Meta", "Tab", "CapsLock"].includes(e.key)) {
       if (e.key === "Tab") e.preventDefault();
@@ -449,7 +624,13 @@ export default function TypingTrainerGame() {
     }
 
     const key = e.key;
-    setPressedKeys((prev) => new Set(prev).add(key.toLowerCase()));
+    const code = e.code ? e.code.toLowerCase() : "";
+    setPressedKeys((prev) => {
+      const next = new Set(prev);
+      next.add(key.toLowerCase());
+      if (code) next.add(code);
+      return next;
+    });
 
     if (!startTime) {
       setStartTime(Date.now());
@@ -460,7 +641,14 @@ export default function TypingTrainerGame() {
       e.preventDefault();
       if (currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);
-        setUserInput((prev) => prev.slice(0, -1));
+        setUserInput((prev) => {
+          const removed = prev.slice(-1);
+          const expectedAtRemoved = targetText[currentIndex - 1];
+          if (removed === expectedAtRemoved) {
+            setCorrectCount((c) => Math.max(0, c - 1));
+          }
+          return prev.slice(0, -1);
+        });
         setHasErrorOnCurrentChar(false);
       }
       return;
@@ -492,6 +680,22 @@ export default function TypingTrainerGame() {
               origin: { y: 0.6 },
             });
           } catch (err) {}
+
+          // Award XP to student if logged in
+          if (siswaCtx?.awardXp) {
+            const baseXP = 25;
+            const finalTotal = (correctCount + 1) + errorCount;
+            const finalAcc = finalTotal > 0 ? Math.min(100, Math.round(((correctCount + 1) / finalTotal) * 100)) : 100;
+            const bonusXP = finalAcc >= 95 ? 15 : finalAcc >= 90 ? 10 : 0;
+            const totalXp = baseXP + bonusXP;
+            const reason = `Praktik Mengetik 10 Jari: ${lesson.shortName} (${finalAcc}% Akurasi)`;
+            const res = siswaCtx.awardXp(totalXp, reason);
+            setAwardedXpInfo({
+              xp: totalXp,
+              bonus: bonusXP,
+              levelInfo: res?.levelInfo,
+            });
+          }
         }
       } else {
         // Error press
@@ -501,14 +705,16 @@ export default function TypingTrainerGame() {
         triggerPopup("Salah!", true);
       }
     }
-  }, [currentIndex, isFinished, isMuted, startTime, targetText]);
+  }, [currentIndex, isFinished, isMuted, startTime, targetText, correctCount, errorCount, lesson.shortName, siswaCtx]);
 
   // Physical Keyup Event Handler
   const handleKeyUp = useCallback((e) => {
     const key = e.key.toLowerCase();
+    const code = e.code ? e.code.toLowerCase() : "";
     setPressedKeys((prev) => {
       const next = new Set(prev);
       next.delete(key);
+      if (code) next.delete(code);
       return next;
     });
   }, []);
@@ -552,7 +758,7 @@ export default function TypingTrainerGame() {
       onClick={focusInput}
       className={`flex flex-col transition-all select-none ${
         isFullscreen
-          ? "fixed inset-0 z-[9999] bg-[#FFFDF5] p-2 sm:p-4 overflow-hidden flex flex-col justify-between"
+          ? "fixed inset-0 z-[9999] bg-[#FFFDF5] p-1.5 sm:p-2.5 overflow-hidden flex flex-col"
           : "w-full"
       }`}
     >
@@ -566,19 +772,19 @@ export default function TypingTrainerGame() {
 
       {/* ── TOP CONTROL PANEL (Hanya tampil saat mode normal) ── */}
       {!isFullscreen && (
-        <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl p-4 sm:p-5 mb-4">
+        <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl p-3.5 sm:p-4 mb-3 sm:mb-4">
           {/* Top Info Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black pb-4 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-cyan-400 border-2 border-black rounded-lg flex items-center justify-center shadow-[3px_3px_0px_0px_#000] font-black text-black">
-                <Keyboard className="w-6 h-6" />
+          <div className="flex flex-wrap items-center justify-between gap-2.5 border-b-2 border-black pb-3 mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-cyan-400 border-2 border-black rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#000] font-black text-black">
+                <Keyboard className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="font-heading font-black text-lg sm:text-xl text-black">
+                  <h1 className="font-heading font-black text-base sm:text-lg text-black">
                     {lesson.title}
                   </h1>
-                  <span className="bg-black text-amber-300 font-mono text-[11px] font-bold px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_0px_#000]">
+                  <span className="bg-black text-amber-300 font-mono text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_0px_#000]">
                     Touch Typing 10 Jari
                   </span>
                 </div>
@@ -589,18 +795,18 @@ export default function TypingTrainerGame() {
             </div>
 
             {/* Quick Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowHands(!showHands);
                 }}
                 title={showHands ? "Sembunyikan Panduan Tangan" : "Tampilkan Panduan Tangan"}
-                className={`p-2 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer ${
+                className={`p-1.5 sm:p-2 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer ${
                   showHands ? "bg-amber-300 text-black" : "bg-white text-slate-600"
                 }`}
               >
-                <Hand className="w-5 h-5" />
+                <Hand className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 onClick={(e) => {
@@ -608,9 +814,9 @@ export default function TypingTrainerGame() {
                   setIsMuted(!isMuted);
                 }}
                 title={isMuted ? "Nyalakan Suara" : "Matikan Suara"}
-                className="p-2 bg-white hover:bg-slate-100 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer text-slate-800"
+                className="p-1.5 sm:p-2 bg-white hover:bg-slate-100 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer text-slate-800"
               >
-                {isMuted ? <VolumeX className="w-5 h-5 text-rose-600" /> : <Volume2 className="w-5 h-5 text-emerald-600" />}
+                {isMuted ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />}
               </button>
               <button
                 onClick={(e) => {
@@ -618,76 +824,76 @@ export default function TypingTrainerGame() {
                   resetLesson();
                 }}
                 title="Ulangi Level Ini"
-                className="flex items-center gap-1.5 px-3 py-2 bg-amber-300 hover:bg-amber-400 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-black text-black cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-amber-300 hover:bg-amber-400 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-black text-black cursor-pointer"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Reset</span>
               </button>
             </div>
           </div>
 
           {/* Realtime Stats Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
             {/* WPM Speed */}
-            <div className="bg-cyan-50 border-2 border-black p-2.5 rounded-lg shadow-[3px_3px_0px_0px_#000] flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-cyan-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
-                <Zap className="w-4 h-4" />
+            <div className="bg-cyan-50 border-2 border-black p-2 sm:p-2.5 rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center gap-2.5">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-cyan-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
+                <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div>
-                <div className="text-[10px] font-mono font-bold text-slate-500 uppercase">Kecepatan</div>
-                <div className="font-heading font-black text-base sm:text-lg text-black font-mono">
-                  {wpm} <span className="text-xs text-slate-500 font-mono">WPM</span>
+                <div className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 uppercase">Kecepatan</div>
+                <div className="font-heading font-black text-sm sm:text-base text-black font-mono">
+                  {wpm} <span className="text-[10px] sm:text-xs text-slate-500 font-mono">WPM</span>
                 </div>
               </div>
             </div>
 
             {/* Accuracy */}
-            <div className="bg-emerald-50 border-2 border-black p-2.5 rounded-lg shadow-[3px_3px_0px_0px_#000] flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-emerald-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
-                <Activity className="w-4 h-4" />
+            <div className="bg-emerald-50 border-2 border-black p-2 sm:p-2.5 rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center gap-2.5">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-emerald-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
+                <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div>
-                <div className="text-[10px] font-mono font-bold text-slate-500 uppercase">Akurasi</div>
-                <div className="font-heading font-black text-base sm:text-lg text-emerald-800">
+                <div className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 uppercase">Akurasi</div>
+                <div className="font-heading font-black text-sm sm:text-base text-emerald-800">
                   {accuracy}%
                 </div>
               </div>
             </div>
 
             {/* Progress */}
-            <div className="bg-amber-50 border-2 border-black p-2.5 rounded-lg shadow-[3px_3px_0px_0px_#000] flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-amber-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
-                <Target className="w-4 h-4" />
+            <div className="bg-amber-50 border-2 border-black p-2 sm:p-2.5 rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center gap-2.5">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-amber-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
+                <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div>
-                <div className="text-[10px] font-mono font-bold text-slate-500 uppercase">Progres</div>
-                <div className="font-heading font-black text-base sm:text-lg text-black font-mono">
-                  {progressPct}% <span className="text-xs text-slate-500 font-mono">({currentIndex}/{targetText.length})</span>
+                <div className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 uppercase">Progres</div>
+                <div className="font-heading font-black text-sm sm:text-base text-black font-mono">
+                  {progressPct}% <span className="text-[10px] sm:text-xs text-slate-500 font-mono">({currentIndex}/{targetText.length})</span>
                 </div>
               </div>
             </div>
 
             {/* Errors */}
-            <div className="bg-rose-50 border-2 border-black p-2.5 rounded-lg shadow-[3px_3px_0px_0px_#000] flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-rose-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
-                <AlertCircle className="w-4 h-4" />
+            <div className="bg-rose-50 border-2 border-black p-2 sm:p-2.5 rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center gap-2.5">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-rose-400 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
+                <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div>
-                <div className="text-[10px] font-mono font-bold text-slate-500 uppercase">Kesalahan</div>
-                <div className="font-heading font-black text-base sm:text-lg text-rose-700">
-                  {errorCount} <span className="text-xs text-slate-500 font-mono">huruf</span>
+                <div className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 uppercase">Kesalahan</div>
+                <div className="font-heading font-black text-sm sm:text-base text-rose-700">
+                  {errorCount} <span className="text-[10px] sm:text-xs text-slate-500 font-mono">huruf</span>
                 </div>
               </div>
             </div>
 
             {/* Time Elapsed */}
-            <div className="hidden lg:flex bg-purple-50 border-2 border-black p-2.5 rounded-lg shadow-[3px_3px_0px_0px_#000] items-center gap-3">
-              <div className="w-8 h-8 rounded bg-purple-300 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
-                <Clock className="w-4 h-4" />
+            <div className="hidden lg:flex bg-purple-50 border-2 border-black p-2 sm:p-2.5 rounded-lg shadow-[2px_2px_0px_0px_#000] items-center gap-2.5">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-purple-300 border-2 border-black flex items-center justify-center font-bold text-black shrink-0">
+                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div>
-                <div className="text-[10px] font-mono font-bold text-slate-500 uppercase">Waktu</div>
-                <div className="font-heading font-black text-base text-purple-900 font-mono">
+                <div className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-500 uppercase">Waktu</div>
+                <div className="font-heading font-black text-sm sm:text-base text-purple-900 font-mono">
                   {formatTime(elapsedTime)}
                 </div>
               </div>
@@ -695,9 +901,9 @@ export default function TypingTrainerGame() {
           </div>
 
           {/* Level Selector Pills */}
-          <div className="mt-4 pt-3 border-t border-slate-200">
+          <div className="mt-3 pt-2.5 border-t border-slate-200">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono font-bold scrollbar-thin">
-              <span className="text-slate-500 mr-1 shrink-0">Pilih Level:</span>
+              <span className="text-slate-500 mr-1 shrink-0 text-[11px]">Pilih Level:</span>
               {LESSONS.map((l) => (
                 <button
                   key={l.id}
@@ -705,7 +911,7 @@ export default function TypingTrainerGame() {
                     e.stopPropagation();
                     resetLesson(l.id);
                   }}
-                  className={`px-3 py-1.5 rounded-md border-2 border-black shrink-0 transition-all cursor-pointer font-bold ${
+                  className={`px-2.5 py-1 rounded-md border-2 border-black shrink-0 transition-all cursor-pointer font-bold text-xs ${
                     currentLevelId === l.id
                       ? "bg-black text-white shadow-[2px_2px_0px_0px_#FF6B00] scale-105"
                       : "bg-white text-slate-800 hover:bg-amber-100 shadow-[1px_1px_0px_0px_#000]"
@@ -718,8 +924,8 @@ export default function TypingTrainerGame() {
           </div>
 
           {/* Bottom Bar: Fullscreen Toggle */}
-          <div className="mt-3 flex items-center justify-between gap-3 text-xs font-mono pt-2 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-slate-600 font-bold">
+          <div className="mt-2.5 flex items-center justify-between gap-3 text-xs font-mono pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-2 text-slate-600 font-bold text-[11px]">
               <span>💡 Panduan: Letakkan jari di baris beranda (ASDF - JKL;) dan tatap layar</span>
             </div>
 
@@ -729,9 +935,9 @@ export default function TypingTrainerGame() {
                 toggleFullscreen();
               }}
               title="Aktifkan Mode Layar Penuh"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-orange-400 hover:bg-orange-300 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] hover:shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-400 hover:bg-orange-300 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] hover:shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
             >
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-3.5 h-3.5" />
               <span>Layar Penuh</span>
             </button>
           </div>
@@ -740,43 +946,43 @@ export default function TypingTrainerGame() {
 
       {/* ── MAIN INTERACTIVE TYPING ARENA ────────────────── */}
       <div
-        className={`relative w-full bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl overflow-hidden flex flex-col justify-between transition-all ${
-          isFullscreen ? "flex-1 w-full h-full min-h-[600px] p-3 sm:p-5" : "p-4 sm:p-6"
+        className={`relative w-full bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl flex flex-col transition-all ${
+          isFullscreen ? "flex-1 w-full h-full max-h-full p-2 sm:p-3.5 overflow-hidden" : "p-3 sm:p-5"
         }`}
       >
         {/* Fullscreen Floating Top HUD */}
         {isFullscreen && (
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b-2 border-black mb-3">
-            <div className="bg-white border-2 border-black px-3.5 py-1.5 rounded-xl shadow-[3px_3px_0px_0px_#000] flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-ping"></span>
-              <span className="font-heading font-black text-xs text-black">
+          <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b-2 border-black mb-1 sm:mb-2 shrink-0">
+            <div className="bg-white border-2 border-black px-2.5 py-1 rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
+              <span className="font-heading font-black text-xs text-black truncate max-w-[180px] sm:max-w-none">
                 {lesson.title}
               </span>
             </div>
 
-            <div className="bg-black text-white border-2 border-black px-4 py-1.5 rounded-xl shadow-[3px_3px_0px_0px_#000] flex items-center gap-3 sm:gap-4 font-mono text-xs font-bold">
-              <div className="flex items-center gap-1.5 text-cyan-300">
+            <div className="bg-black text-white border-2 border-black px-3 py-1 rounded-lg shadow-[2px_2px_0px_0px_#000] flex items-center gap-2 sm:gap-3 font-mono text-xs font-bold">
+              <div className="flex items-center gap-1 text-cyan-300">
                 <Zap className="w-3.5 h-3.5" />
                 <span>{wpm} WPM</span>
               </div>
-              <div className="w-px h-3.5 bg-slate-700"></div>
-              <div className="flex items-center gap-1.5 text-emerald-300">
+              <div className="w-px h-3 bg-slate-700"></div>
+              <div className="flex items-center gap-1 text-emerald-300">
                 <Activity className="w-3.5 h-3.5" />
                 <span>{accuracy}%</span>
               </div>
-              <div className="w-px h-3.5 bg-slate-700"></div>
-              <div className="flex items-center gap-1.5 text-amber-300">
+              <div className="w-px h-3 bg-slate-700"></div>
+              <div className="flex items-center gap-1 text-amber-300">
                 <Target className="w-3.5 h-3.5" />
                 <span>{progressPct}%</span>
               </div>
-              <div className="w-px h-3.5 bg-slate-700"></div>
-              <div className="flex items-center gap-1.5 text-rose-300">
+              <div className="w-px h-3 bg-slate-700"></div>
+              <div className="flex items-center gap-1 text-rose-300">
                 <AlertCircle className="w-3.5 h-3.5" />
                 <span>Salah: {errorCount}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -785,8 +991,9 @@ export default function TypingTrainerGame() {
                 className={`p-1.5 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] cursor-pointer ${
                   showHands ? "bg-amber-300 text-black" : "bg-white text-slate-700"
                 }`}
+                title={showHands ? "Sembunyikan Panduan Tangan" : "Tampilkan Panduan Tangan"}
               >
-                <Hand className="w-4 h-4" />
+                <Hand className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={(e) => {
@@ -794,15 +1001,17 @@ export default function TypingTrainerGame() {
                   setIsMuted(!isMuted);
                 }}
                 className="p-1.5 bg-white hover:bg-slate-100 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] cursor-pointer text-slate-800"
+                title={isMuted ? "Nyalakan Suara" : "Matikan Suara"}
               >
-                {isMuted ? <VolumeX className="w-4 h-4 text-rose-600" /> : <Volume2 className="w-4 h-4 text-emerald-600" />}
+                {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-600" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-600" />}
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   resetLesson();
                 }}
-                className="flex items-center gap-1 px-3 py-1.5 bg-amber-300 hover:bg-amber-400 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-black text-black cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 bg-amber-300 hover:bg-amber-400 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-black text-black cursor-pointer"
+                title="Ulangi Level Ini"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset</span>
@@ -812,9 +1021,10 @@ export default function TypingTrainerGame() {
                   e.stopPropagation();
                   toggleFullscreen();
                 }}
-                className="flex items-center gap-1 px-3.5 py-1.5 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-black cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-black cursor-pointer"
+                title="Keluar Layar Penuh"
               >
-                <Minimize2 className="w-4 h-4" />
+                <Minimize2 className="w-3.5 h-3.5" />
                 <span>Keluar</span>
                 <kbd className="hidden sm:inline bg-black text-white text-[10px] px-1 rounded font-mono">Esc</kbd>
               </button>
@@ -822,71 +1032,208 @@ export default function TypingTrainerGame() {
           </div>
         )}
 
-        {/* ── LIVE TEXT PROMPT DISPLAY BOX (Stylized EdClub Caret Box) ── */}
-        <div className="bg-[#FFFDF5] bg-retro-dots border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl p-6 sm:p-8 mb-3 sm:mb-4 text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[140px] sm:min-h-[160px]">
-          {/* Prompts Typography */}
+        {/* ── CENTERED CORE PLAY AREA (Canvas + Keyboard) ── */}
+        <div
+          className={`w-full flex flex-col items-center justify-center gap-2.5 sm:gap-3.5 md:gap-4 ${
+            isFullscreen ? "flex-1 min-h-0 overflow-y-auto my-auto" : "my-1"
+          }`}
+        >
+          {/* ── LIVE TEXT PROMPT DISPLAY CANVAS (3-Row Centered, TypingClub Style) ── */}
           <div
-            ref={promptContainerRef}
-            className="font-mono text-2xl sm:text-4xl tracking-widest font-black flex flex-wrap items-center justify-center gap-y-2 max-w-3xl leading-relaxed select-none"
+            className={`w-full max-w-3xl lg:max-w-4xl bg-[#FFFDF5] bg-retro-dots border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl relative overflow-hidden flex flex-col shrink-0 ${
+              isFullscreen ? "shadow-[5px_5px_0px_0px_#000]" : ""
+            }`}
           >
-            {targetText.split("").map((char, index) => {
-              const isTyped = index < currentIndex;
-              const isCurrent = index === currentIndex;
-              const isUpcoming = index > currentIndex;
-
-              let charClass = "text-slate-400"; // default upcoming
-              if (isTyped) {
-                charClass = "text-emerald-700 bg-emerald-100 rounded px-0.5";
-              } else if (isCurrent) {
-                charClass = hasErrorOnCurrentChar
-                  ? "bg-rose-500 text-white rounded px-1.5 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]"
-                  : "bg-cyan-300 text-black border-2 border-black rounded px-1.5 shadow-[2px_2px_0px_0px_#000] scale-110";
-              }
-
-              return (
-                <span
-                  key={index}
-                  className={`relative transition-all mx-[1px] inline-block ${charClass}`}
-                >
-                  {char === " " ? (
-                    <span className="opacity-40">␣</span>
-                  ) : (
-                    char
-                  )}
+            {/* Top Status & Finger Guidance Header */}
+            <div className="w-full bg-white/95 backdrop-blur-xs border-b-2 border-black px-3 sm:px-4 py-1.5 flex flex-wrap items-center justify-between gap-1.5 z-10 select-none">
+              <div className="flex items-center gap-2">
+                <span className="bg-amber-300 text-black font-mono text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded border border-black shadow-[1px_1px_0px_0px_#000] uppercase">
+                  Petunjuk Ketik
                 </span>
-              );
-            })}
-          </div>
+                <div className="flex items-center gap-1.5 font-mono text-xs sm:text-sm font-bold text-slate-800">
+                  <span className="text-slate-500 text-xs hidden sm:inline">Tekan:</span>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-md border-2 border-black font-black text-xs sm:text-sm shadow-[2px_2px_0px_0px_#000] transition-colors ${
+                      currentChar === " " ? "bg-cyan-300 text-black" : "bg-cyan-400 text-black"
+                    }`}
+                  >
+                    {currentChar === " " ? "␣ SPASI (Spacebar)" : currentChar}
+                  </span>
+                </div>
+              </div>
 
-          {/* Floating error / hit popups */}
-          {popups.map((p) => (
-            <div
-              key={p.id}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 animate-out fade-out slide-out-to-top duration-700"
-            >
-              <span className="px-3 py-1 font-heading font-black text-xs rounded-full border-2 border-black shadow-[2px_2px_0px_0px_#000] bg-rose-500 text-white">
-                {p.text}
-              </span>
+              {/* Finger Helper Badge */}
+              {activeFingerInfo && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-slate-500 font-bold hidden sm:inline">Jari:</span>
+                  <span
+                    className={`font-mono text-xs sm:text-sm font-black px-3 py-0.5 rounded-md border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center gap-1.5 ${activeFingerInfo.bg} ${activeFingerInfo.text}`}
+                  >
+                    <span>🖐️</span>
+                    <span>{activeFingerInfo.name}</span>
+                  </span>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
 
-        {/* ── VECTOR ANSI VIRTUAL KEYBOARD WITH SVG PATHS & INTEGRATED VECTOR HAND OVERLAY ── */}
-        {showKeyboard && (
-          <div className="relative max-w-3xl mx-auto w-full my-2 sm:my-3 p-3 sm:p-5 bg-white border-2 border-black rounded-2xl shadow-[5px_5px_0px_0px_#000] select-none">
-            {/* SVG Vector Keyboard with Locked 1:1 Hand Vector Layer */}
-            <div className="relative z-10 w-full">
-              <SvgVirtualKeyboard
-                currentChar={currentChar}
-                pressedKeys={pressedKeys}
-                hasError={hasErrorOnCurrentChar}
-                colorByFinger={false}
-                showHands={showHands}
-                handSvgPath={getHandSvgPath(currentChar)}
+            {/* 3-Row Centered Typing Canvas */}
+            <div
+              ref={promptContainerRef}
+              className={`w-full flex flex-col items-center justify-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 select-none relative overflow-x-auto scrollbar-none ${
+                isFullscreen
+                  ? "py-3 sm:py-4 md:py-5 min-h-[140px] sm:min-h-[160px] md:min-h-[180px]"
+                  : "py-3 sm:py-4 min-h-[120px] sm:min-h-[150px]"
+              }`}
+            >
+              {/* Render exactly 3 rows: [activeLineIndex-1], [activeLineIndex], [activeLineIndex+1] */}
+              {[-1, 0, 1].map((offset) => {
+                const lineIndex = activeLineIndex + offset;
+                const lineChars = textLines[lineIndex];
+                const isActiveLine = offset === 0;
+
+                // Placeholder to maintain 3-row height even if line doesn't exist
+                if (!lineChars) {
+                  return (
+                    <div
+                      key={`placeholder-${offset}`}
+                      className="h-[1.6rem] sm:h-[2.2rem] md:h-[2.6rem] w-full"
+                      aria-hidden="true"
+                    />
+                  );
+                }
+
+                return (
+                  <div
+                    key={lineIndex}
+                    className={`flex items-center justify-center gap-0 flex-nowrap transition-all duration-300 max-w-full ${
+                      isActiveLine
+                        ? "opacity-100"
+                        : "opacity-35 scale-95 pointer-events-none"
+                    }`}
+                  >
+                    {lineChars.map(({ char, index, isSpace }) => {
+                      const isTyped = index < currentIndex;
+                      const isCurrent = isActiveLine && index === currentIndex;
+
+                      // Characters in non-active lines don't show per-char state (dimmed preview/history)
+                      if (!isActiveLine) {
+                        if (isSpace) {
+                          return (
+                            <span
+                              key={index}
+                              className="inline-flex items-center justify-center font-mono text-slate-300 px-[1px] sm:px-[2px] text-sm sm:text-base md:text-xl lg:text-2xl w-[0.6em] select-none"
+                            >
+                              ·
+                            </span>
+                          );
+                        }
+                        return (
+                          <span
+                            key={index}
+                            className="inline-flex items-center justify-center font-mono font-bold tracking-normal sm:tracking-wider text-slate-400 px-[1px] sm:px-[2px] text-sm sm:text-base md:text-xl lg:text-2xl"
+                          >
+                            {char}
+                          </span>
+                        );
+                      }
+
+                      // Active line: full coloring with enhanced prominent cursor
+                      let charClasses = "text-slate-400 border-2 border-transparent";
+                      if (isTyped) {
+                        charClasses = "text-emerald-800 bg-emerald-100 border-2 border-emerald-300";
+                      } else if (isCurrent) {
+                        charClasses = hasErrorOnCurrentChar
+                          ? "bg-rose-500 text-white font-black border-2 border-black shadow-[3px_3px_0px_0px_#000] scale-110 -translate-y-0.5 animate-pulse"
+                          : "bg-cyan-300 text-black font-black border-2 border-black shadow-[3px_3px_0px_0px_#000] scale-110 -translate-y-0.5 ring-2 ring-cyan-400/60";
+                      }
+
+                      if (isSpace && isCurrent) {
+                        return (
+                          <span
+                            key={index}
+                            className={`inline-flex items-center justify-center h-[1.4em] min-w-[1.4em] sm:min-w-[1.8em] px-1.5 mx-0.5 font-mono text-lg sm:text-2xl md:text-3xl lg:text-[2.25rem] font-black leading-none whitespace-nowrap select-none rounded-md border-2 border-black shadow-[3px_3px_0px_0px_#000] scale-110 -translate-y-0.5 transition-all duration-75 ${
+                              hasErrorOnCurrentChar
+                                ? "bg-rose-500 text-white animate-pulse"
+                                : "bg-cyan-300 text-black ring-2 ring-cyan-400/60"
+                            }`}
+                            title="Tekan Spasi (Spacebar)"
+                          >
+                            ␣
+                          </span>
+                        );
+                      }
+
+                      if (isSpace) {
+                        return (
+                          <span
+                            key={index}
+                            className={`inline-flex items-center justify-center h-[1.4em] min-w-[0.65em] sm:min-w-[0.8em] font-mono text-base sm:text-xl md:text-2xl text-center select-none ${
+                              isTyped ? "text-emerald-500 font-bold" : "text-slate-300 font-medium"
+                            }`}
+                          >
+                            ·
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <span
+                          key={index}
+                          className={`inline-flex items-center justify-center font-mono font-bold tracking-normal sm:tracking-wider h-[1.4em] min-w-[0.7em] sm:min-w-[0.8em] px-[1.5px] sm:px-[3px] rounded-md transition-all duration-75 text-lg sm:text-2xl md:text-3xl lg:text-[2.25rem] ${charClasses}`}
+                        >
+                          {char}
+                        </span>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+
+              {/* Floating popups */}
+              {popups.map((p) => (
+                <div
+                  key={p.id}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 animate-out fade-out slide-out-to-top duration-700"
+                >
+                  <span className="px-3 py-1 font-heading font-black text-xs rounded-full border-2 border-black shadow-[2px_2px_0px_0px_#000] bg-rose-500 text-white">
+                    {p.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom Mini Progress Track */}
+            <div className="w-full bg-slate-200/80 h-1.5 border-t border-black/10 overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 transition-all duration-150"
+                style={{ width: `${progressPct}%` }}
               />
             </div>
           </div>
-        )}
+
+          {/* ── VECTOR ANSI VIRTUAL KEYBOARD WITH SVG PATHS & INTEGRATED VECTOR HAND OVERLAY ── */}
+          {showKeyboard && (
+            <div
+              className={`relative mx-auto w-full bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] select-none flex items-center justify-center shrink-0 ${
+                isFullscreen
+                  ? "max-w-[580px] sm:max-w-[660px] md:max-w-[720px] lg:max-w-[760px] p-2 sm:p-3"
+                  : "max-w-2xl lg:max-w-3xl p-3 sm:p-4"
+              }`}
+            >
+              {/* SVG Vector Keyboard with Locked 1:1 Hand Vector Layer */}
+              <div className="relative z-10 w-full">
+                <SvgVirtualKeyboard
+                  currentChar={currentChar}
+                  pressedKeys={pressedKeys}
+                  hasError={hasErrorOnCurrentChar}
+                  colorByFinger={false}
+                  showHands={showHands}
+                  handSvgPath={getHandSvgPath(currentChar)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* ── VICTORY & SCORECARD MODAL ── */}
         {isFinished && (
@@ -955,6 +1302,26 @@ export default function TypingTrainerGame() {
                   <div className="font-heading font-black text-lg text-black font-mono">{formatTime(elapsedTime)}</div>
                 </div>
               </div>
+
+              {/* XP Awarded info for Siswa */}
+              {awardedXpInfo && (
+                <div className="bg-amber-100 border-2 border-black p-3 rounded-xl shadow-[3px_3px_0px_0px_#000] flex items-center justify-between text-xs font-mono font-bold">
+                  <div className="flex items-center gap-2 text-amber-950">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>Hadiah Siswa:</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-black font-black">
+                    <span className="bg-amber-400 border border-black px-2.5 py-1 rounded shadow-[1px_1px_0px_0px_#000] font-heading text-xs">
+                      +{awardedXpInfo.xp} XP
+                    </span>
+                    {awardedXpInfo.bonus > 0 && (
+                      <span className="text-[10px] text-emerald-800 bg-emerald-200 border border-black px-1.5 py-0.5 rounded shadow-[1px_1px_0px_0px_#000]">
+                        ⭐ Bonus Akurasi!
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   getLandingPageConfig, 
   updateAllLandingSections, 
@@ -39,6 +39,36 @@ import {
   Terminal
 } from "lucide-react";
 
+// Helper mini toggle button declared outside render
+function MiniToggle({ label, isVisible, onToggle, subLabel }) {
+  return (
+    <div className="flex items-center justify-between p-3 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] gap-3">
+      <div>
+        <span className="font-heading font-bold text-xs sm:text-sm text-black block">
+          {label}
+        </span>
+        {subLabel && (
+          <span className="font-mono text-[10px] text-slate-500 block">
+            {subLabel}
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`px-3 py-1 font-mono text-[11px] font-black uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+          isVisible !== false
+            ? "bg-emerald-400 text-black hover:bg-emerald-300"
+            : "bg-rose-500 text-white hover:bg-rose-400"
+        }`}
+      >
+        {isVisible !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+        <span>{isVisible !== false ? "Tampil" : "Sembunyi"}</span>
+      </button>
+    </div>
+  );
+}
+
 export default function AdminLandingPage() {
   const [config, setConfig] = useState(DEFAULT_LANDING_CONFIG);
   const [activeTab, setActiveTab] = useState("general");
@@ -46,19 +76,29 @@ export default function AdminLandingPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Load config on mount
-  useEffect(() => {
-    loadConfig();
-  }, []);
-
-  const loadConfig = async () => {
-    setIsLoading(true);
+  const loadConfig = useCallback(async () => {
     const res = await getLandingPageConfig();
     if (res.success && res.data) {
       setConfig(res.data);
     }
     setIsLoading(false);
-  };
+  }, []);
+
+  // Load config on mount
+  useEffect(() => {
+    let isMounted = true;
+    getLandingPageConfig().then((res) => {
+      if (isMounted) {
+        if (res.success && res.data) {
+          setConfig(res.data);
+        }
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Helper to update specific section's content or visibility
   const updateSectionContent = (sectionKey, field, value) => {
@@ -175,34 +215,6 @@ export default function AdminLandingPage() {
   const currentWaNumber = config.general?.content?.whatsappNumber || "6280000000000";
   const normalizedWa = normalizeWhatsAppNumber(currentWaNumber);
   const formattedPhone = formatPhoneDisplay(currentWaNumber);
-
-  // Helper mini toggle button
-  const MiniToggle = ({ label, isVisible, onToggle, subLabel }) => (
-    <div className="flex items-center justify-between p-3 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] gap-3">
-      <div>
-        <span className="font-heading font-bold text-xs sm:text-sm text-black block">
-          {label}
-        </span>
-        {subLabel && (
-          <span className="font-mono text-[10px] text-slate-500 block">
-            {subLabel}
-          </span>
-        )}
-      </div>
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`px-3 py-1 font-mono text-[11px] font-black uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-          isVisible !== false
-            ? "bg-emerald-400 text-black hover:bg-emerald-300"
-            : "bg-rose-500 text-white hover:bg-rose-400"
-        }`}
-      >
-        {isVisible !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-        <span>{isVisible !== false ? "Tampil" : "Sembunyi"}</span>
-      </button>
-    </div>
-  );
 
   if (isLoading) {
     return (
@@ -394,6 +406,75 @@ export default function AdminLandingPage() {
 
             <p className="font-mono text-[11px] text-slate-700 leading-relaxed">
               💡 <em>Anda bisa memasukkan format dengan awalan <code>08xxx</code>, <code>628xxx</code>, atau <code>+62 8xxx</code>. Sistem secara otomatis mengonversinya menjadi format internasional yang valid untuk seluruh tombol WhatsApp di website.</em>
+            </p>
+          </div>
+
+          {/* SINGLE PC WORKSTATION CAPACITY INPUT */}
+          <div className="p-5 bg-cyan-50 border-3 border-black shadow-[4px_4px_0px_0px_#000] space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <label className="font-heading font-black text-sm text-black uppercase flex items-center gap-2">
+                <Monitor className="w-4 h-4 text-cyan-700" />
+                <span>Kapasitas Unit PC per Kelas (Single Source of Truth)</span>
+              </label>
+              <span className="font-mono text-[11px] bg-black text-cyan-300 px-2 py-0.5 font-bold">
+                AUTO-SYNC KE SELURUH WEB
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+              <div className="w-full sm:w-48">
+                <div className="flex items-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000]">
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={config.general?.content?.pcCapacity ?? 5}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      updateSectionContent("general", "pcCapacity", isNaN(val) ? 5 : val);
+                    }}
+                    className="w-full p-3 font-mono text-base font-black text-center focus:outline-none focus:bg-cyan-50 text-black"
+                    placeholder="5"
+                  />
+                  <span className="px-3 font-mono text-xs font-bold text-slate-600 border-l-2 border-black bg-slate-100 py-3.5">
+                    PC / Sesi
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Select Buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[11px] font-bold text-slate-600 hidden sm:inline">Pilih Cepat:</span>
+                {[3, 4, 5, 6].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => updateSectionContent("general", "pcCapacity", num)}
+                    className={`px-3.5 py-2 font-mono text-xs font-bold border-2 border-black transition-all cursor-pointer ${
+                      (config.general?.content?.pcCapacity ?? 5) === num
+                        ? "bg-black text-cyan-300 shadow-[2px_2px_0px_0px_#000] font-black"
+                        : "bg-white text-black hover:bg-cyan-100 shadow-[1.5px_1.5px_0px_0px_#000]"
+                    }`}
+                  >
+                    {num} PC
+                  </button>
+                ))}
+              </div>
+
+              <div className="px-4 py-2.5 bg-black text-white border-2 border-black flex items-center gap-3 shrink-0 font-mono text-xs sm:ml-auto">
+                <div>
+                  <span className="text-[10px] text-slate-400 block">FORMAT METODE:</span>
+                  <span className="text-cyan-300 font-bold">1-on-{config.general?.content?.pcCapacity ?? 5} Mentoring</span>
+                </div>
+                <div className="border-l border-slate-700 pl-3">
+                  <span className="text-[10px] text-slate-400 block">STATUS LAB:</span>
+                  <span className="text-emerald-400 font-bold">{config.general?.content?.pcCapacity ?? 5} Workstation Siap</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="font-mono text-[11px] text-slate-700 leading-relaxed">
+              💡 <em>Ubah angka di sini (misal menjadi <strong>4</strong> atau <strong>3</strong>), maka badge &quot;1-ON-5 MENTORING&quot; di Hero Section, denah interaktif workstation di Fasilitas Lab, batas kuota kelas, serta teks promosi di seluruh halaman otomatis tersinkronisasi serentak!</em>
             </p>
           </div>
 

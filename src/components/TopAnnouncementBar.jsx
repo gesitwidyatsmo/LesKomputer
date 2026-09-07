@@ -3,11 +3,14 @@
 import { Terminal } from "lucide-react";
 import { formatWhatsAppUrl } from "@/lib/landingService";
 
-export default function TopAnnouncementBar({ data, globalWhatsapp }) {
+export default function TopAnnouncementBar({ data, globalWhatsapp, globalSettings }) {
+  const pcCapacity = Number(globalSettings?.pcCapacity) || 5;
   const showBadge = data?.showBadge !== false;
   const batchStatus = data?.batchStatus || "[BATCH_2026 // OPEN]";
   const onlineText = data?.onlineText || "[ONLINE]";
-  const marqueeText1 = data?.marqueeText1 || "⚡ KUOTA TERBATAS: MAKSIMAL 5 SISWA / KELAS";
+  const marqueeText1 = data?.marqueeText1
+    ? data.marqueeText1.replace(/\bMAKSIMAL \d+ SISWA\b/i, `MAKSIMAL ${pcCapacity} SISWA`)
+    : `⚡ KUOTA TERBATAS: MAKSIMAL ${pcCapacity} SISWA / KELAS`;
   const marqueeText2 = data?.marqueeText2 || "1 SISWA 1 KOMPUTER — METODE PRAKTIK LANGSUNG DI TEMPAT";
   const marqueeText3 = data?.marqueeText3 || "DAFTAR SEGERA >_";
   const showButton = data?.showButton !== false;
@@ -40,7 +43,7 @@ export default function TopAnnouncementBar({ data, globalWhatsapp }) {
           )}
           {marqueeText2 && (
             <>
-              <span className="text-amber-400 font-bold hidden md:inline">//</span>
+              <span className="text-amber-400 font-bold hidden md:inline">{"//"}</span>
               <span className="text-amber-300 font-medium hidden md:inline">
                 {marqueeText2}
               </span>
@@ -48,7 +51,7 @@ export default function TopAnnouncementBar({ data, globalWhatsapp }) {
           )}
           {marqueeText3 && (
             <>
-              <span className="text-amber-400 font-bold hidden lg:inline">//</span>
+              <span className="text-amber-400 font-bold hidden lg:inline">{"//"}</span>
               <span className="text-cyan-300 font-bold hidden lg:inline">
                 {marqueeText3}
               </span>

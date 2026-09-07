@@ -45,6 +45,7 @@ export const DEFAULT_LANDING_CONFIG = {
     is_visible: true,
     content: {
       whatsappNumber: "6280000000000", // SATU-SATUNYA INPUT NO. WA UNTUK SELURUH WEB
+      pcCapacity: 5, // KAPASITAS WORKSTATION / SISWA PER KELAS (SINGLE SOURCE OF TRUTH)
       brandName: "GWA.TECH",
       brandTagline: "// Gesit, Wawasan, Aplikatif",
       brandDescription: "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.",
@@ -522,6 +523,10 @@ export async function getLandingPageConfig() {
                      "6280000000000";
 
     merged.general.content.whatsappNumber = globalWa;
+
+    // Sinkronisasi kapasitas PC per kelas terpusat (default 5 jika belum disetel)
+    const pcCount = Number(merged.general?.content?.pcCapacity) || 5;
+    merged.general.content.pcCapacity = pcCount;
 
     return { success: true, data: merged, isDefault: false };
   } catch (err) {

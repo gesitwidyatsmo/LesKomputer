@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -17,7 +17,7 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
-import { getSiswaById } from "@/lib/siswaService";
+import { verifikasiSertifikatSiswa } from "@/lib/siswaService";
 
 function VerifikasiContent() {
   const searchParams = useSearchParams();
@@ -25,11 +25,11 @@ function VerifikasiContent() {
 
   const [searchId, setSearchId] = useState(initialId);
   const [siswaData, setSiswaData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const [isLoading, setIsLoading] = useState(() => Boolean(initialId));
+  const [searched, setSearched] = useState(() => Boolean(initialId));
   const [notFound, setNotFound] = useState(false);
 
-  const handleVerify = async (idToSearch) => {
+  const handleVerify = useCallback(async (idToSearch) => {
     const query = (idToSearch || searchId).trim();
     if (!query) return;
 
@@ -38,7 +38,7 @@ function VerifikasiContent() {
     setNotFound(false);
 
     try {
-      const { data, error } = await getSiswaById(query);
+      const { data, error } = await verifikasiSertifikatSiswa(query);
       if (error || !data) {
         setSiswaData(null);
         setNotFound(true);
@@ -52,12 +52,27 @@ function VerifikasiContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchId]);
 
   useEffect(() => {
+    let isMounted = true;
     if (initialId) {
-      handleVerify(initialId);
+      verifikasiSertifikatSiswa(initialId).then(({ data, error }) => {
+        if (isMounted) {
+          if (error || !data) {
+            setSiswaData(null);
+            setNotFound(true);
+          } else {
+            setSiswaData(data);
+            setNotFound(false);
+          }
+          setIsLoading(false);
+        }
+      });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [initialId]);
 
   return (

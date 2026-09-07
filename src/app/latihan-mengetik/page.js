@@ -129,7 +129,7 @@ export default async function LatihanMengetikPage() {
       </main>
 
       {/* Footer */}
-      <Footer brandName={brandName} />
+      <Footer data={config?.footer?.content} globalSettings={globalSettings} />
     </div>
   );
 }

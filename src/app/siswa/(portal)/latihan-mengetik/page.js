@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useSiswa } from "@/context/SiswaContext";
 import TypingTrainerGame from "@/components/typing-trainer/TypingTrainerGame";
 import TypingGuideCard from "@/components/typing-trainer/TypingGuideCard";
 import { 
   ArrowLeft, 
-  Keyboard, 
   Sparkles, 
-  ShieldCheck, 
-  BookOpen, 
-  Brain,
-  Trophy
+  Mouse,
+  Zap,
+  Award
 } from "lucide-react";
 
 export default function SiswaLatihanMengetikPage() {
+  const { currentSiswa, gamification } = useSiswa();
+  const levelInfo = gamification?.levelInfo;
+
   return (
     <div className="space-y-6">
       {/* ── Top Header Bar ────────────────── */}
@@ -26,10 +28,29 @@ export default function SiswaLatihanMengetikPage() {
           <span>Kembali ke Beranda Siswa</span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <span className="bg-amber-300 border-2 border-black px-3 py-1 text-xs font-mono font-bold shadow-[2px_2px_0px_0px_#000] rounded-md flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {levelInfo && (
+            <div className="flex items-center gap-1.5 bg-white border-2 border-black px-3 py-1 text-xs font-mono font-bold shadow-[2px_2px_0px_0px_#000] rounded-lg">
+              <Award className="w-3.5 h-3.5 text-amber-500" />
+              <span>Lv.{levelInfo.level}</span>
+              <span className="text-slate-400">·</span>
+              <Zap className="w-3.5 h-3.5 text-orange-500" />
+              <span>{gamification?.xp || 0} XP</span>
+            </div>
+          )}
+
+          <Link
+            href="/siswa/latihan-mouse"
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-cyan-200 font-mono text-xs font-bold text-black border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+            title="Pindah ke Latihan Mouse"
+          >
+            <Mouse className="w-3.5 h-3.5 text-black" />
+            <span>Latihan Mouse</span>
+          </Link>
+
+          <span className="bg-amber-300 border-2 border-black px-3 py-1 text-xs font-mono font-bold shadow-[2px_2px_0px_0px_#000] rounded-lg flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-black" />
-            <span>Praktik Touch Typing 10 Jari</span>
+            <span>Touch Typing 10 Jari</span>
           </span>
         </div>
       </div>
@@ -41,10 +62,12 @@ export default function SiswaLatihanMengetikPage() {
             <span>⌨️ Ruang Latihan Mengetik Siswa</span>
           </div>
           <h1 className="font-heading font-black text-2xl sm:text-3xl text-black tracking-tight leading-snug">
-            Latihan Praktik Mengetik 10 Jari (Touch Typing)
+            {currentSiswa?.nama
+              ? `Latihan Mengetik 10 Jari · Semangat, ${currentSiswa.nama}! 🚀`
+              : "Latihan Praktik Mengetik 10 Jari (Touch Typing)"}
           </h1>
           <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
-            Tingkatkan kecepatan mengetik (WPM) dan akurasi Anda dengan teknik 10 jari tanpa melihat keyboard fisik. Ikuti panduan tombol dan jari di layar!
+            Tingkatkan kecepatan mengetik (WPM) dan akurasi Anda dengan teknik 10 jari tanpa melihat keyboard fisik. Kumpulkan XP dan raih bintang di setiap level!
           </p>
         </div>
       </div>

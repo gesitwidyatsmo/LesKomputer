@@ -224,6 +224,34 @@ export async function getSiswaById(id) {
   return { data, error };
 }
 
+/**
+ * Verifikasi sertifikat publik (Sanitized query, no password / PII leak)
+ */
+export async function verifikasiSertifikatSiswa(id) {
+  const { data, error } = await supabase
+    .from('siswa')
+    .select(`
+      id,
+      nama,
+      status,
+      nilai_akhir,
+      predikat,
+      tanggal_lulus,
+      modul:modul_id(id, nama, total_pertemuan, icon),
+      kelas:kelas_id(nama)
+    `)
+    .eq('id', id)
+    .single();
+
+  if (data) {
+    data.modul = data.modul?.nama || data.modul;
+    data.totalPertemuan = data.modul?.total_pertemuan || 10;
+    data.kelas = data.kelas?.nama || data.kelas;
+  }
+
+  return { data, error };
+}
+
 export async function getKehadiranSiswa(siswaId) {
   const { data, error } = await supabase
     .from('kehadiran')

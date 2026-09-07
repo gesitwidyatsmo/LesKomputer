@@ -67,22 +67,25 @@ function SiswaFormModal({ siswa, kelasList, modulList, onClose, onSaved }) {
     confirm_password: "",
   });
 
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(!isEdit);
   const [isSaving, setIsSaving] = useState(false);
   const [err, setErr] = useState("");
 
   // Generate ID otomatis saat tambah baru
   useEffect(() => {
+    let isMounted = true;
     if (!isEdit) {
-      setIsGenerating(true);
       generateIdSiswa().then((id) => {
-        setForm((f) => ({ ...f, id }));
-        setIsGenerating(false);
+        if (isMounted) {
+          setForm((f) => ({ ...f, id }));
+          setIsGenerating(false);
+        }
       });
-    } else {
-      setForm((f) => ({ ...f, id: siswa.id }));
     }
-  }, [isEdit, siswa?.id]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isEdit]);
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -572,17 +575,27 @@ export default function DataSiswa() {
 
   // ── Loaders ──
   const loadSiswa = useCallback(async () => {
-    setIsLoading(true);
     const { data } = await getSemuaSiswa();
     if (data) setSiswaList(data);
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    loadSiswa();
-    getSemuaKelas().then(({ data }) => { if (data) setKelasList(data); });
-    getSemuaModul().then(({ data }) => { if (data) setModulList(data); });
-  }, [loadSiswa]);
+    let isMounted = true;
+    Promise.all([
+      getSemuaSiswa(),
+      getSemuaKelas(),
+      getSemuaModul()
+    ]).then(([{ data: sData }, { data: kData }, { data: mData }]) => {
+      if (isMounted) {
+        if (sData) setSiswaList(sData);
+        if (kData) setKelasList(kData);
+        if (mData) setModulList(mData);
+        setIsLoading(false);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   // ── Detail Modal Loader ──
   const handleOpenDetail = async (siswa) => {

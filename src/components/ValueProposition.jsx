@@ -137,7 +137,7 @@ export default function ValueProposition({ data }) {
                   </h3>
                   {val.subtitle && (
                     <p className="font-mono text-xs font-bold text-slate-600 uppercase mb-4 tracking-wide">
-                      // {val.subtitle}
+                      {"//"} {val.subtitle}
                     </p>
                   )}
 

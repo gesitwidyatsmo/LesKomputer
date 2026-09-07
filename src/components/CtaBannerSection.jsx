@@ -3,12 +3,15 @@
 import { ArrowRight, Terminal, CheckCircle2 } from "lucide-react";
 import { formatWhatsAppUrl } from "@/lib/landingService";
 
-export default function CtaBannerSection({ data, globalWhatsapp }) {
+export default function CtaBannerSection({ data, globalWhatsapp, globalSettings }) {
+  const pcCapacity = Number(globalSettings?.pcCapacity) || 5;
   const showBadge = data?.showBadge !== false;
   const badgeText = data?.badgeText || "[SYS_COMMAND // INITIALIZE_ENROLLMENT]";
   const titlePrefix = data?.titlePrefix || "SIAP MENJADI MAHIR";
   const titleHighlight = data?.titleHighlight || "DAN PERCAYA DIRI BEKERJA?";
-  const description = data?.description || "Slot 5 siswa per kelas sangat cepat penuh. Segera konsultasikan modul yang Anda butuhkan dan amankan jadwal kelas terbaik Anda bersama mentor kami hari ini.";
+  const description = data?.description
+    ? data.description.replace(/\b\d+ siswa per kelas\b/i, `${pcCapacity} siswa per kelas`)
+    : `Slot ${pcCapacity} siswa per kelas sangat cepat penuh. Segera konsultasikan modul yang Anda butuhkan dan amankan jadwal kelas terbaik Anda bersama mentor kami hari ini.`;
   
   const showBadges = data?.showBadges !== false;
   const badge1 = data?.badge1 || "Bebas Biaya Pendaftaran";

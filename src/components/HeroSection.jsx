@@ -14,15 +14,21 @@ import {
 
 import { formatWhatsAppUrl } from "@/lib/landingService";
 
-export default function HeroSection({ data, globalWhatsapp }) {
+export default function HeroSection({ data, globalWhatsapp, globalSettings }) {
   const [activeTab, setActiveTab] = useState("excel");
 
+  const pcCapacity = Number(globalSettings?.pcCapacity) || 5;
+
   const showBadge = data?.showBadge !== false;
-  const badgeText = data?.badgeText || "[⚡ METODE EKSKLUSIF 1-ON-5 MENTORING]";
+  const badgeText = data?.badgeText
+    ? data.badgeText.replace(/1-on-\d+/i, `1-ON-${pcCapacity}`).replace(/1-ON-5/g, `1-ON-${pcCapacity}`)
+    : `[⚡ METODE EKSKLUSIF 1-ON-${pcCapacity} MENTORING]`;
   const headlinePrefix = data?.headlinePrefix || "Belajar Komputer";
   const headlineSub = data?.headlineSub || "Gak Pakai Rumit.";
   const headlineHighlight = data?.headlineHighlight || "Dari Nol Sampai Mahir.";
-  const description = data?.description || "Kuasai Microsoft Word, Excel Logika & Kasir, dan PowerPoint Profesional dengan metode mentoring privat maksimal 5 orang. 1 Siswa 1 Unit Komputer — 100% praktik langsung studi kasus dunia kerja.";
+  const description = data?.description
+    ? data.description.replace(/\bmaksimal \d+ orang\b/i, `maksimal ${pcCapacity} orang`).replace(/\b5 orang\b/i, `${pcCapacity} orang`)
+    : `Kuasai Microsoft Word, Excel Logika & Kasir, dan PowerPoint Profesional dengan metode mentoring privat maksimal ${pcCapacity} orang. 1 Siswa 1 Unit Komputer — 100% praktik langsung studi kasus dunia kerja.`;
   
   const showCtaWhatsapp = data?.showCtaWhatsapp !== false;
   const ctaWhatsappText = data?.ctaWhatsappText || "Konsultasi via WhatsApp";
@@ -40,7 +46,9 @@ export default function HeroSection({ data, globalWhatsapp }) {
   const showFloatingBadges = data?.showFloatingBadges !== false;
   const floatingBadgeLeftTitle = data?.floatingBadgeLeftTitle || "Total Alumni Lulus";
   const floatingBadgeLeftValue = data?.floatingBadgeLeftValue || "500+ Siswa Mahir";
-  const floatingBadgeRightText = data?.floatingBadgeRightText || "5 PC WORKSTATION SIAP";
+  const floatingBadgeRightText = data?.floatingBadgeRightText
+    ? data.floatingBadgeRightText.replace(/\b\d+ PC WORKSTATION\b/i, `${pcCapacity} PC WORKSTATION`)
+    : `${pcCapacity} PC WORKSTATION SIAP`;
 
   const showSimulator = data?.showSimulator !== false;
 
@@ -52,7 +60,7 @@ export default function HeroSection({ data, globalWhatsapp }) {
       {/* Decorative floating code tags in background */}
       <div className="absolute top-12 right-12 opacity-15 select-none pointer-events-none font-mono text-xs hidden lg:block text-slate-800">
         <p>&gt; RUN INIT_WORKSTATION_LAB()</p>
-        <p>&gt; ALLOCATING 5 PC SLOTS... [OK]</p>
+        <p>&gt; ALLOCATING {pcCapacity} PC SLOTS... [OK]</p>
         <p>&gt; MENTOR_SYNC: READY</p>
       </div>
 

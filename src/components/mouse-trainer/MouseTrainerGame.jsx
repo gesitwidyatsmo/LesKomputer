@@ -209,6 +209,10 @@ export default function MouseTrainerGame() {
 
   // Target coordinates & size
   const [targetPos, setTargetPos] = useState({ x: 100, y: 100 });
+  const targetPosRef = useRef(targetPos);
+  useEffect(() => {
+    targetPosRef.current = targetPos;
+  }, [targetPos]);
   const [movingVelocity, setMovingVelocity] = useState({ dx: 2, dy: 1.5 });
   const [hoverProgress, setHoverProgress] = useState(0);
 
@@ -386,7 +390,7 @@ export default function MouseTrainerGame() {
   useEffect(() => {
     if (stage.type !== "moving" || isFinished) return;
 
-    let localPos = { ...targetPos };
+    let localPos = { ...targetPosRef.current };
     let localVel = { ...movingVelocity };
 
     const animate = () => {

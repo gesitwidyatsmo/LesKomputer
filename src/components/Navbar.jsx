@@ -73,7 +73,13 @@ export default function Navbar({ globalWhatsapp, brandName }) {
           </nav>
 
           {/* Right Action CTA */}
-          <div className="hidden md:flex items-center shrink-0">
+          <div className="hidden md:flex items-center gap-2.5 shrink-0">
+            <Link 
+              href="/siswa/login"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-300 hover:bg-yellow-200 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            >
+              <span>🔑</span> Portal Siswa
+            </Link>
             <Link 
               href="/daftar"
               className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-400 text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
@@ -137,6 +143,13 @@ export default function Navbar({ globalWhatsapp, brandName }) {
             </Link>
 
             <div className="pt-2 space-y-2">
+              <Link 
+                href="/siswa/login"
+                onClick={() => setIsOpen(false)}
+                className="block text-center py-2.5 bg-yellow-300 hover:bg-yellow-200 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-bold text-black uppercase cursor-pointer"
+              >
+                🔑 Portal Siswa (Login)
+              </Link>
               <Link 
                 href="/daftar"
                 onClick={() => setIsOpen(false)}

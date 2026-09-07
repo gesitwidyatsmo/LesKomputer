@@ -153,18 +153,15 @@ export default function MateriDropdownContent({ materi }) {
     ? `gwa_misi_${currentSiswa.id}_${materi.id}`
     : `gwa_misi_guest_${materi.id}`;
 
-  const [checkedMisi, setCheckedMisi] = useState({});
-
-  useEffect(() => {
+  const [checkedMisi, setCheckedMisi] = useState(() => {
+    if (typeof window === "undefined") return {};
     try {
       const saved = localStorage.getItem(storageKeyMisi);
-      if (saved) {
-        setCheckedMisi(JSON.parse(saved));
-      }
+      return saved ? JSON.parse(saved) : {};
     } catch {
-      // ignore
+      return {};
     }
-  }, [storageKeyMisi]);
+  });
 
   const toggleMisi = (index) => {
     const isNowDone = !checkedMisi[index];
@@ -250,17 +247,15 @@ export default function MateriDropdownContent({ materi }) {
     ? `gwa_catatan_${currentSiswa.id}_${materi.id}`
     : `gwa_catatan_guest_${materi.id}`;
 
-  const [notes, setNotes] = useState("");
-  const [saveStatus, setSaveStatus] = useState("saved"); // 'saving' | 'saved'
-
-  useEffect(() => {
+  const [notes, setNotes] = useState(() => {
+    if (typeof window === "undefined") return "";
     try {
-      const saved = localStorage.getItem(storageKeyNotes);
-      if (saved) setNotes(saved);
+      return localStorage.getItem(storageKeyNotes) || "";
     } catch {
-      // ignore
+      return "";
     }
-  }, [storageKeyNotes]);
+  });
+  const [saveStatus, setSaveStatus] = useState("saved"); // 'saving' | 'saved'
 
   const handleNotesChange = (e) => {
     const value = e.target.value;

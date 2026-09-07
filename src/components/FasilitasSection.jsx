@@ -43,81 +43,45 @@ import {
 import { useState } from "react";
 import { formatWhatsAppUrl } from "@/lib/landingService";
 
-export default function FasilitasSection({ data, globalWhatsapp }) {
+export default function FasilitasSection({ data, globalWhatsapp, globalSettings }) {
   const [selectedPc, setSelectedPc] = useState(1);
+
+  const pcCapacity = Number(globalSettings?.pcCapacity) || 5;
 
   const showBadge = data?.showBadge !== false;
   const badgeText = data?.badgeText || "[LAB_ARCHITECTURE // PRIVATE_ROOM]";
-  const titlePrefix = data?.titlePrefix || "DENAH KELAS 5-WORKSTATION:";
+  const titlePrefix = data?.titlePrefix
+    ? data.titlePrefix.replace(/\b\d+-WORKSTATION\b/i, `${pcCapacity}-WORKSTATION`)
+    : `DENAH KELAS ${pcCapacity}-WORKSTATION:`;
   const titleHighlight = data?.titleHighlight || "1 SISWA 1 UNIT KOMPUTER";
-  const description = data?.description || "Kami menolak konsep kelas massal yang berisik dan tidak terarah. Di GWA Tech Course, setiap sesi hanya diisi 5 orang untuk menjamin bimbingan intensif dan pemahaman penuh.";
+  const description = data?.description
+    ? data.description.replace(/\b\d+ orang\b/i, `${pcCapacity} orang`)
+    : `Kami menolak konsep kelas massal yang berisik dan tidak terarah. Di GWA Tech Course, setiap sesi hanya diisi ${pcCapacity} orang untuk menjamin bimbingan intensif dan pemahaman penuh.`;
 
   const showWorkstations = data?.showWorkstations !== false;
   const showFacilitiesList = data?.showFacilitiesList !== false;
   const showStats = data?.showStats !== false;
 
-  const defaultPcStations = [
-    {
-      id: 1,
+  const defaultPcStations = Array.from({ length: pcCapacity }, (_, i) => {
+    const num = i + 1;
+    const isOccupied = num === 3;
+    return {
+      id: num,
       isVisible: true,
-      name: "PC-01 // WORKSTATION",
-      status: "TERSEDIA",
-      isOnline: true,
+      name: `PC-${String(num).padStart(2, "0")} // WORKSTATION`,
+      status: isOccupied ? "TERISI (BATCH PAGI)" : "TERSEDIA",
+      isOnline: !isOccupied,
       specs: "Intel Core i5 // 16GB RAM // Dual Monitor // Office 365 Pro",
-      session: "Shift Pagi / Sore / Malam",
-      color: "bg-emerald-300",
-      accent: "border-emerald-500"
-    },
-    {
-      id: 2,
-      isVisible: true,
-      name: "PC-02 // WORKSTATION",
-      status: "TERSEDIA",
-      isOnline: true,
-      specs: "Intel Core i5 // 16GB RAM // Dual Monitor // Office 365 Pro",
-      session: "Shift Pagi / Sore / Malam",
-      color: "bg-emerald-300",
-      accent: "border-emerald-500"
-    },
-    {
-      id: 3,
-      isVisible: true,
-      name: "PC-03 // WORKSTATION",
-      status: "TERISI (BATCH PAGI)",
-      isOnline: false,
-      specs: "Intel Core i5 // 16GB RAM // Dual Monitor // Office 365 Pro",
-      session: "Slot Siang & Malam Tersedia",
-      color: "bg-rose-200",
-      accent: "border-rose-500"
-    },
-    {
-      id: 4,
-      isVisible: true,
-      name: "PC-04 // WORKSTATION",
-      status: "TERSEDIA",
-      isOnline: true,
-      specs: "Intel Core i5 // 16GB RAM // Dual Monitor // Office 365 Pro",
-      session: "Shift Pagi / Sore / Malam",
-      color: "bg-emerald-300",
-      accent: "border-emerald-500"
-    },
-    {
-      id: 5,
-      isVisible: true,
-      name: "PC-05 // WORKSTATION",
-      status: "TERSEDIA",
-      isOnline: true,
-      specs: "Intel Core i5 // 16GB RAM // Dual Monitor // Office 365 Pro",
-      session: "Shift Pagi / Sore / Malam",
-      color: "bg-emerald-300",
-      accent: "border-emerald-500"
-    }
-  ];
+      session: isOccupied ? "Slot Siang & Malam Tersedia" : "Shift Pagi / Sore / Malam",
+      color: isOccupied ? "bg-rose-200" : "bg-emerald-300",
+      accent: isOccupied ? "border-rose-500" : "border-emerald-500"
+    };
+  });
 
   const defaultFacilities = [
     {
       isVisible: true,
-      title: "Maksimal 5 Siswa / Kelas",
+      title: `Maksimal ${pcCapacity} Siswa / Kelas`,
       desc: "Suasana belajar privat & intensif. Mentor selalu standby di samping Anda untuk membimbing setiap kendala rumus dan tugas.",
       icon: <Users className="w-6 h-6 text-black" />,
       color: "bg-orange-300"
@@ -161,7 +125,7 @@ export default function FasilitasSection({ data, globalWhatsapp }) {
 
   const defaultStats = [
     { isVisible: true, value: "500+", label: "Siswa Lulus Mahir", sub: "Tersebar di berbagai kantor & instansi" },
-    { isVisible: true, value: "1 : 5", label: "Rasio Mentor Siswa", sub: "Maksimal 5 siswa per sesi pertemuan" },
+    { isVisible: true, value: `1 : ${pcCapacity}`, label: "Rasio Mentor Siswa", sub: `Maksimal ${pcCapacity} siswa per sesi pertemuan` },
     { isVisible: true, value: "98%", label: "Tingkat Kepuasan", sub: "Rekomendasi langsung dari alumni" },
     { isVisible: true, value: "100%", label: "Praktik Langsung", sub: "Bukan teori hafalan semata" }
   ];
@@ -207,7 +171,8 @@ export default function FasilitasSection({ data, globalWhatsapp }) {
     Package: <Package className="w-6 h-6 text-black" />
   };
 
-  const rawPcStations = data?.pcStations || defaultPcStations;
+  const configuredStations = data?.pcStations && data.pcStations.length > 0 ? data.pcStations : defaultPcStations;
+  const rawPcStations = configuredStations.slice(0, pcCapacity);
   const pcStations = rawPcStations.filter((pc) => pc.isVisible !== false);
 
   const rawFacilities = data?.facilities || defaultFacilities;
@@ -215,10 +180,20 @@ export default function FasilitasSection({ data, globalWhatsapp }) {
     .filter((f) => f.isVisible !== false)
     .map((f) => ({
       ...f,
+      title: f.title ? f.title.replace(/Maksimal \d+ Siswa/i, `Maksimal ${pcCapacity} Siswa`) : f.title,
       icon: f.icon || (f.iconName && iconMap[f.iconName]) || <Monitor className="w-6 h-6 text-black" />
     }));
 
-  const rawStats = data?.stats || defaultStats;
+  const rawStats = (data?.stats || defaultStats).map((st) => {
+    if (st.label?.toLowerCase().includes("rasio")) {
+      return {
+        ...st,
+        value: `1 : ${pcCapacity}`,
+        sub: `Maksimal ${pcCapacity} siswa per sesi pertemuan`
+      };
+    }
+    return st;
+  });
   const stats = rawStats.filter((st) => st.isVisible !== false);
 
   const currentStation = pcStations.find(pc => pc.id === selectedPc) || pcStations[0] || defaultPcStations[0];

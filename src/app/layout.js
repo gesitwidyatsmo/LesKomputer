@@ -19,6 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "GWA Tech Course // Kursus Komputer Eksklusif 1-on-5",
   description: "Belajar Komputer Gak Pakai Rumit. Dari Nol Sampai Mahir Praktik. Kuasai Microsoft Office (Word, Excel, PowerPoint) dengan metode eksklusif 1-on-5 mentoring.",
 };

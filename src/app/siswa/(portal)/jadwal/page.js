@@ -55,14 +55,19 @@ export default function JadwalPage() {
   const [isLoadingJadwal, setIsLoadingJadwal] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     if (currentSiswa?.kelas_id) {
-      setIsLoadingJadwal(true);
       getJadwalByKelas(currentSiswa.kelas_id)
         .then(({ data }) => {
-          if (data) setJadwalKelas(data);
-        })
-        .finally(() => setIsLoadingJadwal(false));
+          if (isMounted) {
+            if (data) setJadwalKelas(data);
+            setIsLoadingJadwal(false);
+          }
+        });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [currentSiswa?.kelas_id]);
 
   if (!currentSiswa) return null;

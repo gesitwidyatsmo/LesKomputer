@@ -233,18 +233,27 @@ export default function ManajemenMateri() {
 
 	// ── Load modul on mount ──
 	const loadModul = useCallback(async () => {
-		setModulLoading(true);
 		const { data } = await getSemuaModul();
 		if (data) {
 			setModulList(data);
-			if (!selectedModul && data.length > 0) setSelectedModul(data[0]);
+			setSelectedModul((curr) => curr || data[0]);
 		}
 		setModulLoading(false);
 	}, []);
 
 	useEffect(() => {
-		loadModul();
-	}, [loadModul]);
+		let isMounted = true;
+		getSemuaModul().then(({ data }) => {
+			if (isMounted) {
+				if (data) {
+					setModulList(data);
+					setSelectedModul((curr) => curr || data[0]);
+				}
+				setModulLoading(false);
+			}
+		});
+		return () => { isMounted = false; };
+	}, []);
 
 	// ── Load materi when modul changes ──
 	const loadMateri = useCallback(async (modulId) => {
@@ -256,8 +265,17 @@ export default function ManajemenMateri() {
 	}, []);
 
 	useEffect(() => {
-		if (selectedModul) loadMateri(selectedModul.id);
-	}, [selectedModul, loadMateri]);
+		let isMounted = true;
+		if (selectedModul?.id) {
+			getMateriByModul(selectedModul.id).then(({ data }) => {
+				if (isMounted) {
+					if (data) setMateriList(data);
+					setMateriLoading(false);
+				}
+			});
+		}
+		return () => { isMounted = false; };
+	}, [selectedModul?.id]);
 
 	// ── Modul CRUD ──
 	const handleModulSaved = async () => {
@@ -1516,8 +1534,8 @@ export default function ManajemenMateri() {
 										{editData.tipe_konten === 'materi_saja' ? (
 											<div className='text-center py-10 bg-white border-2 border-dashed border-black p-6 font-mono text-xs text-slate-500'>
 												<Brain className='w-10 h-10 mx-auto mb-2 text-slate-400' />
-												<p className='font-bold uppercase text-black'>Tipe Konten: "Materi Saja"</p>
-												<p className='mt-1'>Ubah tipe di tab Konten menjadi "Materi & Quiz" jika ingin membuat kuis.</p>
+												<p className='font-bold uppercase text-black'>Tipe Konten: &quot;Materi Saja&quot;</p>
+												<p className='mt-1'>Ubah tipe di tab Konten menjadi &quot;Materi &amp; Quiz&quot; jika ingin membuat kuis.</p>
 											</div>
 										) : (
 											<>
@@ -1527,7 +1545,7 @@ export default function ManajemenMateri() {
 														<input
 															type='number'
 															value={quizData.passing_score}
-															onChange={(e) => setQuizData({ ...quizData, passing_score: parseInt(e.target.value) })}
+															onChange={(e) => setQuizData({ ...quizData, passing_score: parseInt(e.target.value, 10) || 0 })}
 															className='w-full border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] px-3 py-1.5 text-xs font-mono font-bold bg-white focus:bg-yellow-50 focus:outline-none'
 														/>
 													</div>
@@ -1592,6 +1610,7 @@ export default function ManajemenMateri() {
 															<div className='flex items-center gap-2 flex-wrap'>
 																{s.gambar_url ? (
 																	<div className='relative inline-flex items-center gap-2 bg-yellow-100 border border-black p-1.5 rounded'>
+																		{/* eslint-disable-next-line @next/next/no-img-element */}
 																		<img src={s.gambar_url} alt='Preview Soal' className='w-12 h-12 object-contain bg-white border border-black rounded' />
 																		<span className='text-[10px] font-mono text-slate-700 max-w-[200px] truncate'>{s.gambar_url}</span>
 																		<button
@@ -1672,6 +1691,7 @@ export default function ManajemenMateri() {
 																			{/* Option Image Upload / Preview */}
 																			{pil.gambar_url ? (
 																				<div className='relative inline-flex items-center gap-1 bg-white border border-black p-0.5 rounded shrink-0'>
+																					{/* eslint-disable-next-line @next/next/no-img-element */}
 																					<img src={pil.gambar_url} alt='Pilihan' className='w-6 h-6 object-contain rounded' />
 																					<button
 																						type='button'

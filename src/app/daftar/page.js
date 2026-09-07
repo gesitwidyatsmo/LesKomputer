@@ -584,7 +584,7 @@ export default function PendaftaranSiswaPage() {
                         ))}
                       </select>
                       <p className="text-[10px] font-mono text-slate-500">
-                        *Admin akan mengonfirmasi ketersediaan slot 5 PC sebelum kelas dimulai.
+                        *Admin akan mengonfirmasi ketersediaan slot {globalSettings?.pcCapacity || 5} PC sebelum kelas dimulai.
                       </p>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSiswa } from "@/context/SiswaContext";
 import {
   getQuizByMateri,
@@ -340,6 +340,7 @@ function QuizCard({ quiz, onFinish }) {
                     </p>
                     {item.gambar_url && (
                       <div className="mt-2 flex justify-start">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.gambar_url}
                           alt="Gambar Soal"
@@ -380,6 +381,7 @@ function QuizCard({ quiz, onFinish }) {
                                 {letter}
                               </span>
                               {opt.gambar_url && (
+                                /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
                                   src={opt.gambar_url}
                                   alt={`Pilihan ${letter}`}
@@ -531,6 +533,7 @@ function QuizCard({ quiz, onFinish }) {
           </p>
           {q?.gambar_url && (
             <div className="mt-3 flex justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={q.gambar_url}
                 alt="Gambar Soal"
@@ -568,6 +571,7 @@ function QuizCard({ quiz, onFinish }) {
                     {letter}
                   </span>
                   {p.gambar_url && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={p.gambar_url}
                       alt={`Pilihan ${letter}`}
@@ -640,7 +644,7 @@ function QuizCard({ quiz, onFinish }) {
 }
 
 function QuizPageContent() {
-  const { currentSiswa } = useSiswa();
+  const { currentSiswa, awardXp, triggerUnlockBadge } = useSiswa();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -649,6 +653,26 @@ function QuizPageContent() {
   const [materiList, setMateriList] = useState([]);
   const [riwayat, setRiwayat] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleStartQuiz = useCallback(async (materiId) => {
+    setIsLoading(true);
+    const { data } = await getQuizByMateri(materiId);
+    if (data) {
+      setActiveQuizId(materiId);
+      setActiveQuizData(data);
+    } else {
+      Swal.fire({
+        icon: "info",
+        title: "Kuis Belum Tersedia",
+        text: "Kuis untuk materi ini akan segera ditambahkan oleh guru ya!",
+        customClass: {
+          popup: "border-3 border-black rounded-xl shadow-[6px_6px_0px_0px_#000]",
+          confirmButton: "bg-orange-500 border-2 border-black font-bold text-black rounded-lg",
+        },
+      });
+    }
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -674,33 +698,22 @@ function QuizPageContent() {
       }
     }
     loadData();
-  }, [currentSiswa, searchParams]);
-
-  const handleStartQuiz = async (materiId) => {
-    setIsLoading(true);
-    const { data } = await getQuizByMateri(materiId);
-    if (data) {
-      setActiveQuizId(materiId);
-      setActiveQuizData(data);
-    } else {
-      Swal.fire({
-        icon: "info",
-        title: "Kuis Belum Tersedia",
-        text: "Kuis untuk materi ini akan segera ditambahkan oleh guru ya!",
-        customClass: {
-          popup: "border-3 border-black rounded-xl shadow-[6px_6px_0px_0px_#000]",
-          confirmButton: "bg-orange-500 border-2 border-black font-bold text-black rounded-lg",
-        },
-      });
-    }
-    setIsLoading(false);
-  };
+  }, [currentSiswa, searchParams, handleStartQuiz]);
 
   const handleFinishQuiz = async (score) => {
     if (!currentSiswa || !activeQuizData) return;
-    const status =
-      score >= (activeQuizData.passing_score ?? 70) ? "lulus" : "tidak_lulus";
+    const isPassing = score >= (activeQuizData.passing_score ?? 70);
+    const status = isPassing ? "lulus" : "tidak_lulus";
     await submitQuizHasil(currentSiswa.id, activeQuizData.id, score, status);
+
+    if (isPassing) {
+      if (score === 100) {
+        awardXp?.(50, `Kuis Sempurna: Skor 100 (${activeQuizData.judul || "Kuis"})`);
+        triggerUnlockBadge?.("quiz_champion");
+      } else {
+        awardXp?.(30, `Lulus Kuis: Skor ${score} (${activeQuizData.judul || "Kuis"})`);
+      }
+    }
 
     const { data: riwayatData } = await getQuizHasilSiswa(currentSiswa.id);
     if (riwayatData) {

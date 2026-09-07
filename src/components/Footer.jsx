@@ -7,7 +7,11 @@ import { formatPhoneDisplay, formatWhatsAppUrl } from "@/lib/landingService";
 export default function Footer({ data, globalSettings }) {
   const brandName = globalSettings?.brandName || data?.brandName || "GWA.TECH";
   const brandTagline = globalSettings?.brandTagline || data?.brandTagline || "// Gesit, Wawasan, Aplikatif";
-  const brandDescription = globalSettings?.brandDescription || data?.brandDescription || "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.";
+  const pcCapacity = Number(globalSettings?.pcCapacity) || 5;
+  const rawBrandDescription = globalSettings?.brandDescription || data?.brandDescription || "Lembaga kursus komputer terpercaya dengan pendekatan eksklusif 1-on-5 mentoring. Fokus pada efisiensi kerja, pemahaman logika rumus, dan studi kasus nyata.";
+  const brandDescription = rawBrandDescription
+    .replace(/1-on-\d+/gi, `1-on-${pcCapacity}`)
+    .replace(/\b\d+ siswa\b/gi, `${pcCapacity} siswa`);
   const address = globalSettings?.address || data?.address || "Jl. Pendidikan No. 123, Kecamatan Ilmu, Kota Teknologi, Indonesia 12345";
   const workingHours = globalSettings?.workingHours || data?.workingHours || "Senin - Sabtu: 08.30 - 21.00 WIB";
   const whatsappNumber = globalSettings?.whatsappNumber || "6280000000000";
@@ -43,12 +47,12 @@ export default function Footer({ data, globalSettings }) {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span className="text-emerald-400 font-bold">[SYS_STATUS: 100% OPERATIONAL]</span>
               <span className="text-slate-600 hidden sm:inline">|</span>
-              <span className="hidden sm:inline text-slate-300">{brandName} // LKP LES KOMPUTER</span>
+              <span className="hidden sm:inline text-slate-300">{brandName} {"//"} LKP LES KOMPUTER</span>
             </div>
             <div className="flex items-center gap-3 text-[11px]">
               <span className="text-amber-400 font-bold">1 SISWA 1 KOMPUTER</span>
               <span>•</span>
-              <span className="text-cyan-300 font-bold">MAKS 5 SISWA / KELAS</span>
+              <span className="text-cyan-300 font-bold">MAKS {pcCapacity} SISWA / KELAS</span>
             </div>
           </div>
         </div>

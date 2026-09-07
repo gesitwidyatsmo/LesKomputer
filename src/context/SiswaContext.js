@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { loginSiswa, getKehadiranSiswa } from "@/lib/siswaService";
 import { getAksesSiswa } from "@/lib/materiService";
@@ -22,49 +22,13 @@ export function SiswaProvider({ children }) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore session dari sessionStorage saat mount
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem("gwa_siswa_session");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setCurrentSiswa(parsed);
-        // Refresh akses materi & gamifikasi saat reload
-        refreshAkses(parsed.id);
-        refreshGamification(parsed.id);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const refreshGamification = (siswaId) => {
+  const refreshGamification = useCallback((siswaId) => {
     const state = getGamificationState(siswaId);
     setGamification(state);
     return state;
-  };
+  }, []);
 
-  const awardXp = (amount, reason) => {
-    const siswaId = currentSiswa?.id || "guest";
-    const updated = addXp(siswaId, amount, reason);
-    if (updated) {
-      setGamification(updated);
-    }
-    return updated;
-  };
-
-  const triggerUnlockBadge = (badgeId) => {
-    const siswaId = currentSiswa?.id || "guest";
-    const updated = unlockBadge(siswaId, badgeId);
-    if (updated) {
-      setGamification(updated);
-    }
-    return updated;
-  };
-
-  const refreshAkses = async (siswaId, existingSiswaData = null) => {
+  const refreshAkses = useCallback(async (siswaId, existingSiswaData = null) => {
     // 1. Fetch Akses
     const { aksesMap } = await getAksesSiswa(siswaId);
     if (aksesMap) setAksesMateri(aksesMap);
@@ -92,12 +56,60 @@ export function SiswaProvider({ children }) {
             pertemuanSelesai: selesaiCount,
             totalPertemuan: baseData.totalPertemuan || 10
         };
-        sessionStorage.setItem("gwa_siswa_session", JSON.stringify(updated));
+        try {
+          sessionStorage.setItem("gwa_siswa_session", JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
         return updated;
     });
 
     // Also refresh gamification
     refreshGamification(siswaId);
+  }, [refreshGamification]);
+
+  // Restore session dari sessionStorage saat mount
+  useEffect(() => {
+    let isMounted = true;
+    async function initSession() {
+      try {
+        const saved = sessionStorage.getItem("gwa_siswa_session");
+        if (saved && isMounted) {
+          const parsed = JSON.parse(saved);
+          setCurrentSiswa(parsed);
+          await refreshAkses(parsed.id, parsed);
+          refreshGamification(parsed.id);
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    initSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshAkses, refreshGamification]);
+
+  const awardXp = (amount, reason) => {
+    const siswaId = currentSiswa?.id || "guest";
+    const updated = addXp(siswaId, amount, reason);
+    if (updated) {
+      setGamification(updated);
+    }
+    return updated;
+  };
+
+  const triggerUnlockBadge = (badgeId) => {
+    const siswaId = currentSiswa?.id || "guest";
+    const updated = unlockBadge(siswaId, badgeId);
+    if (updated) {
+      setGamification(updated);
+    }
+    return updated;
   };
 
   const login = async (idSiswa, password) => {
@@ -105,7 +117,11 @@ export function SiswaProvider({ children }) {
     
     if (success && data) {
       setCurrentSiswa(data);
-      sessionStorage.setItem("gwa_siswa_session", JSON.stringify(data));
+      try {
+        sessionStorage.setItem("gwa_siswa_session", JSON.stringify(data));
+      } catch {
+        // ignore
+      }
       await refreshAkses(data.id, data);
       refreshGamification(data.id);
       return { success: true };
@@ -117,7 +133,11 @@ export function SiswaProvider({ children }) {
   const logout = () => {
     setCurrentSiswa(null);
     setAksesMateri({});
-    sessionStorage.removeItem("gwa_siswa_session");
+    try {
+      sessionStorage.removeItem("gwa_siswa_session");
+    } catch {
+      // ignore
+    }
     router.replace("/siswa/login");
   };
 

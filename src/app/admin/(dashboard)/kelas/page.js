@@ -64,7 +64,16 @@ export default function ManajemenKelasJadwal() {
     setKelasLoading(false);
   }, []);
 
-  useEffect(() => { loadKelas(); }, [loadKelas]);
+  useEffect(() => {
+    let isMounted = true;
+    getSemuaKelas().then(({ data: kData }) => {
+      if (isMounted) {
+        if (kData) setKelasList(kData);
+        setKelasLoading(false);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   // ── Load Jadwal saat kelas dipilih ──
   const loadJadwal = useCallback(async () => {
@@ -75,7 +84,18 @@ export default function ManajemenKelasJadwal() {
     setJadwalLoading(false);
   }, [selectedKelas]);
 
-  useEffect(() => { loadJadwal(); }, [loadJadwal]);
+  useEffect(() => {
+    let isMounted = true;
+    if (selectedKelas) {
+      getJadwalByKelas(selectedKelas.id).then(({ data }) => {
+        if (isMounted) {
+          if (data) setJadwalList(data);
+          setJadwalLoading(false);
+        }
+      });
+    }
+    return () => { isMounted = false; };
+  }, [selectedKelas]);
 
   // ── Handlers Kelas ──
   const handleOpenKelasModal = (kelas = null) => {
@@ -437,7 +457,7 @@ export default function ManajemenKelasJadwal() {
   );
 
   // ── Panel Kiri (Daftar Kelas) ──
-  const LeftPanel = () => (
+  const leftPanelContent = (
     <div className="flex flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden">
       {/* Retro Window Bar */}
       <div className="flex items-center justify-between px-3.5 py-2 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none shrink-0">
@@ -551,7 +571,7 @@ export default function ManajemenKelasJadwal() {
   );
 
   // ── Panel Kanan (Sesi Pertemuan) ──
-  const RightPanel = () => (
+  const rightPanelContent = (
     <div className="flex flex-col bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden">
       {!selectedKelas ? (
         <div className="flex flex-col items-center justify-center min-h-[350px] text-slate-500 p-8 bg-[#FFFDF5]">
@@ -732,10 +752,10 @@ export default function ManajemenKelasJadwal() {
       {/* ── DESKTOP: 2-PANEL SIDE BY SIDE ── */}
       <div className="hidden lg:flex items-start gap-6">
         <div className="w-1/3 min-w-[320px] lg:sticky lg:top-4 shrink-0">
-          <LeftPanel />
+          {leftPanelContent}
         </div>
         <div className="w-2/3 flex-1 min-w-0">
-          <RightPanel />
+          {rightPanelContent}
         </div>
       </div>
 
@@ -743,11 +763,11 @@ export default function ManajemenKelasJadwal() {
       <div className="lg:hidden">
         {mobileView === "list" ? (
           <div>
-            <LeftPanel />
+            {leftPanelContent}
           </div>
         ) : (
           <div>
-            <RightPanel />
+            {rightPanelContent}
           </div>
         )}
       </div>

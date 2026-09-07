@@ -4,8 +4,9 @@ import { useState } from "react";
 import { HelpCircle, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { formatWhatsAppUrl } from "@/lib/landingService";
 
-export default function FaqSection({ data, globalWhatsapp }) {
+export default function FaqSection({ data, globalWhatsapp, globalSettings }) {
   const [openIndex, setOpenIndex] = useState(0);
+  const pcCapacity = Number(globalSettings?.pcCapacity) || 5;
 
   const showBadge = data?.showBadge !== false;
   const badgeText = data?.badgeText || "[KNOWLEDGE_BASE // FAQ]";
@@ -50,7 +51,16 @@ export default function FaqSection({ data, globalWhatsapp }) {
   ];
 
   const rawFaqs = data?.faqs || defaultFaqs;
-  const faqs = rawFaqs.filter((f) => f.isVisible !== false);
+  const faqs = rawFaqs
+    .filter((f) => f.isVisible !== false)
+    .map((f) => ({
+      ...f,
+      a: typeof f.a === "string"
+        ? f.a
+            .replace(/maksimal \d+ siswa/gi, `maksimal ${pcCapacity} siswa`)
+            .replace(/\d+ unit komputer PC/gi, `${pcCapacity} unit komputer PC`)
+        : f.a
+    }));
 
   const toggleFaq = (idx) => {
     setOpenIndex(openIndex === idx ? null : idx);
