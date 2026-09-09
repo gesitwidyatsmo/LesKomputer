@@ -20,11 +20,13 @@ import {
   Zap,
   Layers,
   Award,
+  Loader2,
 } from "lucide-react";
 import MateriViewer from "./MateriViewer";
 import { useRouter } from "next/navigation";
 import { useSiswa } from "@/context/SiswaContext";
 import { formatWhatsAppUrl } from "@/lib/landingService";
+import { getQuizByMateri } from "@/lib/quizService";
 import confetti from "canvas-confetti";
 
 /**
@@ -145,8 +147,32 @@ export default function MateriDropdownContent({ materi }) {
 
   const videoData = getEmbedVideo(materi.video_url);
 
+  // ── Quiz State for this meeting ──
+  const [quizDetails, setQuizDetails] = useState(null);
+  const [loadingQuiz, setLoadingQuiz] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (showQuizButton) {
+      setLoadingQuiz(true);
+      getQuizByMateri(materi.id).then(({ data }) => {
+        if (isMounted && data) {
+          setQuizDetails(data);
+        }
+        if (isMounted) setLoadingQuiz(false);
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [materi.id, showQuizButton]);
+
+  const userQuizResult = (currentSiswa?.nilaiQuiz || []).find(
+    (nq) => nq.quiz_id === quizDetails?.id || nq.quiz?.materi?.pertemuan === materi.pertemuan
+  );
+
   // ── Tab State ──
-  const [activeTab, setActiveTab] = useState("panduan"); // 'panduan' | 'video' | 'praktik' | 'kartu_catatan'
+  const [activeTab, setActiveTab] = useState("panduan"); // 'panduan' | 'video' | 'praktik' | 'kartu_catatan' | 'quiz'
 
   // ── 1. Misi Praktik Checked State (Persisted in localStorage) ──
   const storageKeyMisi = currentSiswa
@@ -328,6 +354,24 @@ export default function MateriDropdownContent({ materi }) {
       label: "🃏 Kartu & Catatan",
       badge: kartuList.length ? `${kartuList.length} Kartu` : null,
     },
+    ...(showQuizButton
+      ? [
+          {
+            id: "quiz",
+            label: "🧠 Kuis Evaluasi",
+            badge: userQuizResult
+              ? `${userQuizResult.status === "lulus" ? "Lulus ✓" : "Skor"} ${userQuizResult.nilai}`
+              : quizDetails?.soal?.length
+              ? `${quizDetails.soal.length} Soal`
+              : "Kuis",
+            badgeColor: userQuizResult
+              ? userQuizResult.status === "lulus"
+                ? "bg-emerald-400 text-black"
+                : "bg-rose-400 text-white"
+              : "bg-purple-300 text-black",
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -373,7 +417,7 @@ export default function MateriDropdownContent({ materi }) {
               <span className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
                 Rangkuman Materi:
               </span>
-              <p className="text-sm font-medium text-slate-900 leading-relaxed">
+              <p className="text-sm font-medium text-slate-900 leading-relaxed whitespace-pre-line">
                 {materi.deskripsi}
               </p>
             </div>
@@ -408,13 +452,43 @@ export default function MateriDropdownContent({ materi }) {
 
               {materi.tips && (
                 <div className="p-4 bg-amber-100 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000]">
-                  <div className="flex items-center gap-1.5 font-heading text-xs font-black text-black uppercase mb-2 border-b border-black/20 pb-2">
+                  <div className="flex items-center gap-1.5 font-heading text-xs font-black text-black uppercase mb-3 border-b border-black/20 pb-2">
                     <Lightbulb className="w-4 h-4 text-amber-700" />
                     <span>Tips Cepat dari Guru</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
-                    {materi.tips}
-                  </p>
+                  {(() => {
+                    const lines = String(materi.tips)
+                      .split('\n')
+                      .map((l) => l.trim())
+                      .filter(Boolean);
+
+                    if (lines.length > 1) {
+                      return (
+                        <ul className="space-y-2.5">
+                          {lines.map((line, idx) => {
+                            const cleanLine = line.replace(/^[-*•\d+.]+\s*/, '').trim();
+                            return (
+                              <li
+                                key={idx}
+                                className="flex items-start gap-2.5 text-xs sm:text-sm font-medium text-slate-900"
+                              >
+                                <span className="w-4 h-4 bg-amber-300 text-amber-950 border border-black flex items-center justify-center text-[10px] shrink-0 mt-0.5 rounded font-black shadow-[1px_1px_0px_0px_#000]">
+                                  💡
+                                </span>
+                                <span className="flex-1 leading-relaxed">{cleanLine || line}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      );
+                    }
+
+                    return (
+                      <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium whitespace-pre-line">
+                        {materi.tips}
+                      </p>
+                    );
+                  })()}
                 </div>
               )}
             </div>
@@ -831,6 +905,150 @@ export default function MateriDropdownContent({ materi }) {
               rows={3}
               className="w-full p-3.5 bg-white border-2 border-black rounded-lg shadow-inner text-xs sm:text-sm font-medium text-slate-900 focus:bg-yellow-50 focus:outline-none leading-relaxed resize-y font-mono"
             />
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB: 🧠 Kuis Evaluasi Interaktif ────────────────────────── */}
+      {activeTab === "quiz" && (
+        <div className="space-y-5 animate-in fade-in zoom-in-98 duration-150">
+          {/* Header Banner Kuis */}
+          <div className="p-5 sm:p-6 bg-purple-100 border-3 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="bg-purple-300 text-black font-mono font-bold text-xs px-2.5 py-0.5 border border-black rounded">
+                    Evaluasi Pemahaman
+                  </span>
+                  <span className="text-xs font-bold text-purple-900 font-mono">
+                    Pertemuan #{materi.pertemuan}
+                  </span>
+                </div>
+                <h3 className="font-heading font-black text-xl sm:text-2xl text-black tracking-tight">
+                  {quizDetails?.judul || `Kuis Pertemuan ${materi.pertemuan}`} 🎮
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-700 font-medium max-w-xl leading-relaxed">
+                  Uji pemahamanmu tentang materi <strong>&quot;{materi.judul}&quot;</strong> melalui kuis pilihan ganda interaktif.
+                </p>
+              </div>
+
+              {/* Status Badge Kelulusan Siswa */}
+              {userQuizResult && (
+                <div
+                  className={`p-4 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] text-center shrink-0 min-w-[170px] ${
+                    userQuizResult.status === "lulus" ? "bg-emerald-200" : "bg-rose-200"
+                  }`}
+                >
+                  <span className="text-[10px] font-mono font-bold uppercase text-slate-700 block">
+                    Hasil Kuis Terakhir
+                  </span>
+                  <span className="font-heading font-black text-2xl text-black block">
+                    {userQuizResult.nilai} / 100
+                  </span>
+                  <span
+                    className={`inline-block mt-1 text-[11px] font-bold px-2 py-0.5 border border-black rounded ${
+                      userQuizResult.status === "lulus"
+                        ? "bg-emerald-400 text-black"
+                        : "bg-rose-400 text-white"
+                    }`}
+                  >
+                    {userQuizResult.status === "lulus" ? "✓ Lulus Kuis" : "Belum Lulus"}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Grid Informasi & Parameter Kuis */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="p-3.5 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] flex items-center gap-3">
+              <div className="w-10 h-10 bg-yellow-300 border-2 border-black rounded-lg flex items-center justify-center text-lg shrink-0 shadow-[1.5px_1.5px_0px_0px_#000]">
+                🎯
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase text-slate-500 block">
+                  Passing Score
+                </span>
+                <span className="font-heading font-black text-sm text-black">
+                  Min. {quizDetails?.passing_score ?? 75}%
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] flex items-center gap-3">
+              <div className="w-10 h-10 bg-cyan-300 border-2 border-black rounded-lg flex items-center justify-center text-lg shrink-0 shadow-[1.5px_1.5px_0px_0px_#000]">
+                📝
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase text-slate-500 block">
+                  Jumlah Soal
+                </span>
+                <span className="font-heading font-black text-sm text-black">
+                  {quizDetails?.soal?.length ?? 0} Soal Pilihan Ganda
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-300 border-2 border-black rounded-lg flex items-center justify-center text-lg shrink-0 shadow-[1.5px_1.5px_0px_0px_#000]">
+                ⚡
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase text-slate-500 block">
+                  Hadiah XP
+                </span>
+                <span className="font-heading font-black text-sm text-black">
+                  +30 s/d 50 XP Siswa
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Panduan & Tombol Aksi Kuis */}
+          <div className="p-5 bg-white border-3 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] space-y-4">
+            <div className="space-y-1.5 border-b-2 border-black/10 pb-3">
+              <h4 className="font-heading font-black text-xs sm:text-sm uppercase text-black flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-orange-500" />
+                Petunjuk Pengerjaan:
+              </h4>
+              <ul className="text-xs text-slate-700 space-y-1 font-medium list-disc list-inside">
+                <li>Soal berupa pilihan ganda (A, B, C, D) dengan 1 jawaban benar.</li>
+                <li>Kamu dapat melompat dan memeriksa kembali jawaban sebelum menekan tombol kumpulkan.</li>
+                <li>Setelah mengumpulkan, kunci jawaban &amp; pembahasan lengkap akan langsung ditampilkan.</li>
+              </ul>
+            </div>
+
+            {loadingQuiz ? (
+              <div className="py-6 text-center text-xs font-mono text-slate-600 flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                <span>Memuat data kuis...</span>
+              </div>
+            ) : quizDetails && quizDetails.soal && quizDetails.soal.length > 0 ? (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                <p className="text-xs font-mono text-slate-600">
+                  {userQuizResult
+                    ? `Kamu sudah pernah mengerjakan kuis ini. Ingin coba lagi untuk mendapatkan skor sempurna?`
+                    : `Kuis siap dikerjakan! Klik tombol di samping untuk mulai.`}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/siswa/quiz?materi=${materi.id}`)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs sm:text-sm uppercase tracking-wider border-3 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer shrink-0"
+                >
+                  <Brain className="w-4 h-4" />
+                  <span>
+                    {userQuizResult
+                      ? "Ulangi Kuis Sekarang ↗"
+                      : "Mulai Kerjakan Kuis Sekarang ↗"}
+                  </span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="p-4 bg-yellow-50 border-2 border-dashed border-black rounded-lg text-center text-xs font-mono text-slate-700">
+                💡 Soal kuis untuk pertemuan ini sedang dipersiapkan oleh guru. Silakan pelajari panduan materi dan selesaikan misi praktik terlebih dahulu!
+              </div>
+            )}
           </div>
         </div>
       )}

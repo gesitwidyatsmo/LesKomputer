@@ -213,9 +213,14 @@ export default function MateriPage() {
                           {materi.judul}
                         </span>
                         {STATUS_BADGE[status]}
+                        {materi.tipe_konten === "materi_quiz" && (
+                          <span className="text-[10px] font-bold bg-purple-300 text-black px-2 py-0.5 border border-black rounded shadow-[1px_1px_0px_0px_#000] flex items-center gap-1">
+                            <span>🎮</span> Ada Kuis
+                          </span>
+                        )}
                         {materi.tipe_konten === "quiz_saja" && (
-                          <span className="text-[11px] font-bold bg-purple-300 text-black px-2 py-0.5 border border-black rounded">
-                            🎮 Kuis Khusus
+                          <span className="text-[10px] font-bold bg-amber-300 text-black px-2 py-0.5 border border-black rounded shadow-[1px_1px_0px_0px_#000] flex items-center gap-1">
+                            <span>🧠</span> Kuis Khusus
                           </span>
                         )}
                       </div>

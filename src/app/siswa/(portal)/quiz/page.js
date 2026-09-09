@@ -8,6 +8,7 @@ import {
   submitQuizHasil,
 } from "@/lib/quizService";
 import { getMateriByModul } from "@/lib/materiService";
+import { getSemuaModul } from "@/lib/modulService";
 import { useSearchParams, useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import {
@@ -651,8 +652,11 @@ function QuizPageContent() {
   const [activeQuizId, setActiveQuizId] = useState(null);
   const [activeQuizData, setActiveQuizData] = useState(null);
   const [materiList, setMateriList] = useState([]);
+  const [modulList, setModulList] = useState([]);
+  const [selectedModulId, setSelectedModulId] = useState(currentSiswa?.modul_id || "");
   const [riwayat, setRiwayat] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMateri, setLoadingMateri] = useState(false);
 
   const handleStartQuiz = useCallback(async (materiId) => {
     setIsLoading(true);
@@ -674,16 +678,44 @@ function QuizPageContent() {
     setIsLoading(false);
   }, []);
 
+  const handleSelectModul = async (modulId) => {
+    setSelectedModulId(modulId);
+    setLoadingMateri(true);
+    const { data: materiData } = await getMateriByModul(modulId);
+    if (materiData) {
+      setMateriList(materiData.filter((m) => m.tipe_konten !== "materi_saja"));
+    }
+    setLoadingMateri(false);
+  };
+
   useEffect(() => {
     async function loadData() {
       if (!currentSiswa) return;
 
       setIsLoading(true);
-      const { data: materiData } = await getMateriByModul(
-        currentSiswa.modul_id
+
+      // 1. Fetch active modules for switcher
+      const { data: allModul } = await getSemuaModul();
+      const activeModuls = (allModul || []).filter(
+        (m) => m.status === "Aktif" || !m.status
       );
-      if (materiData) {
-        setMateriList(materiData.filter((m) => m.tipe_konten !== "materi_saja"));
+      setModulList(activeModuls);
+
+      // Default module target
+      const targetModulId =
+        selectedModulId ||
+        currentSiswa.modul_id ||
+        activeModuls[0]?.id ||
+        "";
+      if (!selectedModulId && targetModulId) {
+        setSelectedModulId(targetModulId);
+      }
+
+      if (targetModulId) {
+        const { data: materiData } = await getMateriByModul(targetModulId);
+        if (materiData) {
+          setMateriList(materiData.filter((m) => m.tipe_konten !== "materi_saja"));
+        }
       }
 
       const { data: riwayatData } = await getQuizHasilSiswa(currentSiswa.id);
@@ -821,6 +853,52 @@ function QuizPageContent() {
         </div>
       </div>
 
+      {/* Modul Selector Tabs */}
+      {modulList.length > 1 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-heading text-xs font-black uppercase text-slate-700 flex items-center gap-1.5">
+              <span>📂</span> Pilih Modul Kuis:
+            </span>
+            <span className="text-[11px] font-mono font-bold text-slate-500">
+              {modulList.length} Modul Aktif
+            </span>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+            {modulList.map((m) => {
+              const isCurrentModul = m.id === currentSiswa?.modul_id;
+              const isSelected = selectedModulId === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => handleSelectModul(m.id)}
+                  className={`px-3.5 py-2 rounded-xl font-heading text-xs font-black border-2 border-black transition-all shrink-0 cursor-pointer flex items-center gap-2 select-none ${
+                    isSelected
+                      ? "bg-black text-amber-300 shadow-[3px_3px_0px_0px_#f59e0b] translate-x-0.5 translate-y-0.5"
+                      : "bg-white hover:bg-yellow-100 text-black shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                  }`}
+                >
+                  <span>{m.icon || "💻"}</span>
+                  <span>{m.nama}</span>
+                  {isCurrentModul && (
+                    <span
+                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border border-black ${
+                        isSelected
+                          ? "bg-amber-300 text-black"
+                          : "bg-cyan-200 text-black"
+                      }`}
+                    >
+                      Modul Saya
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Pilih Topik Quiz */}
       <div>
         <div className="flex items-center gap-2 mb-3">
@@ -830,7 +908,12 @@ function QuizPageContent() {
           </h2>
         </div>
 
-        {materiList.length === 0 ? (
+        {loadingMateri ? (
+          <div className="p-8 text-center bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl flex items-center justify-center gap-2 font-heading text-xs font-bold">
+            <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+            <span>Memuat daftar kuis modul...</span>
+          </div>
+        ) : materiList.length === 0 ? (
           <div className="p-8 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl text-center text-xs text-slate-600 font-bold">
             Belum ada kuis yang tersedia untuk modul ini.
           </div>
@@ -846,6 +929,13 @@ function QuizPageContent() {
               ];
               const cardBg = bgColors[idx % bgColors.length];
 
+              const userResult = riwayat.find(
+                (r) =>
+                  r.quiz?.materi?.pertemuan === materi.pertemuan &&
+                  (r.quiz?.materi?.modul_id === materi.modul_id ||
+                    !r.quiz?.materi?.modul_id)
+              );
+
               return (
                 <button
                   key={materi.id}
@@ -857,9 +947,23 @@ function QuizPageContent() {
                       <div className="w-8 h-8 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-lg flex items-center justify-center font-heading font-bold text-xs text-black">
                         #{materi.pertemuan}
                       </div>
-                      <span className="text-[11px] font-bold bg-white text-black px-2.5 py-0.5 border border-black rounded-full">
-                        Sesi Pertemuan {materi.pertemuan}
-                      </span>
+                      {userResult ? (
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 border border-black rounded-full font-mono shadow-[1px_1px_0px_0px_#000] ${
+                            userResult.status === "lulus"
+                              ? "bg-emerald-400 text-black"
+                              : "bg-rose-300 text-black"
+                          }`}
+                        >
+                          {userResult.status === "lulus"
+                            ? `✓ Lulus (${userResult.nilai})`
+                            : `Skor: ${userResult.nilai}`}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold bg-white text-black px-2.5 py-0.5 border border-black rounded-full font-mono">
+                          Belum Dimainkan
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="font-heading font-black text-sm text-black leading-snug group-hover:underline line-clamp-2">
@@ -868,7 +972,9 @@ function QuizPageContent() {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-black/20 flex items-center justify-between font-heading text-xs font-black text-black">
-                    <span>Mulai Main Kuis &gt;</span>
+                    <span>
+                      {userResult ? "Mainkan Ulang >" : "Mulai Main Kuis >"}
+                    </span>
                     <Brain className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                   </div>
                 </button>

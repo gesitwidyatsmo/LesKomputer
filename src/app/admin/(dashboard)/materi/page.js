@@ -5,9 +5,458 @@ import Swal from 'sweetalert2';
 import { getMateriByModul, upsertMateri, uploadPDF, uploadBahanLatihan, deleteMateri, upsertLampiran, deleteLampiran } from '@/lib/materiService';
 import { getQuizByMateri, upsertQuiz, saveSoalPilihan, deleteQuiz, uploadQuizImage } from '@/lib/quizService';
 import { getSemuaModul, upsertModul, deleteModul, updateUrutanModul } from '@/lib/modulService';
-import { Plus, Edit2, Trash2, BookOpen, FileText, Brain, Upload, Loader2, X, Layers, ChevronRight, Save, GripVertical, AlertCircle, Package, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, BookOpen, FileText, Brain, Upload, Loader2, X, Layers, ChevronRight, Save, GripVertical, AlertCircle, Package, Image as ImageIcon, Copy, Check, Sparkles } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ClientPortal from '@/components/ClientPortal';
+
+// ─── Bulk Input Templates & Parsers ──────────────────────────────────────────
+const BULK_TEMPLATES = {
+	topik: {
+		title: '📋 [BULK_IMPORT] Input Banyak Topik / Sub-Materi',
+		subtitle: 'Tempel (paste) daftar materi di mana 1 baris mewakili 1 item topik.',
+		placeholder: 'Pengenalan Antarmuka & Menu Utama\nFormat Teks, Paragraf, dan Alignment\nMenyisipkan Tabel, Gambar & Bentuk\nPengaturan Margin & Tata Letak Halaman\nMenyimpan dan Mencetak Dokumen',
+		guide: 'Setiap baris baru akan menjadi 1 topik. Jika ada nomor atau bullet point (contoh: "1. ", "- ", "• "), sistem otomatis membersihkannya.',
+		example: `Pengenalan Antarmuka & Menu Utama
+Format Teks, Paragraf, dan Alignment
+Menyisipkan Tabel, Gambar & Bentuk
+Pengaturan Margin & Tata Letak Halaman
+Menyimpan dan Mencetak Dokumen`,
+	},
+	misi: {
+		title: '🎯 [BULK_IMPORT] Input Banyak Misi Praktik (Quest)',
+		subtitle: 'Tempel (paste) daftar tugas praktik di mana 1 baris mewakili 1 checklist misi tantangan.',
+		placeholder: 'Buka aplikasi dan buat file lembar kerja baru\nBuat tabel daftar harga barang dengan minimal 5 baris\nGunakan rumus perkalian (=B2*C2) untuk menghitung total\nGunakan fungsi =SUM() untuk menghitung total keseluruhan\nSimpan lembar kerja dengan nama Latihan_Toko.xlsx',
+		guide: 'Setiap baris baru akan menjadi 1 checklist misi tantangan praktik siswa.',
+		example: `Buka aplikasi dan buat file lembar kerja baru
+Buat tabel daftar harga barang dengan minimal 5 baris
+Gunakan rumus perkalian (=B2*C2) untuk menghitung total
+Gunakan fungsi =SUM() untuk menghitung total keseluruhan
+Simpan lembar kerja dengan nama Latihan_Toko.xlsx`,
+	},
+	flashcard: {
+		title: '🃏 [BULK_IMPORT] Input Banyak Flashcards (Kartu Pintar)',
+		subtitle: 'Gunakan tanda pemisah pipa | (garis tegak) atau Tab antar kolom.',
+		placeholder: `Membatalkan Aksi (Undo) | Mengembalikan dokumen ke kondisi sebelumnya | Ctrl + Z | Tekan berulang untuk beberapa langkah
+Menyimpan Berkas (Save) | Menyimpan seluruh perubahan ke dokumen | Ctrl + S | Biasakan tekan secara berkala
+Definisi RAM Komputer | Memori akses acak untuk penyimpanan data sementara | | Data akan hilang saat listrik mati
+Fungsi Tombol Tab | Memindahkan kursor ke posisi tab stop berikutnya | Tab | Berguna merapikan teks paragraf`,
+		guide: `Format Kolom: Sisi Depan | Sisi Belakang | Shortcut Keyboard (Opsional) | Tips Tambahan (Opsional)
+• Jika TANPA shortcut tetapi ada tips, cukup kosongkan kolom ke-3: Sisi Depan | Sisi Belakang | | Tips Anda
+• Atau bisa juga tulis 3 kolom langsung: Sisi Depan | Sisi Belakang | Tips: Catatan penting Anda`,
+		example: `Membatalkan Aksi (Undo) | Mengembalikan dokumen ke kondisi sebelum diedit | Ctrl + Z | Tekan berulang untuk beberapa langkah
+Menyimpan Berkas (Save) | Menyimpan seluruh perubahan ke dokumen | Ctrl + S | Biasakan tekan secara berkala saat mengetik
+Definisi RAM Komputer | Memori akses acak untuk penyimpanan data sementara | | Data akan hilang jika komputer mati mendadak
+Menyalin Teks (Copy) | Menduplikasi teks terpilih ke clipboard | Ctrl + C |
+Fungsi Mouse Kanan | Membuka menu konteks opsi cepat pada objek | | Tips: Klik kanan ikon file untuk melihat menu Properties`,
+	},
+	quiz: {
+		title: '📝 [BULK_IMPORT] Input Banyak Soal Kuis Pilihan Ganda',
+		subtitle: 'Mendukung format standar teks soal dengan opsi A, B, C, D dan kunci jawaban.',
+		placeholder: `1. Tombol kombinasi keyboard untuk menyimpan file dokumen adalah...
+A. Ctrl + C
+*B. Ctrl + S
+C. Ctrl + V
+D. Ctrl + P
+Penjelasan: Ctrl + S adalah shortcut standar untuk perintah Save.
+
+2. Perangkat keras komputer yang berfungsi untuk menggerakkan kursor adalah...
+*A. Mouse
+B. Keyboard
+C. Monitor
+D. Printer
+Penjelasan: Mouse adalah peranti penunjuk (pointing device).
+
+3. Fungsi Excel untuk menghitung rata-rata adalah...
+A. =SUM()
+*B. =AVERAGE()
+C. =MAX()
+D. =MIN()`,
+		guide: `Petunjuk Format Kuis:
+• Beri tanda bintang (*) di depan pilihan yang benar (contoh: *B. Jawaban benar), ATAU tulis baris "Kunci: B" / "Jawaban: B".
+• Pisahkan antar soal dengan 1 baris kosong (atau penomoran nomor 1, 2, dst).
+• Penjelasan jawaban bersifat opsional dengan menambahkan baris "Penjelasan: ...".`,
+		example: `1. Tombol kombinasi keyboard untuk menyimpan file dokumen adalah...
+A. Ctrl + C
+*B. Ctrl + S
+C. Ctrl + V
+D. Ctrl + P
+Penjelasan: Ctrl + S adalah shortcut standar untuk perintah Save.
+
+2. Perangkat keras komputer yang berfungsi untuk menggerakkan kursor adalah...
+*A. Mouse
+B. Keyboard
+C. Monitor
+D. Printer
+Penjelasan: Mouse adalah peranti penunjuk (pointing device).
+
+3. Fungsi Excel untuk menjumlahkan sekumpulan angka adalah...
+A. =AVERAGE()
+B. =COUNT()
+*C. =SUM()
+D. =MAX()
+Penjelasan: Fungsi =SUM() digunakan untuk menjumlahkan sekumpulan nilai atau rentang sel.`,
+	},
+};
+
+function parseQuizText(rawText) {
+	if (!rawText || !rawText.trim()) return [];
+
+	// Pisahkan per baris kosong ganda terlebih dahulu
+	const rawBlocks = rawText
+		.split(/\n\s*\n+/)
+		.map((b) => b.trim())
+		.filter(Boolean);
+
+	// Jika ada blok yang berisi beberapa soal sekaligus (misal hanya dipisah 1 baris baru), pecah per nomor soal
+	const blocks = [];
+	for (const rb of rawBlocks) {
+		const subBlocks = rb
+			.split(/(?=(?:^|\n)\s*(?:Soal\s*)?\d+[\.\)]\s+)/i)
+			.map((b) => b.trim())
+			.filter(Boolean);
+		if (subBlocks.length > 1) {
+			blocks.push(...subBlocks);
+		} else {
+			blocks.push(rb);
+		}
+	}
+
+	const soalList = [];
+
+	for (const block of blocks) {
+		const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+		if (lines.length === 0) continue;
+
+		let pertanyaan = '';
+		let penjelasan = '';
+		let kunciJawaban = '';
+		const pilihan = [];
+
+		for (const line of lines) {
+			const kunciMatch = line.match(/^(?:Kunci|Jawaban|Answer|Key)\s*[:=]\s*([A-Ea-e1-5])/i);
+			if (kunciMatch) {
+				kunciJawaban = kunciMatch[1].toUpperCase();
+			}
+			const explMatch = line.match(/^(?:Penjelasan|Pembahasan|Explanation|Note)\s*[:=]\s*(.+)/i);
+			if (explMatch) {
+				penjelasan = explMatch[1].trim();
+			}
+		}
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+
+			if (/^(?:Kunci|Jawaban|Answer|Key)\s*[:=]/i.test(line)) continue;
+			if (/^(?:Penjelasan|Pembahasan|Explanation|Note)\s*[:=]/i.test(line)) continue;
+
+			// Pilihan HANYA berupa huruf [A-Ea-e] agar nomor soal (1., 2., 3., 4.) tidak tertukar menjadi pilihan
+			const optMatch = line.match(/^(\*)?\s*(?:\[?\s*([A-Ea-e])[\.\)\:\-]\s*|\(?([A-Ea-e])\)\s*)(.*)/);
+			if (optMatch) {
+				const isStarred = !!optMatch[1];
+				const letter = (optMatch[2] || optMatch[3]).toUpperCase();
+				const text = optMatch[4].trim();
+
+				const isLetterMatch =
+					kunciJawaban &&
+					(letter === kunciJawaban ||
+						(['1', '2', '3', '4', '5'].includes(kunciJawaban) && ['A', 'B', 'C', 'D', 'E'][parseInt(kunciJawaban, 10) - 1] === letter));
+				const adalahBenar = isStarred || !!isLetterMatch;
+
+				pilihan.push({
+					teks: text,
+					gambar_url: '',
+					adalah_benar: adalahBenar,
+					letter: letter,
+				});
+			} else {
+				if (pilihan.length === 0) {
+					pertanyaan = pertanyaan ? `${pertanyaan}\n${line}` : line;
+				}
+			}
+		}
+
+		// Bersihkan awalan nomor soal seperti "1. ", "Soal 1. ", "1) "
+		pertanyaan = pertanyaan.replace(/^(?:Soal\s*)?\d+[\.\)]\s*/i, '').trim();
+
+		if (!pertanyaan && pilihan.length === 0) continue;
+
+		const finalPilihan = pilihan.map((p) => ({
+			teks: p.teks,
+			gambar_url: '',
+			adalah_benar: p.adalah_benar,
+		}));
+
+		if (!finalPilihan.some((p) => p.adalah_benar) && finalPilihan.length > 0) {
+			finalPilihan[0].adalah_benar = true;
+		}
+
+		while (finalPilihan.length < 4) {
+			finalPilihan.push({ teks: '', gambar_url: '', adalah_benar: false });
+		}
+
+		soalList.push({
+			pertanyaan,
+			gambar_url: '',
+			penjelasan,
+			pilihan: finalPilihan.slice(0, 4),
+		});
+	}
+
+	return soalList;
+}
+
+function parseBulkData(type, rawText) {
+	if (!rawText || !rawText.trim()) return [];
+
+	if (type === 'topik' || type === 'misi') {
+		return rawText
+			.split('\n')
+			.map((l) => l.trim().replace(/^[-*•\d+.]+\s*/, ''))
+			.filter(Boolean);
+	}
+
+	if (type === 'flashcard') {
+		return rawText
+			.split('\n')
+			.map((l) => l.trim())
+			.filter(Boolean)
+			.map((line) => {
+				const parts = line.split(/[|\t]/).map((p) => p.trim());
+				if (!parts[0]) return null;
+
+				let depan = parts[0] || '';
+				let belakang = parts[1] || '';
+				let shortcut = '';
+				let tips = '';
+
+				if (parts.length >= 4) {
+					// Format 4 kolom: Depan | Belakang | Shortcut | Tips (contoh: a | a | | a)
+					shortcut = parts[2] || '';
+					tips = parts[3] || '';
+				} else if (parts.length === 3) {
+					// Format 3 kolom: deteksi otomatis apakah kolom ke-3 adalah Shortcut atau Tips
+					const p2 = parts[2] || '';
+					if (/^(?:tips?|catatan|note)\s*[:=]/i.test(p2)) {
+						tips = p2.replace(/^(?:tips?|catatan|note)\s*[:=]\s*/i, '');
+					} else if (/^(?:shortcut|tombol|kombinasi|key)\s*[:=]/i.test(p2)) {
+						shortcut = p2.replace(/^(?:shortcut|tombol|kombinasi|key)\s*[:=]\s*/i, '');
+					} else {
+						const isLikelyShortcut =
+							/\b(ctrl|alt|shift|win|windows|fn|tab|esc|enter|del|backspace|f[1-9]|f1[0-2])\b/i.test(p2) ||
+							(p2.includes('+') && p2.length < 30);
+						if (isLikelyShortcut) {
+							shortcut = p2;
+						} else {
+							tips = p2;
+						}
+					}
+				}
+
+				// Bersihkan awalan label jika ada
+				tips = tips.replace(/^(?:tips?|catatan|note)\s*[:=]\s*/i, '');
+				shortcut = shortcut.replace(/^(?:shortcut|tombol|kombinasi|key)\s*[:=]\s*/i, '');
+
+				return {
+					depan,
+					belakang,
+					shortcut,
+					tips,
+				};
+			})
+			.filter(Boolean);
+	}
+
+	if (type === 'quiz') {
+		return parseQuizText(rawText);
+	}
+
+	return [];
+}
+
+function BulkInputModal({ isOpen, type, onClose, onApply }) {
+	const [rawText, setRawText] = useState('');
+	const [mode, setMode] = useState('append');
+	const [copied, setCopied] = useState(false);
+
+	useEffect(() => {
+		if (isOpen) {
+			setRawText('');
+			setMode('append');
+			setCopied(false);
+		}
+	}, [isOpen, type]);
+
+	if (!isOpen) return null;
+
+	const config = BULK_TEMPLATES[type] || BULK_TEMPLATES.topik;
+	const parsedItems = parseBulkData(type, rawText);
+
+	const handleCopyExample = () => {
+		if (config.example) {
+			navigator.clipboard.writeText(config.example);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		}
+	};
+
+	const handleUseExample = () => {
+		if (config.example) {
+			setRawText(config.example);
+		}
+	};
+
+	const handleProcess = () => {
+		if (parsedItems.length === 0) {
+			Swal.fire({
+				icon: 'warning',
+				title: 'Data Belum Ada',
+				text: 'Silakan isi atau tempel (paste) data pada kotak teks terlebih dahulu.',
+			});
+			return;
+		}
+		onApply(parsedItems, mode);
+	};
+
+	return (
+		<ClientPortal>
+			<div className='fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4'>
+				<div className='fixed inset-0 bg-black/70 backdrop-blur-xs' onClick={onClose} />
+				<div className='relative bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] w-full max-h-[92vh] flex flex-col overflow-hidden max-w-2xl'>
+					{/* Window Titlebar */}
+					<div className='flex items-center justify-between px-4 py-2.5 bg-black text-white font-mono text-xs font-bold border-b-2 border-black select-none shrink-0'>
+						<div className='flex items-center gap-2'>
+							<div className='flex gap-1.5'>
+								<span className='w-2.5 h-2.5 rounded-full bg-rose-500 border border-black inline-block'></span>
+								<span className='w-2.5 h-2.5 rounded-full bg-amber-400 border border-black inline-block'></span>
+								<span className='w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black inline-block'></span>
+							</div>
+							<span>bulk_batch_importer.exe</span>
+						</div>
+						<button
+							onClick={onClose}
+							className='px-1.5 py-0.5 bg-rose-600 hover:bg-rose-500 text-white font-mono text-[10px] cursor-pointer'>
+							ESC [X]
+						</button>
+					</div>
+
+					{/* Header Box */}
+					<div className='px-5 py-3 bg-cyan-100 border-b-2 border-black shrink-0'>
+						<h3 className='font-heading font-black text-base uppercase text-black'>{config.title}</h3>
+						<p className='font-mono text-xs text-slate-700 mt-0.5'>{config.subtitle}</p>
+					</div>
+
+					{/* Body Content */}
+					<div className='p-5 overflow-y-auto bg-[#FFFDF5] space-y-4 flex-1'>
+						{/* Guide & Template Card */}
+						<div className='p-3.5 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] space-y-2'>
+							<div className='flex flex-wrap items-center justify-between gap-2 border-b border-black/20 pb-2'>
+								<span className='font-mono text-xs font-bold uppercase text-black flex items-center gap-1.5'>
+									<Sparkles className='w-3.5 h-3.5 text-orange-600' /> Format &amp; Template Contoh
+								</span>
+								<div className='flex items-center gap-2'>
+									<button
+										type='button'
+										onClick={handleCopyExample}
+										className='inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-300 hover:bg-yellow-200 text-black font-mono text-[11px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+										{copied ? <Check className='w-3 h-3 text-emerald-700' /> : <Copy className='w-3 h-3' />}
+										<span>{copied ? 'Tersalin!' : 'Salin Contoh'}</span>
+									</button>
+									<button
+										type='button'
+										onClick={handleUseExample}
+										className='inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-300 hover:bg-emerald-200 text-black font-mono text-[11px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+										<span>Gunakan Contoh</span>
+									</button>
+								</div>
+							</div>
+							<p className='font-mono text-[11px] text-slate-700 whitespace-pre-line leading-relaxed'>
+								{config.guide}
+							</p>
+							<div className='p-2.5 bg-slate-900 text-emerald-400 font-mono text-[11px] overflow-x-auto border border-black max-h-36 select-all'>
+								<pre className='font-mono whitespace-pre'>{config.example}</pre>
+							</div>
+						</div>
+
+						{/* Textarea Input */}
+						<div className='space-y-1.5'>
+							<div className='flex items-center justify-between'>
+								<label className='font-mono text-xs font-bold uppercase text-black'>
+									[INPUT_BOX] Tempel Teks Anda di Sini:
+								</label>
+								<span className={`font-mono text-xs font-bold px-2 py-0.5 border border-black ${parsedItems.length > 0 ? 'bg-emerald-300 text-black' : 'bg-slate-200 text-slate-600'}`}>
+									Terdeteksi: {parsedItems.length} Item
+								</span>
+							</div>
+							<textarea
+								value={rawText}
+								onChange={(e) => setRawText(e.target.value)}
+								rows={7}
+								placeholder={config.placeholder}
+								className='w-full border-2 border-black shadow-[2px_2px_0px_0px_#000] p-3 text-xs font-mono font-medium bg-white focus:bg-yellow-50 focus:outline-none'
+							/>
+						</div>
+
+						{/* Mode Toggle */}
+						<div className='p-3 bg-yellow-100 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] flex flex-wrap items-center justify-between gap-3'>
+							<span className='font-mono text-xs font-bold uppercase text-black'>Metode Masuk Data:</span>
+							<div className='flex items-center gap-4'>
+								<label className='flex items-center gap-1.5 font-mono text-xs font-bold text-black cursor-pointer'>
+									<input
+										type='radio'
+										name='bulk_mode'
+										value='append'
+										checked={mode === 'append'}
+										onChange={() => setMode('append')}
+										className='accent-black cursor-pointer'
+									/>
+									<span>+ Tambahkan ke data yang ada</span>
+								</label>
+								<label className='flex items-center gap-1.5 font-mono text-xs font-bold text-black cursor-pointer'>
+									<input
+										type='radio'
+										name='bulk_mode'
+										value='replace'
+										checked={mode === 'replace'}
+										onChange={() => setMode('replace')}
+										className='accent-black cursor-pointer'
+									/>
+									<span>Gantikan seluruh data</span>
+								</label>
+							</div>
+						</div>
+					</div>
+
+					{/* Modal Footer */}
+					<div className='bg-white px-5 py-3 border-t-2 border-black flex justify-between items-center shrink-0'>
+						<button
+							type='button'
+							onClick={() => setRawText('')}
+							disabled={!rawText}
+							className='px-3 py-1.5 border border-black text-black font-mono text-xs uppercase disabled:opacity-40 hover:bg-slate-100 cursor-pointer'>
+							Bersihkan Kotak
+						</button>
+						<div className='flex items-center gap-3'>
+							<button
+								type='button'
+								onClick={onClose}
+								className='px-4 py-2 border-2 border-black text-black font-mono font-bold uppercase text-xs shadow-[2px_2px_0px_0px_#000] hover:bg-slate-100 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+								Batal
+							</button>
+							<button
+								type='button'
+								onClick={handleProcess}
+								disabled={parsedItems.length === 0}
+								className='inline-flex items-center gap-2 px-5 py-2 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 transition-all cursor-pointer'>
+								<Check className='w-4 h-4' />
+								<span>Proses &amp; Masukkan ({parsedItems.length} Item)</span>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ClientPortal>
+	);
+}
 
 // ─── Modul Form Modal ────────────────────────────────────────────────────────
 function ModulModal({ modul, onClose, onSaved }) {
@@ -227,6 +676,55 @@ export default function ManajemenMateri() {
 	});
 	const [uploadingImageState, setUploadingImageState] = useState({});
 	const [isUploadingBahan, setIsUploadingBahan] = useState(false);
+
+	// ── Bulk Importer State & Handler ──
+	const [bulkModal, setBulkModal] = useState({
+		isOpen: false,
+		type: 'topik',
+	});
+
+	const handleApplyBulk = (parsedData, mode) => {
+		if (!parsedData || parsedData.length === 0) {
+			Swal.fire({
+				icon: 'warning',
+				title: 'Data Kosong',
+				text: 'Tidak ada data valid yang terdeteksi dari teks yang dimasukkan.',
+			});
+			return;
+		}
+
+		if (bulkModal.type === 'topik') {
+			setEditData((prev) => ({
+				...prev,
+				topik: mode === 'replace' ? parsedData : [...(prev.topik || []), ...parsedData],
+			}));
+		} else if (bulkModal.type === 'misi') {
+			setEditData((prev) => ({
+				...prev,
+				misi_praktik: mode === 'replace' ? parsedData : [...(prev.misi_praktik || []), ...parsedData],
+			}));
+		} else if (bulkModal.type === 'flashcard') {
+			setEditData((prev) => ({
+				...prev,
+				kartu_pintar: mode === 'replace' ? parsedData : [...(prev.kartu_pintar || []), ...parsedData],
+			}));
+		} else if (bulkModal.type === 'quiz') {
+			setQuizData((prev) => ({
+				...prev,
+				soal: mode === 'replace' ? parsedData : [...(prev.soal || []), ...parsedData],
+			}));
+		}
+
+		Swal.fire({
+			icon: 'success',
+			title: 'Berhasil Diimpor!',
+			text: `${parsedData.length} item berhasil dimasukkan ke form.`,
+			timer: 1500,
+			showConfirmButton: false,
+		});
+
+		setBulkModal({ isOpen: false, type: 'topik' });
+	};
 
 	// ── Preview accordion state ──
 	const [expandedId, setExpandedId] = useState(null);
@@ -910,7 +1408,7 @@ export default function ManajemenMateri() {
 														{materi.deskripsi && (
 															<div className='md:col-span-2 bg-white border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
 																<p className='font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1'>[DESKRIPSI_MATERI]</p>
-																<p className='text-sm text-slate-800 leading-relaxed font-medium'>{materi.deskripsi}</p>
+																<p className='text-sm text-slate-800 leading-relaxed font-medium whitespace-pre-line'>{materi.deskripsi}</p>
 															</div>
 														)}
 														{topikArr.length > 0 && (
@@ -930,8 +1428,33 @@ export default function ManajemenMateri() {
 														)}
 														{materi.tips && (
 															<div className='bg-yellow-100 border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
-																<p className='font-mono text-[10px] font-bold text-black uppercase tracking-wider mb-1'>💡 [TIPS_&_TRICKS]</p>
-																<p className='text-xs font-mono text-slate-800 leading-relaxed font-medium'>{materi.tips}</p>
+																<p className='font-mono text-[10px] font-bold text-black uppercase tracking-wider mb-2'>💡 [TIPS_&_TRICKS]</p>
+																{(() => {
+																	const lines = String(materi.tips)
+																		.split('\n')
+																		.map((l) => l.trim())
+																		.filter(Boolean);
+
+																	if (lines.length > 1) {
+																		return (
+																			<ul className='space-y-1.5'>
+																				{lines.map((line, idx) => {
+																					const cleanLine = line.replace(/^[-*•\d+.]+\s*/, '').trim();
+																					return (
+																						<li key={idx} className='flex items-start gap-2 text-xs font-mono font-medium text-slate-800'>
+																							<span className='mt-1 w-1.5 h-1.5 bg-amber-500 border border-black shrink-0' />
+																							<span className='flex-1 leading-relaxed'>{cleanLine || line}</span>
+																						</li>
+																					);
+																				})}
+																			</ul>
+																		);
+																	}
+
+																	return (
+																		<p className='text-xs font-mono text-slate-800 leading-relaxed font-medium whitespace-pre-line'>{materi.tips}</p>
+																	);
+																})()}
 															</div>
 														)}
 														{materi.lampiran?.length > 0 && (
@@ -1208,37 +1731,52 @@ export default function ManajemenMateri() {
 										</div>
 
 										<div>
-											<div className='flex justify-between items-center mb-1'>
+											<div className='mb-1'>
 												<label className='font-mono text-xs font-bold uppercase text-black'>[TOPICS] Topik / Sub-Materi</label>
+											</div>
+											{(editData.topik || []).length === 0 ? (
+												<div className='p-2.5 bg-white border border-dashed border-black/40 text-center font-mono text-xs text-slate-500 mb-2'>
+													Belum ada topik bahasan. Klik tombol di bawah untuk menambah.
+												</div>
+											) : (
+												editData.topik.map((t, i) => (
+													<div
+														key={i}
+														className='flex gap-2 mb-2'>
+														<input
+															type='text'
+															value={t}
+															onChange={(e) => {
+																const nt = [...editData.topik];
+																nt[i] = e.target.value;
+																setEditData({ ...editData, topik: nt });
+															}}
+															placeholder={`Topik bahasan #${i + 1}`}
+															className='flex-1 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] px-3 py-1.5 text-xs font-mono font-bold bg-white focus:bg-yellow-50 focus:outline-none'
+														/>
+														<button
+															type='button'
+															onClick={() => setEditData({ ...editData, topik: editData.topik.filter((_, idx) => idx !== i) })}
+															className='p-1.5 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] transition-colors cursor-pointer'>
+															<X className='w-3.5 h-3.5' />
+														</button>
+													</div>
+												))
+											)}
+											<div className='flex flex-wrap items-center gap-2 mt-1'>
 												<button
 													type='button'
-													onClick={() => setEditData({ ...editData, topik: [...editData.topik, ''] })}
-													className='px-2 py-0.5 bg-yellow-300 hover:bg-yellow-200 text-black font-mono text-[10px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000]'>
-													+ Tambah Item
+													onClick={() => setEditData({ ...editData, topik: [...(editData.topik || []), ''] })}
+													className='inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-300 hover:bg-yellow-200 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+													<Plus className='w-3.5 h-3.5' /> + Tambah Item
+												</button>
+												<button
+													type='button'
+													onClick={() => setBulkModal({ isOpen: true, type: 'topik' })}
+													className='inline-flex items-center gap-1.5 px-3 py-1.5 bg-cyan-200 hover:bg-cyan-300 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+													<Copy className='w-3.5 h-3.5' /> 📋 Input Banyak Sekaligus (Bulk)
 												</button>
 											</div>
-											{editData.topik.map((t, i) => (
-												<div
-													key={i}
-													className='flex gap-2 mb-2'>
-													<input
-														type='text'
-														value={t}
-														onChange={(e) => {
-															const nt = [...editData.topik];
-															nt[i] = e.target.value;
-															setEditData({ ...editData, topik: nt });
-														}}
-														placeholder={`Topik bahasan #${i + 1}`}
-														className='flex-1 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] px-3 py-1.5 text-xs font-mono font-bold bg-white focus:bg-yellow-50 focus:outline-none'
-													/>
-													<button
-														onClick={() => setEditData({ ...editData, topik: editData.topik.filter((_, idx) => idx !== i) })}
-														className='p-1.5 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] transition-colors'>
-														<X className='w-3.5 h-3.5' />
-													</button>
-												</div>
-											))}
 										</div>
 
 										<div>
@@ -1265,39 +1803,53 @@ export default function ManajemenMateri() {
 										</div>
 
 										<div>
-											<div className='flex justify-between items-center mb-1'>
+											<div className='mb-1'>
 												<label className='font-mono text-xs font-bold uppercase text-black'>🎯 [QUEST] Misi Praktik Hari Ini (Checklist Interaktif)</label>
+												<p className='font-mono text-[10px] text-slate-500'>Checklist langkah tantangan praktik yang akan dicentang siswa di aplikasi komputernya.</p>
+											</div>
+											{(editData.misi_praktik || []).length === 0 ? (
+												<div className='p-2.5 bg-white border border-dashed border-black/40 text-center font-mono text-xs text-slate-500 mb-2'>
+													Belum ada misi praktik. Klik tombol di bawah untuk menambah.
+												</div>
+											) : (
+												(editData.misi_praktik || []).map((m, i) => (
+													<div
+														key={i}
+														className='flex gap-2 mb-2'>
+														<input
+															type='text'
+															value={m}
+															onChange={(e) => {
+																const nm = [...(editData.misi_praktik || [])];
+																nm[i] = e.target.value;
+																setEditData({ ...editData, misi_praktik: nm });
+															}}
+															placeholder={`Langkah misi #${i + 1} (cth: Buka MS Word dan buat tabel 3x3)`}
+															className='flex-1 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] px-3 py-1.5 text-xs font-mono font-bold bg-white focus:bg-emerald-50 focus:outline-none'
+														/>
+														<button
+															type='button'
+															onClick={() => setEditData({ ...editData, misi_praktik: editData.misi_praktik.filter((_, idx) => idx !== i) })}
+															className='p-1.5 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] transition-colors cursor-pointer'>
+															<X className='w-3.5 h-3.5' />
+														</button>
+													</div>
+												))
+											)}
+											<div className='flex flex-wrap items-center gap-2 mt-1'>
 												<button
 													type='button'
 													onClick={() => setEditData({ ...editData, misi_praktik: [...(editData.misi_praktik || []), ''] })}
-													className='px-2 py-0.5 bg-emerald-400 hover:bg-emerald-300 text-black font-mono text-[10px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] cursor-pointer'>
-													+ Tambah Misi
+													className='inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+													<Plus className='w-3.5 h-3.5' /> + Tambah Misi
+												</button>
+												<button
+													type='button'
+													onClick={() => setBulkModal({ isOpen: true, type: 'misi' })}
+													className='inline-flex items-center gap-1.5 px-3 py-1.5 bg-cyan-200 hover:bg-cyan-300 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+													<Copy className='w-3.5 h-3.5' /> 📋 Input Banyak Sekaligus (Bulk)
 												</button>
 											</div>
-											{(editData.misi_praktik || []).map((m, i) => (
-												<div
-													key={i}
-													className='flex gap-2 mb-2'>
-													<input
-														type='text'
-														value={m}
-														onChange={(e) => {
-															const nm = [...(editData.misi_praktik || [])];
-															nm[i] = e.target.value;
-															setEditData({ ...editData, misi_praktik: nm });
-														}}
-														placeholder={`Langkah misi #${i + 1} (cth: Buka MS Word dan buat tabel 3x3)`}
-														className='flex-1 border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] px-3 py-1.5 text-xs font-mono font-bold bg-white focus:bg-emerald-50 focus:outline-none'
-													/>
-													<button
-														type='button'
-														onClick={() => setEditData({ ...editData, misi_praktik: editData.misi_praktik.filter((_, idx) => idx !== i) })}
-														className='p-1.5 bg-rose-400 hover:bg-rose-300 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] transition-colors cursor-pointer'>
-														<X className='w-3.5 h-3.5' />
-													</button>
-												</div>
-											))}
-											<p className='font-mono text-[10px] text-slate-500 mt-1'>Checklist langkah tantangan praktik yang akan dicentang siswa di aplikasi komputernya.</p>
 										</div>
 
 										{/* ── Bahan Latihan Siap Pakai (Direct Upload & External Links) ── */}
@@ -1421,8 +1973,95 @@ export default function ManajemenMateri() {
 
 										{/* ── Kartu Pintar Shortcut & Istilah ── */}
 										<div>
-											<div className='flex justify-between items-center mb-1'>
+											<div className='mb-1'>
 												<label className='font-mono text-xs font-bold uppercase text-black'>🃏 [FLASHCARDS] Kartu Pintar Shortcut &amp; Istilah</label>
+												<p className='font-mono text-[10px] text-slate-500'>Kartu 3D interaktif yang bisa dibolak-balik siswa untuk melatih daya ingat tombol shortcut.</p>
+											</div>
+											{(editData.kartu_pintar || []).length === 0 ? (
+												<div className='p-2.5 bg-white border border-dashed border-black/40 text-center font-mono text-xs text-slate-500 mb-2'>
+													Belum ada kartu pintar. Klik tombol di bawah untuk menambah.
+												</div>
+											) : (
+												(editData.kartu_pintar || []).map((k, i) => (
+													<div
+														key={i}
+														className='p-3 bg-purple-50 border-2 border-black mb-2 space-y-2'>
+														<div className='flex justify-between items-center'>
+															<span className='font-mono text-[10px] font-bold uppercase text-purple-900'>Kartu #{i + 1}</span>
+															<button
+																type='button'
+																onClick={() =>
+																	setEditData({
+																		...editData,
+																		kartu_pintar: editData.kartu_pintar.filter((_, idx) => idx !== i),
+																	})
+																}
+																className='p-1 bg-rose-400 hover:bg-rose-300 text-black border border-black shadow-[1px_1px_0px_0px_#000] transition-colors cursor-pointer'>
+																<X className='w-3 h-3' />
+															</button>
+														</div>
+														<div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+															<div>
+																<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Sisi Depan (Pertanyaan / Istilah)</label>
+																<input
+																	type='text'
+																	value={k.depan || ''}
+																	onChange={(e) => {
+																		const nk = [...(editData.kartu_pintar || [])];
+																		nk[i].depan = e.target.value;
+																		setEditData({ ...editData, kartu_pintar: nk });
+																	}}
+																	placeholder='cth: Cara membatalkan perintah terakhir (Undo)?'
+																	className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+																/>
+															</div>
+															<div>
+																<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Shortcut Keyboard (jika ada)</label>
+																<input
+																	type='text'
+																	value={k.shortcut || ''}
+																	onChange={(e) => {
+																		const nk = [...(editData.kartu_pintar || [])];
+																		nk[i].shortcut = e.target.value;
+																		setEditData({ ...editData, kartu_pintar: nk });
+																	}}
+																	placeholder='cth: Ctrl + Z atau Alt + F4'
+																	className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+																/>
+															</div>
+														</div>
+														<div>
+															<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Sisi Belakang (Kunci / Penjelasan)</label>
+															<input
+																type='text'
+																value={k.belakang || ''}
+																onChange={(e) => {
+																	const nk = [...(editData.kartu_pintar || [])];
+																	nk[i].belakang = e.target.value;
+																	setEditData({ ...editData, kartu_pintar: nk });
+																}}
+																placeholder='cth: Mengembalikan isi dokumen ke kondisi sebelum diedit'
+																className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+															/>
+														</div>
+														<div>
+															<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Tips Tambahan (Opsional)</label>
+															<input
+																type='text'
+																value={k.tips || ''}
+																onChange={(e) => {
+																	const nk = [...(editData.kartu_pintar || [])];
+																	nk[i].tips = e.target.value;
+																	setEditData({ ...editData, kartu_pintar: nk });
+																}}
+																placeholder='cth: Tekan berulang kali untuk membatalkan beberapa langkah'
+																className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
+															/>
+														</div>
+													</div>
+												))
+											)}
+											<div className='flex flex-wrap items-center gap-2 mt-1'>
 												<button
 													type='button'
 													onClick={() =>
@@ -1434,89 +2073,16 @@ export default function ManajemenMateri() {
 															],
 														})
 													}
-													className='px-2 py-0.5 bg-purple-400 hover:bg-purple-300 text-black font-mono text-[10px] font-bold uppercase border border-black shadow-[1px_1px_0px_0px_#000] cursor-pointer'>
-													+ Tambah Kartu
+													className='inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-400 hover:bg-purple-300 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+													<Plus className='w-3.5 h-3.5' /> + Tambah Kartu
+												</button>
+												<button
+													type='button'
+													onClick={() => setBulkModal({ isOpen: true, type: 'flashcard' })}
+													className='inline-flex items-center gap-1.5 px-3 py-1.5 bg-cyan-200 hover:bg-cyan-300 text-black font-mono text-xs font-bold uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+													<Copy className='w-3.5 h-3.5' /> 📋 Input Banyak Sekaligus (Bulk)
 												</button>
 											</div>
-											{(editData.kartu_pintar || []).map((k, i) => (
-												<div
-													key={i}
-													className='p-3 bg-purple-50 border-2 border-black mb-2 space-y-2'>
-													<div className='flex justify-between items-center'>
-														<span className='font-mono text-[10px] font-bold uppercase text-purple-900'>Kartu #{i + 1}</span>
-														<button
-															type='button'
-															onClick={() =>
-																setEditData({
-																	...editData,
-																	kartu_pintar: editData.kartu_pintar.filter((_, idx) => idx !== i),
-																})
-															}
-															className='p-1 bg-rose-400 hover:bg-rose-300 text-black border border-black shadow-[1px_1px_0px_0px_#000] transition-colors cursor-pointer'>
-															<X className='w-3 h-3' />
-														</button>
-													</div>
-													<div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
-														<div>
-															<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Sisi Depan (Pertanyaan / Istilah)</label>
-															<input
-																type='text'
-																value={k.depan || ''}
-																onChange={(e) => {
-																	const nk = [...(editData.kartu_pintar || [])];
-																	nk[i].depan = e.target.value;
-																	setEditData({ ...editData, kartu_pintar: nk });
-																}}
-																placeholder='cth: Cara membatalkan perintah terakhir (Undo)?'
-																className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
-															/>
-														</div>
-														<div>
-															<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Shortcut Keyboard (jika ada)</label>
-															<input
-																type='text'
-																value={k.shortcut || ''}
-																onChange={(e) => {
-																	const nk = [...(editData.kartu_pintar || [])];
-																	nk[i].shortcut = e.target.value;
-																	setEditData({ ...editData, kartu_pintar: nk });
-																}}
-																placeholder='cth: Ctrl + Z atau Alt + F4'
-																className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
-															/>
-														</div>
-													</div>
-													<div>
-														<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Sisi Belakang (Kunci / Penjelasan)</label>
-														<input
-															type='text'
-															value={k.belakang || ''}
-															onChange={(e) => {
-																const nk = [...(editData.kartu_pintar || [])];
-																nk[i].belakang = e.target.value;
-																setEditData({ ...editData, kartu_pintar: nk });
-															}}
-															placeholder='cth: Mengembalikan isi dokumen ke kondisi sebelum diedit'
-															className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
-														/>
-													</div>
-													<div>
-														<label className='block font-mono text-[9px] font-bold uppercase text-slate-700 mb-0.5'>Tips Tambahan (Opsional)</label>
-														<input
-															type='text'
-															value={k.tips || ''}
-															onChange={(e) => {
-																const nk = [...(editData.kartu_pintar || [])];
-																nk[i].tips = e.target.value;
-																setEditData({ ...editData, kartu_pintar: nk });
-															}}
-															placeholder='cth: Tekan berulang kali untuk membatalkan beberapa langkah'
-															className='w-full border border-black shadow-[1px_1px_0px_0px_#000] px-2 py-1 text-xs font-mono font-bold bg-white focus:bg-purple-100 focus:outline-none'
-														/>
-													</div>
-												</div>
-											))}
-											<p className='font-mono text-[10px] text-slate-500 mt-1'>Kartu 3D interaktif yang bisa dibolak-balik siswa untuk melatih daya ingat tombol shortcut.</p>
 										</div>
 									</div>
 								)}
@@ -1662,32 +2228,9 @@ export default function ManajemenMateri() {
 															className='w-full border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] px-3 py-1.5 text-xs font-mono font-bold bg-white focus:bg-yellow-50 focus:outline-none'
 														/>
 													</div>
-													<div className='flex flex-col justify-end items-end'>
-														<p className='font-mono text-xs font-bold text-black'>{quizData.soal.length} SOAL TERDAFTAR</p>
-														<button
-															type='button'
-															onClick={() =>
-																setQuizData({
-																	...quizData,
-																	soal: [
-																		...quizData.soal,
-																		{
-																			pertanyaan: '',
-																			gambar_url: '',
-																			penjelasan: '',
-																			pilihan: [
-																				{ teks: '', gambar_url: '', adalah_benar: true },
-																				{ teks: '', gambar_url: '', adalah_benar: false },
-																				{ teks: '', gambar_url: '', adalah_benar: false },
-																				{ teks: '', gambar_url: '', adalah_benar: false },
-																			],
-																		},
-																	],
-																})
-															}
-															className='mt-1 px-3 py-1 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
-															<Plus className='w-3.5 h-3.5 inline mr-1' /> Tambah Soal
-														</button>
+													<div className='flex flex-col justify-center items-end text-right'>
+														<span className='font-mono text-[10px] font-bold text-slate-500 uppercase'>Total Soal Terdaftar</span>
+														<p className='font-mono text-base font-black text-black'>{quizData.soal.length} SOAL</p>
 													</div>
 												</div>
 
@@ -1865,6 +2408,45 @@ export default function ManajemenMateri() {
 															/>
 														</div>
 													))}
+
+													{quizData.soal.length === 0 && (
+														<div className='p-4 bg-white border-2 border-dashed border-black text-center font-mono text-xs text-slate-500'>
+															Belum ada soal kuis. Klik <strong>+ Tambah Soal</strong> atau <strong>📋 Input Banyak Soal Sekaligus</strong> di bawah untuk memasukkan soal.
+														</div>
+													)}
+
+													<div className='flex flex-wrap items-center gap-3 pt-3 border-t-2 border-black'>
+														<button
+															type='button'
+															onClick={() =>
+																setQuizData({
+																	...quizData,
+																	soal: [
+																		...quizData.soal,
+																		{
+																			pertanyaan: '',
+																			gambar_url: '',
+																			penjelasan: '',
+																			pilihan: [
+																				{ teks: '', gambar_url: '', adalah_benar: true },
+																				{ teks: '', gambar_url: '', adalah_benar: false },
+																				{ teks: '', gambar_url: '', adalah_benar: false },
+																				{ teks: '', gambar_url: '', adalah_benar: false },
+																			],
+																		},
+																	],
+																})
+															}
+															className='inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+															<Plus className='w-4 h-4' /> + Tambah Soal
+														</button>
+														<button
+															type='button'
+															onClick={() => setBulkModal({ isOpen: true, type: 'quiz' })}
+															className='inline-flex items-center gap-1.5 px-4 py-2 bg-cyan-200 hover:bg-cyan-300 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer'>
+															<Copy className='w-4 h-4' /> 📋 Input Banyak Soal Sekaligus (Bulk / Teks)
+														</button>
+													</div>
 												</div>
 											</>
 										)}
@@ -1891,6 +2473,14 @@ export default function ManajemenMateri() {
 					</div>
 				</ClientPortal>
 			)}
+
+			{/* Bulk Input Modal */}
+			<BulkInputModal
+				isOpen={bulkModal.isOpen}
+				type={bulkModal.type}
+				onClose={() => setBulkModal((prev) => ({ ...prev, isOpen: false }))}
+				onApply={handleApplyBulk}
+			/>
 		</div>
 	);
 }
