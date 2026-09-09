@@ -198,6 +198,8 @@ export default function ManajemenMateri() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState('konten');
 	const [isSaving, setIsSaving] = useState(false);
+	const [savingStatus, setSavingStatus] = useState('');
+	const [uploadProgress, setUploadProgress] = useState(null);
 
 	const [editData, setEditData] = useState({
 		id: null,
@@ -352,6 +354,7 @@ export default function ManajemenMateri() {
 			bahan_latihan: [],
 			kartu_pintar: [],
 		});
+		setUploadFile(null);
 		setLampiranAwal([]);
 		setQuizData({ id: null, judul: `Quiz Pertemuan ${materiList.length + 1}`, durasi_menit: 0, passing_score: 75, soal: [] });
 		setActiveTab('konten');
@@ -374,6 +377,7 @@ export default function ManajemenMateri() {
 			bahan_latihan: Array.isArray(materi.bahan_latihan) ? materi.bahan_latihan : JSON.parse(materi.bahan_latihan || '[]'),
 			kartu_pintar: Array.isArray(materi.kartu_pintar) ? materi.kartu_pintar : JSON.parse(materi.kartu_pintar || '[]'),
 		});
+		setUploadFile(null);
 		setLampiranAwal(materi.lampiran || []);
 		if (materi.tipe_konten !== 'materi_saja') {
 			const { data: qData } = await getQuizByMateri(materi.id);
@@ -385,6 +389,7 @@ export default function ManajemenMateri() {
 
 	const handleSave = async () => {
 		setIsSaving(true);
+		setSavingStatus('Menyimpan data materi...');
 		try {
 			const materiPayload = {
 				modul_id: editData.modul_id,
@@ -408,19 +413,36 @@ export default function ManajemenMateri() {
 			const materiId = savedMateri.id;
 
 			if (uploadFile) {
-				const res = await uploadPDF(uploadFile, editData.modul_id, uploadFile.name);
+				setSavingStatus('Mengunggah PDF: 0%');
+				setUploadProgress({
+					percent: 0,
+					loadedMB: '0.0',
+					totalMB: (uploadFile.size / (1024 * 1024)).toFixed(2),
+				});
+				const res = await uploadPDF(uploadFile, editData.modul_id, uploadFile.name, (prog) => {
+					setUploadProgress(prog);
+					setSavingStatus(`Mengunggah PDF: ${prog.percent}%`);
+				});
+				if (res.error) {
+					throw new Error('Gagal upload berkas PDF: ' + (res.error.message || JSON.stringify(res.error)));
+				}
 				if (res.url) {
-					await upsertLampiran({
+					setSavingStatus('Mencatat lampiran PDF...');
+					const { error: lampErr } = await upsertLampiran({
 						materi_id: materiId,
 						nama_file: uploadFile.name,
 						storage_path: res.path,
 						url_publik: res.url,
 						ukuran_mb: +(uploadFile.size / (1024 * 1024)).toFixed(2),
 					});
+					if (lampErr) {
+						throw new Error('Gagal menyimpan lampiran ke database: ' + (lampErr.message || JSON.stringify(lampErr)));
+					}
 				}
 			}
 
 			if (editData.tipe_konten !== 'materi_saja') {
+				setSavingStatus('Menyimpan data kuis...');
 				const quizPayload = {
 					materi_id: materiId,
 					judul: quizData.judul,
@@ -440,12 +462,22 @@ export default function ManajemenMateri() {
 			setIsModalOpen(false);
 			setUploadFile(null);
 			loadMateri(selectedModul.id);
+			Swal.fire({
+				icon: 'success',
+				title: 'Berhasil Disimpan!',
+				text: uploadFile ? 'Data materi dan modul PDF berhasil disimpan.' : 'Data materi berhasil diperbarui.',
+				timer: 1500,
+				showConfirmButton: false,
+			});
 		} catch (err) {
 			console.error('Save failed:', err);
 			const errMsg = err?.message || err?.details || (typeof err === 'string' ? err : JSON.stringify(err));
-			Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menyimpan materi: ' + errMsg });
+			Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: errMsg });
+		} finally {
+			setIsSaving(false);
+			setSavingStatus('');
+			setUploadProgress(null);
 		}
-		setIsSaving(false);
 	};
 
 	const handleUploadBahanFiles = async (e) => {
@@ -1094,6 +1126,27 @@ export default function ManajemenMateri() {
 								))}
 							</div>
 
+							{/* Live Upload Progress Banner */}
+							{uploadProgress && (
+								<div className='px-5 py-2.5 bg-yellow-300 border-b-2 border-black shrink-0 space-y-1.5'>
+									<div className='flex justify-between items-center text-xs font-mono font-bold text-black'>
+										<span className='flex items-center gap-1.5'>
+											<Loader2 className='w-3.5 h-3.5 animate-spin text-black' />
+											MENGUNGGAH PDF: {uploadProgress.percent}%
+										</span>
+										<span className='bg-black text-white px-2 py-0.5 text-[10px] font-bold'>
+											{uploadProgress.loadedMB} MB / {uploadProgress.totalMB} MB
+										</span>
+									</div>
+									<div className='w-full h-3 bg-white border-2 border-black overflow-hidden shadow-[1px_1px_0px_0px_#000]'>
+										<div
+											className='h-full bg-emerald-500 transition-all duration-150 ease-out'
+											style={{ width: `${uploadProgress.percent}%` }}
+										/>
+									</div>
+								</div>
+							)}
+
 							{/* Tab Content */}
 							<div className='p-5 overflow-y-auto flex-1 bg-[#FFFDF5] space-y-4'>
 								{/* ─ Konten ─ */}
@@ -1510,18 +1563,78 @@ export default function ManajemenMateri() {
 											</div>
 										)}
 
+										{uploadProgress && (
+											<div className='p-4 bg-yellow-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] space-y-2'>
+												<div className='flex justify-between items-center text-xs font-mono font-bold text-black'>
+													<span className='flex items-center gap-1.5'>
+														<Loader2 className='w-4 h-4 animate-spin text-orange-600' />
+														Sedang Mengunggah Berkas Modul PDF...
+													</span>
+													<span className='font-heading text-sm font-black text-emerald-700'>{uploadProgress.percent}%</span>
+												</div>
+												<div className='w-full h-3.5 bg-white border-2 border-black overflow-hidden shadow-[1px_1px_0px_0px_#000]'>
+													<div
+														className='h-full bg-emerald-500 transition-all duration-150 ease-out'
+														style={{ width: `${uploadProgress.percent}%` }}
+													/>
+												</div>
+												<div className='flex justify-between text-[11px] font-mono font-bold text-slate-700'>
+													<span className='truncate max-w-[250px]'>File: {uploadFile?.name}</span>
+													<span>{uploadProgress.loadedMB} MB / {uploadProgress.totalMB} MB</span>
+												</div>
+											</div>
+										)}
+
 										<label className='flex flex-col items-center justify-center border-2 border-dashed border-black bg-white hover:bg-yellow-50 p-8 text-center cursor-pointer transition-colors shadow-[2px_2px_0px_0px_#000]'>
 											<Upload className='w-8 h-8 text-black mb-2' />
 											<p className='font-heading font-black text-sm uppercase text-black mb-0.5'>
-												{uploadFile ? <span className='text-emerald-600'>✓ FILE: {uploadFile.name}</span> : 'Pilih Berkas Modul PDF'}
+												{uploadFile ? <span className='text-emerald-600'>✓ FILE TERPILIH: {uploadFile.name}</span> : 'Pilih Berkas Modul PDF'}
 											</p>
 											<p className='font-mono text-[10px] text-slate-500'>Maksimal ukuran file 10MB (.pdf)</p>
+											{uploadFile && (
+												<div className='mt-3 flex items-center gap-2'>
+													<span className='text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 border border-emerald-500'>
+														{(uploadFile.size / (1024 * 1024)).toFixed(2)} MB
+													</span>
+													<button
+														type='button'
+														onClick={(e) => {
+															e.preventDefault();
+															e.stopPropagation();
+															setUploadFile(null);
+														}}
+														className='text-xs font-mono font-bold bg-rose-200 text-rose-800 px-2 py-0.5 border border-rose-500 hover:bg-rose-300'>
+														Batal Pilih
+													</button>
+												</div>
+											)}
 											<input
 												type='file'
-												accept='.pdf'
+												accept='.pdf,application/pdf'
 												className='hidden'
 												onChange={(e) => {
-													if (e.target.files[0]) setUploadFile(e.target.files[0]);
+													const file = e.target.files?.[0];
+													if (!file) return;
+													const maxMB = 10;
+													if (file.size > maxMB * 1024 * 1024) {
+														Swal.fire({
+															icon: 'warning',
+															title: 'File Terlalu Besar',
+															text: `Ukuran file ${(file.size / (1024 * 1024)).toFixed(1)} MB melebihi batas maksimal ${maxMB} MB. Harap kompres berkas PDF terlebih dahulu.`,
+														});
+														e.target.value = '';
+														return;
+													}
+													if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+														Swal.fire({
+															icon: 'error',
+															title: 'Format Tidak Sesuai',
+															text: 'Hanya berkas dokumen berekstensi .pdf yang diperbolehkan.',
+														});
+														e.target.value = '';
+														return;
+													}
+													setUploadFile(file);
 												}}
 											/>
 										</label>
@@ -1771,7 +1884,7 @@ export default function ManajemenMateri() {
 									disabled={isSaving}
 									className='inline-flex items-center gap-2 px-5 py-2 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 transition-all cursor-pointer'>
 									{isSaving ? <Loader2 className='w-4 h-4 animate-spin' /> : <Save className='w-4 h-4' />}
-									Simpan Pertemuan
+									{isSaving ? (savingStatus || 'Menyimpan...') : 'Simpan Pertemuan'}
 								</button>
 							</div>
 						</div>

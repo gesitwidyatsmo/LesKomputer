@@ -101,12 +101,91 @@ export async function bukaSemuaAkses(siswaId, allMateriIds) {
   return { data, error };
 }
 
-export async function uploadPDF(file, modul, fileName) {
-  const filePath = `${modul}/${Date.now()}_${fileName}`;
+export function uploadPDFWithProgress(file, modul, fileName, onProgress) {
+  return new Promise((resolve) => {
+    const rawFileName = fileName || file?.name || "modul_materi.pdf";
+    const cleanName = rawFileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const cleanModul = (modul || "modul").replace(/[^a-zA-Z0-9._-]/g, "_");
+    const filePath = `${cleanModul}/${Date.now()}_${cleanName}`;
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    const uploadUrl = `${supabaseUrl}/storage/v1/object/materi-pdf/${filePath}`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', uploadUrl, true);
+
+    xhr.setRequestHeader('apikey', supabaseAnonKey);
+    xhr.setRequestHeader('Authorization', `Bearer ${supabaseAnonKey}`);
+    xhr.setRequestHeader('x-upsert', 'true');
+    xhr.setRequestHeader('Content-Type', file?.type || 'application/pdf');
+
+    if (xhr.upload && typeof onProgress === 'function') {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.min(100, Math.round((event.loaded / event.total) * 100));
+          onProgress({
+            percent,
+            loaded: event.loaded,
+            total: event.total,
+            loadedMB: (event.loaded / (1024 * 1024)).toFixed(2),
+            totalMB: (event.total / (1024 * 1024)).toFixed(2),
+          });
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('materi-pdf')
+          .getPublicUrl(filePath);
+
+        resolve({
+          path: filePath,
+          url: publicUrl,
+          error: null,
+        });
+      } else {
+        let errMessage = 'Gagal upload PDF ke storage';
+        try {
+          const res = JSON.parse(xhr.responseText);
+          errMessage = res.message || res.error || errMessage;
+        } catch {
+          errMessage = xhr.statusText || errMessage;
+        }
+        resolve({ error: new Error(errMessage) });
+      }
+    };
+
+    xhr.onerror = () => {
+      resolve({ error: new Error('Koneksi jaringan terputus saat mengunggah PDF.') });
+    };
+
+    xhr.ontimeout = () => {
+      resolve({ error: new Error('Waktu pengunggahan berkas PDF habis (timeout).') });
+    };
+
+    xhr.send(file);
+  });
+}
+
+export async function uploadPDF(file, modul, fileName, onProgress = null) {
+  if (typeof window !== 'undefined' && typeof XMLHttpRequest !== 'undefined' && typeof onProgress === 'function') {
+    return uploadPDFWithProgress(file, modul, fileName, onProgress);
+  }
+
+  const rawFileName = fileName || file?.name || "modul_materi.pdf";
+  const cleanName = rawFileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const cleanModul = (modul || "modul").replace(/[^a-zA-Z0-9._-]/g, "_");
+  const filePath = `${cleanModul}/${Date.now()}_${cleanName}`;
   
   const { data, error } = await supabase.storage
     .from('materi-pdf')
-    .upload(filePath, file);
+    .upload(filePath, file, {
+      contentType: file?.type || 'application/pdf',
+      upsert: true,
+    });
     
   if (error) return { error };
   
@@ -116,7 +195,8 @@ export async function uploadPDF(file, modul, fileName) {
     
   return { 
     path: data.path,
-    url: publicUrl
+    url: publicUrl,
+    error: null,
   };
 }
 
