@@ -65,7 +65,7 @@ export default function MouseGuideCard() {
                 : "text-slate-300 hover:text-white hover:bg-slate-800"
             }`}
           >
-            🎯 6 Tahap Latihan
+            🎯 8 Tahap Latihan
           </button>
         </div>
       </div>
@@ -198,11 +198,32 @@ export default function MouseGuideCard() {
                 </li>
               </ul>
             </div>
+
+            <div className="bg-violet-50 border-2 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000] space-y-2.5 md:col-span-2">
+              <div className="flex items-center gap-2 text-violet-700 font-heading font-black text-sm">
+                <Sparkles className="w-5 h-5 shrink-0 text-violet-600" />
+                <span>TRIK CERDAS SELEKSI / BLOK TEKS DENGAN MOUSE:</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-800 font-medium">
+                <div className="bg-white border border-black p-3 rounded-lg shadow-[2px_2px_0px_0px_#000]">
+                  <strong className="text-black block font-bold mb-1">👆 Trik Klik 2x (Double-Click):</strong>
+                  Klik 2 kali cepat tepat di atas sebuah kata untuk memblok kata tersebut secara instan tanpa perlu menyeret kursor!
+                </div>
+                <div className="bg-white border border-black p-3 rounded-lg shadow-[2px_2px_0px_0px_#000]">
+                  <strong className="text-black block font-bold mb-1">⚡ Trik Klik 3x (Triple-Click):</strong>
+                  Klik 3 kali cepat berturut-turut pada sebuah kalimat/paragraf untuk memblok seluruh paragraf secara otomatis.
+                </div>
+                <div className="bg-white border border-black p-3 rounded-lg shadow-[2px_2px_0px_0px_#000]">
+                  <strong className="text-black block font-bold mb-1">🎯 Mulai dari Sudut Huruf:</strong>
+                  Arahkan pointer tepat sebelum huruf pertama, tahan klik kiri, lalu geser stabil hingga akhir kata yang diinginkan.
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         {activeTab === "tahapan" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
                 step: 1,
@@ -241,10 +262,24 @@ export default function MouseGuideCard() {
               },
               {
                 step: 6,
+                title: "Seleksi Teks (Text Selection)",
+                desc: "Tahan klik kiri dan geser kursor untuk memblok kata target (atau klik 2x cepat pada kata).",
+                color: "bg-violet-200",
+                badge: "Tahap 6",
+              },
+              {
+                step: 7,
                 title: "Gulir Layar (Scroll Wheel)",
                 desc: "Gunakan roda mouse untuk menggulung layar ke atas/bawah dan temukan kotak tersembunyi.",
                 color: "bg-cyan-200",
-                badge: "Tahap 6",
+                badge: "Tahap 7",
+              },
+              {
+                step: 8,
+                title: "Target Bergerak (Moving Target)",
+                desc: "Bidik kotak yang sedang melayang memantul. Melatih ketangkasan dan refleks koordinasi mata-tangan.",
+                color: "bg-orange-200",
+                badge: "Tahap 8",
               },
             ].map((item) => (
               <div

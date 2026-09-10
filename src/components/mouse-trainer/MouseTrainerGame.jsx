@@ -27,7 +27,8 @@ import {
   FileCode,
   FolderDown,
   Compass,
-  X
+  X,
+  Highlighter
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -95,8 +96,20 @@ const STAGES = [
   },
   {
     id: 6,
-    name: "Tahap 6: Gulir Layar (Scroll Wheel)",
-    shortName: "6. Scroll Wheel",
+    name: "Tahap 6: Seleksi Teks (Text Selection)",
+    shortName: "6. Seleksi Teks",
+    color: "bg-violet-600 hover:bg-violet-700 text-white",
+    borderColor: "border-violet-800",
+    bgLight: "bg-violet-50",
+    textLabel: "Blok Kata Target",
+    desc: "Klik & tahan tombol kiri dari awal kata lalu geser untuk memblok kata target (atau klik 2x cepat).",
+    instruction: "Tahan klik kiri dan geser kursor untuk memblok kata target pada lembar dokumen!",
+    type: "select",
+  },
+  {
+    id: 7,
+    name: "Tahap 7: Gulir Layar (Scroll Wheel)",
+    shortName: "7. Scroll Wheel",
     color: "bg-cyan-600 hover:bg-cyan-700 text-white",
     borderColor: "border-cyan-800",
     bgLight: "bg-cyan-50",
@@ -106,9 +119,9 @@ const STAGES = [
     type: "scroll",
   },
   {
-    id: 7,
-    name: "Tahap 7: Target Bergerak (Moving Target)",
-    shortName: "7. Target Bergerak",
+    id: 8,
+    name: "Tahap 8: Target Bergerak (Moving Target)",
+    shortName: "8. Target Bergerak",
     color: "bg-orange-500 hover:bg-orange-600 text-black",
     borderColor: "border-orange-700",
     bgLight: "bg-orange-50",
@@ -116,6 +129,80 @@ const STAGES = [
     desc: "Target akan melayang memantul perlahan. Latih refleks dan ketepatan koordinasi.",
     instruction: "Bidik target yang sedang bergerak dan klik tepat sasaran!",
     type: "moving",
+  },
+];
+
+// Soal Latihan Seleksi / Blok Teks (Stage 6)
+const TEXT_SELECTION_ITEMS = [
+  {
+    id: 1,
+    sentence: "Perangkat keras komputer terdiri dari monitor, keyboard, dan mouse.",
+    target: "mouse",
+    hint: "Blok kata 'mouse' di akhir kalimat.",
+    tip: "Klik 2x cepat pada kata atau tahan klik kiri dari 'm' ke 'e'",
+  },
+  {
+    id: 2,
+    sentence: "Gunakan tombol klik kiri mouse untuk memilih dan membuka dokumen.",
+    target: "klik kiri",
+    hint: "Blok frasa 'klik kiri' pada kalimat di atas.",
+    tip: "Tahan klik kiri dari huruf 'k' lalu geser hingga akhir 'i'",
+  },
+  {
+    id: 3,
+    sentence: "Menyeleksi teks dengan rapi mempermudah kita menyalin tulisan penting.",
+    target: "Menyeleksi teks",
+    hint: "Blok frasa 'Menyeleksi teks' di awal kalimat.",
+    tip: "Mulai seleksi tepat dari huruf 'M' kapital",
+  },
+  {
+    id: 4,
+    sentence: "Belajar mengoperasikan komputer melatih keterampilan digital sejak dini.",
+    target: "keterampilan digital",
+    hint: "Blok frasa 'keterampilan digital'!",
+    tip: "Tahan dan geser kursor stabil melewati kedua kata",
+  },
+  {
+    id: 5,
+    sentence: "Aplikasi pengolah kata sering digunakan untuk mengetik surat dan laporan.",
+    target: "pengolah kata",
+    hint: "Blok frasa 'pengolah kata' pada teks.",
+    tip: "Pastikan tidak kelebihan memblok spasi sebelum atau sesudahnya",
+  },
+  {
+    id: 6,
+    sentence: "Pointer mouse akan berubah bentuk saat diarahkan ke atas tulisan dokumen.",
+    target: "dokumen",
+    hint: "Blok kata 'dokumen' di ujung kalimat.",
+    tip: "Coba trik klik 2x cepat tepat di atas kata 'dokumen'!",
+  },
+  {
+    id: 7,
+    sentence: "Latihan mouse setiap hari membuat koordinasi tangan semakin lincah dan cepat.",
+    target: "semakin lincah",
+    hint: "Blok frasa 'semakin lincah'!",
+    tip: "Tarik kursor perlahan dari huruf 's' ke 'h'",
+  },
+  {
+    id: 8,
+    sentence: "Tekan tombol mouse dengan lembut agar kursor tidak bergeser secara liar.",
+    target: "secara liar",
+    hint: "Blok frasa 'secara liar' di akhir kalimat.",
+    tip: "Lepas mouse begitu seluruh huruf 'secara liar' terblok",
+  },
+  {
+    id: 9,
+    sentence: "Kursor tetikus bergerak mengikuti arah gerakan tangan di atas meja kerja.",
+    target: "tetikus",
+    hint: "Blok kata 'tetikus'!",
+    tip: "Klik 2x cepat pada kata 'tetikus'!",
+  },
+  {
+    id: 10,
+    sentence: "Keterampilan menggunakan mouse adalah fondasi utama dalam belajar teknologi.",
+    target: "fondasi utama",
+    hint: "Blok frasa 'fondasi utama' pada kalimat.",
+    tip: "Tahan klik kiri dan geser halus melewati 'fondasi utama'",
   },
 ];
 
@@ -231,12 +318,18 @@ export default function MouseTrainerGame() {
   const hoverTimerRef = useRef(null);
   const animFrameRef = useRef(null);
   const timerIntervalRef = useRef(null);
+  const justDraggedRef = useRef(false);
+  const hasMovedRef = useRef(false);
 
-  // Stage 6 Scroll Target Section
+  // Stage 6 Text Selection state
+  const [textItemIndex, setTextItemIndex] = useState(0);
+
+  // Stage 7 Scroll Target Section
   const [scrollTargetSection, setScrollTargetSection] = useState(2);
 
   const stage = STAGES.find((s) => s.id === currentStageId) || STAGES[0];
   const sizeConfig = SIZES[selectedSize] || SIZES.medium;
+  const currentTextItem = TEXT_SELECTION_ITEMS[textItemIndex % TEXT_SELECTION_ITEMS.length] || TEXT_SELECTION_ITEMS[0];
 
   // Utility to generate random coordinates within container (Excluding top HUD area)
   const getRandomPosition = useCallback((targetWidth, targetHeight, customContainer = null) => {
@@ -277,6 +370,18 @@ export default function MouseTrainerGame() {
       }
       setDragItemPos(itemPos);
       setDropZonePos(dropPos);
+    } else if (stage.type === "select") {
+      // Pick a new random sentence & target word
+      setTextItemIndex((prev) => {
+        let next = Math.floor(Math.random() * TEXT_SELECTION_ITEMS.length);
+        if (next === prev && TEXT_SELECTION_ITEMS.length > 1) {
+          next = (next + 1) % TEXT_SELECTION_ITEMS.length;
+        }
+        return next;
+      });
+      if (typeof window !== "undefined") {
+        window.getSelection()?.removeAllRanges();
+      }
     } else if (stage.type === "scroll") {
       // Pick a new random sector between 1 and 10 (different from previous)
       setScrollTargetSection((prev) => {
@@ -317,11 +422,20 @@ export default function MouseTrainerGame() {
     setReactionTimes([]);
     setHoverProgress(0);
     setIsDragging(false);
+    justDraggedRef.current = false;
+    hasMovedRef.current = false;
 
     if (hoverTimerRef.current) clearInterval(hoverTimerRef.current);
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-    if (sId === 6 && scrollContainerRef.current) {
+    if (typeof window !== "undefined") {
+      try {
+        window.getSelection()?.removeAllRanges();
+      } catch (err) {}
+    }
+
+    const targetStage = STAGES.find((s) => s.id === sId);
+    if (targetStage?.type === "scroll" && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -491,7 +605,7 @@ export default function MouseTrainerGame() {
 
   // Background Click (Miss Click detection)
   const handleAreaClick = (e) => {
-    if (isFinished) return;
+    if (isFinished || justDraggedRef.current || stage.type === "select") return;
     if (!startTime) setStartTime(Date.now());
     
     setTotalClicks((prev) => prev + 1);
@@ -509,7 +623,7 @@ export default function MouseTrainerGame() {
   // Prevent default right-click and detect Right-Click Misses
   const handleContextMenu = (e) => {
     e.preventDefault();
-    if (isFinished) return;
+    if (isFinished || justDraggedRef.current) return;
     if (!startTime) setStartTime(Date.now());
 
     setTotalClicks((prev) => prev + 1);
@@ -551,8 +665,10 @@ export default function MouseTrainerGame() {
   // Drag & drop handlers
   const handleDragStart = (e) => {
     if (stage.type !== "drag" || isFinished) return;
+    e.stopPropagation();
     if (!startTime) setStartTime(Date.now());
     setIsDragging(true);
+    hasMovedRef.current = false;
 
     const rect = e.currentTarget.getBoundingClientRect();
     setDragOffset({
@@ -563,6 +679,7 @@ export default function MouseTrainerGame() {
 
   const handleDragMove = (e) => {
     if (!isDragging || stage.type !== "drag" || !gameAreaRef.current) return;
+    hasMovedRef.current = true;
     const areaRect = gameAreaRef.current.getBoundingClientRect();
     const newX = Math.max(10, Math.min(e.clientX - areaRect.left - dragOffset.x, areaRect.width - 90));
     const newY = Math.max(10, Math.min(e.clientY - areaRect.top - dragOffset.y, areaRect.height - 90));
@@ -572,6 +689,17 @@ export default function MouseTrainerGame() {
   const handleDragEnd = (e) => {
     if (!isDragging || stage.type !== "drag") return;
     setIsDragging(false);
+
+    // Tandai bahwa drag baru saja selesai agar synthetic click event bawaan browser diabaikan
+    justDraggedRef.current = true;
+    setTimeout(() => {
+      justDraggedRef.current = false;
+    }, 150);
+
+    // Jika file hanya diklik tanpa digeser (drag), jangan hitung sebagai percobaan drop
+    if (!hasMovedRef.current) {
+      return;
+    }
 
     // Check collision with dropzone
     const itemCenter = {
@@ -589,7 +717,66 @@ export default function MouseTrainerGame() {
     ) {
       handleTargetSuccess(e, "Sukses Masuk!");
     } else {
+      setTotalClicks((prev) => prev + 1);
+      setMissClicks((prev) => prev + 1);
       playTone("miss", isMuted);
+
+      const rect = gameAreaRef.current?.getBoundingClientRect();
+      if (rect && e) {
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        triggerHitEffect(clickX, clickY, "Meleset!");
+      }
+    }
+  };
+
+  // Stage 6 Text Selection Handler
+  const handleTextSelectionEnd = (e) => {
+    if (stage.type !== "select" || isFinished) return;
+    if (!startTime) setStartTime(Date.now());
+
+    const selection = typeof window !== "undefined" && window.getSelection ? window.getSelection() : null;
+    const rawSelected = selection ? selection.toString() : "";
+    const trimmed = rawSelected.trim();
+
+    // Jika pengguna hanya mengklik teks tanpa memblok huruf apapun, jangan hitung sebagai meleset
+    if (!trimmed) {
+      return;
+    }
+
+    const targetLower = currentTextItem.target.toLowerCase().trim();
+    const selectedLower = trimmed.toLowerCase();
+
+    // Koordinat pop-up feedback
+    const rect = gameAreaRef.current?.getBoundingClientRect();
+    const clickX = e && rect ? e.clientX - rect.left : (gameAreaRef.current?.clientWidth || 400) / 2;
+    const clickY = e && rect ? e.clientY - rect.top : (gameAreaRef.current?.clientHeight || 400) / 2;
+
+    setTotalClicks((prev) => prev + 1);
+
+    if (selectedLower === targetLower) {
+      // TEPAT SESUAI TARGET!
+      handleTargetSuccess(e, "Seleksi Tepat!");
+      if (selection) {
+        try {
+          selection.removeAllRanges();
+        } catch (err) {}
+      }
+    } else if (targetLower.includes(selectedLower) && selectedLower.length < targetLower.length) {
+      // KURANG HURUF / KURANG LENGKAP
+      setMissClicks((prev) => prev + 1);
+      playTone("miss", isMuted);
+      triggerHitEffect(clickX, clickY, "Kurang lengkap!");
+    } else if (selectedLower.includes(targetLower) && selectedLower.length > targetLower.length) {
+      // BABLAS / KELEBIHAN KATA
+      setMissClicks((prev) => prev + 1);
+      playTone("miss", isMuted);
+      triggerHitEffect(clickX, clickY, "Kelebihan kata!");
+    } else {
+      // KATA YANG DIPILIH SALAH
+      setMissClicks((prev) => prev + 1);
+      playTone("miss", isMuted);
+      triggerHitEffect(clickX, clickY, "Kata salah!");
     }
   };
 
@@ -936,8 +1123,8 @@ export default function MouseTrainerGame() {
           </div>
         )}
 
-        {/* ── STAGES 1, 2, 3, 4, 7: Standard Target Box ────────────────── */}
-        {stage.type !== "drag" && stage.type !== "scroll" && !isFinished && (
+        {/* ── STAGES 1, 2, 3, 4, 8: Standard Target Box ────────────────── */}
+        {stage.type !== "drag" && stage.type !== "scroll" && stage.type !== "select" && !isFinished && (
           <div
             onClick={(e) => {
               e.stopPropagation();
@@ -1031,6 +1218,7 @@ export default function MouseTrainerGame() {
             {/* Draggable File Item */}
             <div
               onMouseDown={handleDragStart}
+              onClick={(e) => e.stopPropagation()}
               style={{
                 position: "absolute",
                 left: `${dragItemPos.x}px`,
@@ -1054,7 +1242,69 @@ export default function MouseTrainerGame() {
           </>
         )}
 
-        {/* ── STAGE 6: Scroll Wheel Playground (10 Sektor dengan Latihan Scroll Ke Atas & Ke Bawah) ── */}
+        {/* ── STAGE 6: Seleksi & Blok Teks (Text Selection) ────────────────── */}
+        {stage.type === "select" && !isFinished && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-3 sm:p-6 select-none overflow-y-auto">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-2xl bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl p-5 sm:p-7 space-y-4 animate-in zoom-in-95 duration-200"
+            >
+              {/* Target Mission Header Banner */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-200 pb-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-violet-600 border-2 border-black flex items-center justify-center text-white shadow-[2px_2px_0px_0px_#000]">
+                    <Highlighter className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold block">
+                      Target #{currentTarget + 1}
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-slate-700">Blok teks:</span>
+                      <span className="font-heading font-black text-sm sm:text-base text-violet-950 bg-violet-200 border-2 border-violet-700 px-3 py-0.5 rounded-lg shadow-[2px_2px_0px_0px_#6D28D9]">
+                        "{currentTextItem.target}"
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pro Tip Badge */}
+                <div className="bg-amber-100 border border-amber-400 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-amber-900 flex items-center gap-1.5 shadow-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span>Trik: Bisa klik 2x cepat!</span>
+                </div>
+              </div>
+
+              {/* Interactive Text Display (Document Paper Area) */}
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-mono text-slate-500 flex items-center justify-between">
+                  <span>📄 Lembar Kalimat Latihan:</span>
+                  <span className="font-bold text-violet-700">{currentTextItem.hint}</span>
+                </div>
+
+                <div
+                  onMouseUp={handleTextSelectionEnd}
+                  className="bg-[#FFFDF8] border-3 border-black rounded-xl p-5 sm:p-7 shadow-inner text-base sm:text-xl font-mono text-slate-900 leading-relaxed sm:leading-loose tracking-wide cursor-text select-text hover:border-violet-600 transition-colors selection:bg-violet-300 selection:text-black min-h-[100px] flex items-center"
+                >
+                  {currentTextItem.sentence}
+                </div>
+              </div>
+
+              {/* Footer Guidance */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs font-mono text-slate-600 border-t border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>{currentTextItem.tip}</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-bold">
+                  Lepas tombol mouse untuk memvalidasi
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STAGE 7: Scroll Wheel Playground (10 Sektor dengan Latihan Scroll Ke Atas & Ke Bawah) ── */}
         {stage.type === "scroll" && !isFinished && (
           <div
             ref={scrollContainerRef}
