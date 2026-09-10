@@ -24,85 +24,32 @@ import {
   Flame,
   Star,
   Award,
-  X
+  X,
+  Map,
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  Unlock,
+  Play,
+  Layers
 } from "lucide-react";
 import SvgVirtualKeyboard from "./SvgVirtualKeyboard";
+import TypingStageMap from "./TypingStageMap";
 import Swal from "sweetalert2";
 import { useSiswa } from "@/context/SiswaContext";
+import {
+  TYPING_LESSONS,
+  getLessonById,
+  getUnitById,
+  getLessonsByUnit
+} from "@/data/typingCurriculum";
+import {
+  getTypingProgress,
+  saveLevelResult,
+  isLevelUnlocked,
+  calculateStars
+} from "@/lib/typingProgressService";
 
-// Curriculum Lessons (Progressive Lessons from Home Row to Real Indonesian Words)
-const LESSONS = [
-  {
-    id: 1,
-    title: "Level 1: Jangkar F & J",
-    desc: "Melatih kedua jari telunjuk pada tonjolan jangkar F dan J.",
-    shortName: "1. F & J",
-    text: "f j f j ff jj f f j j fj jf ff jj fjf jfj f j ff jj fj jf",
-  },
-  {
-    id: 2,
-    title: "Level 2: Home Row D & K",
-    desc: "Melatih jari tengah kiri (D) dan jari tengah kanan (K).",
-    shortName: "2. D & K",
-    text: "d k d k f d j k dk kd fd jk fjdk dkf jkd d k dd kk dk kd",
-  },
-  {
-    id: 3,
-    title: "Level 3: Home Row S & L",
-    desc: "Melatih jari manis kiri (S) dan jari manis kanan (L).",
-    shortName: "3. S & L",
-    text: "s l s l a s l k sl ls as lk fals slad laks s l ss ll sl ls",
-  },
-  {
-    id: 4,
-    title: "Level 4: Home Row Lengkap (ASDF JKL;)",
-    desc: "Menggabungkan seluruh baris beranda dari A sampai titik koma (;).",
-    shortName: "4. Home Row",
-    text: "a s d f j k l ; asdf jkl; a; sl dk fj flask salad fall jakal",
-  },
-  {
-    id: 5,
-    title: "Level 5: Baris Atas E & I",
-    desc: "Menjangkau baris atas dengan jari tengah kiri (E) dan kanan (I).",
-    shortName: "5. E & I",
-    text: "e i e i de ki fe ji ed ik feed die kid life like idea file",
-  },
-  {
-    id: 6,
-    title: "Level 6: Baris Atas R & U",
-    desc: "Menjangkau baris atas dengan jari telunjuk kiri (R) dan kanan (U).",
-    shortName: "6. R & U",
-    text: "r u r u fr ju er iu rude true fire surf rule user fur sure",
-  },
-  {
-    id: 7,
-    title: "Level 7: Baris Atas T, Y, O, P",
-    desc: "Melengkapi penguasaan seluruh baris atas keyboard.",
-    shortName: "7. T Y O P",
-    text: "t y o p ft jy lo ;p type post port your open play poet toy",
-  },
-  {
-    id: 8,
-    title: "Level 8: Baris Bawah V, M, C, Komma",
-    desc: "Menjangkau baris bawah keyboard dengan jari telunjuk dan tengah.",
-    shortName: "8. Baris Bawah",
-    text: "v m c , fv jm dc k, view move calm live come mica voice",
-  },
-  {
-    id: 9,
-    title: "Level 9: Kata Bahasa Indonesia",
-    desc: "Latihan mengetik kata-kata bahasa Indonesia yang sering digunakan.",
-    shortName: "9. Kata Nyata",
-    text: "ini adalah latihan mengetik sepuluh jari agar semakin mahir dan lincah mengoperasikan komputer di kelas kursus",
-  },
-  {
-    id: 10,
-    title: "Level 10: Tantangan Kecepatan & Kalimat",
-    desc: "Uji kecepatan WPM dan akurasi dengan kalimat lengkap.",
-    shortName: "10. Uji WPM",
-    text: "belajar komputer dengan metode praktis dan menyenangkan membuat kita lebih percaya diri dalam dunia digital dan teknologi masa depan",
-  },
-];
 
 // Color palette for 10 fingers
 const FINGER_COLORS = {
@@ -342,6 +289,9 @@ function getHandSvgPath(char) {
 
 export default function TypingTrainerGame() {
   const siswaCtx = useSiswa();
+  const siswaId = siswaCtx?.currentSiswa?.id || "guest";
+  const [viewMode, setViewMode] = useState("map"); // "map" | "play"
+  const [progress, setProgress] = useState(() => getTypingProgress(siswaId));
   const [currentLevelId, setCurrentLevelId] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userInput, setUserInput] = useState("");
@@ -359,6 +309,23 @@ export default function TypingTrainerGame() {
   const [isFinished, setIsFinished] = useState(false);
   const [hasErrorOnCurrentChar, setHasErrorOnCurrentChar] = useState(false);
   const [awardedXpInfo, setAwardedXpInfo] = useState(null);
+  const [completionResult, setCompletionResult] = useState(null);
+
+  // Sinkronisasi status progres dari custom event
+  useEffect(() => {
+    const handleProgressUpdate = (e) => {
+      if (e.detail?.progress) {
+        setProgress(e.detail.progress);
+      } else {
+        setProgress(getTypingProgress(siswaId));
+      }
+    };
+    window.addEventListener("gwa-typing-progress-updated", handleProgressUpdate);
+    return () => {
+      window.removeEventListener("gwa-typing-progress-updated", handleProgressUpdate);
+    };
+  }, [siswaId]);
+
 
   // Floating effects
   const [popups, setPopups] = useState([]);
@@ -368,11 +335,12 @@ export default function TypingTrainerGame() {
   const hiddenInputRef = useRef(null);
   const promptContainerRef = useRef(null);
 
-  const lesson = LESSONS.find((l) => l.id === currentLevelId) || LESSONS[0];
+  const lesson = useMemo(() => getLessonById(currentLevelId), [currentLevelId]);
   const targetText = lesson.text;
   const currentChar = targetText[currentIndex] || "";
   const activeFinger = getFingerForKey(currentChar);
   const activeFingerInfo = FINGER_COLORS[activeFinger] || FINGER_COLORS.thumb;
+
 
   // Split targetText into lines of characters (each line ~ chars that fit in one visual row)
   // We tokenize words + their following space so that 100% of characters (and spaces) keep their exact index in targetText.
@@ -442,6 +410,7 @@ export default function TypingTrainerGame() {
     setIsFinished(false);
     setHasErrorOnCurrentChar(false);
     setAwardedXpInfo(null);
+    setCompletionResult(null);
 
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     setTimeout(() => {
@@ -672,29 +641,48 @@ export default function TypingTrainerGame() {
         // Check completion
         if (nextIndex >= targetText.length) {
           setIsFinished(true);
-          playTypingSound("victory", isMuted);
-          try {
-            confetti({
-              particleCount: 120,
-              spread: 80,
-              origin: { y: 0.6 },
-            });
-          } catch (err) {}
 
-          // Award XP to student if logged in
-          if (siswaCtx?.awardXp) {
-            const baseXP = 25;
-            const finalTotal = (correctCount + 1) + errorCount;
-            const finalAcc = finalTotal > 0 ? Math.min(100, Math.round(((correctCount + 1) / finalTotal) * 100)) : 100;
-            const bonusXP = finalAcc >= 95 ? 15 : finalAcc >= 90 ? 10 : 0;
-            const totalXp = baseXP + bonusXP;
-            const reason = `Praktik Mengetik 10 Jari: ${lesson.shortName} (${finalAcc}% Akurasi)`;
-            const res = siswaCtx.awardXp(totalXp, reason);
-            setAwardedXpInfo({
-              xp: totalXp,
-              bonus: bonusXP,
-              levelInfo: res?.levelInfo,
-            });
+          const finalMinutes = Math.max((Date.now() - (startTime || Date.now())) / 60000, 0.05);
+          const finalWords = (correctCount + 1) / 5;
+          const finalWpm = Math.round(finalWords / finalMinutes);
+          const finalTotal = (correctCount + 1) + errorCount;
+          const finalAcc = finalTotal > 0 ? Math.min(100, Math.round(((correctCount + 1) / finalTotal) * 100)) : 100;
+          const minAcc = lesson.minAccuracy || 80;
+
+          // Simpan progres ke typingProgressService
+          const saveRes = saveLevelResult(siswaId, currentLevelId, {
+            accuracy: finalAcc,
+            wpm: finalWpm,
+            minAccuracy: minAcc,
+          });
+
+          setCompletionResult(saveRes);
+
+          if (saveRes?.isPassed) {
+            playTypingSound("victory", isMuted);
+            try {
+              confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 },
+              });
+            } catch (err) {}
+
+            // Hadiahi XP ke siswa jika terdaftar
+            if (siswaCtx?.awardXp) {
+              const baseXP = 25;
+              const bonusXP = finalAcc >= 95 ? 15 : finalAcc >= 90 ? 10 : 0;
+              const totalXp = baseXP + bonusXP;
+              const reason = `Praktik Mengetik 10 Jari: ${lesson.shortName} (${finalAcc}% Akurasi, ${finalWpm} WPM)`;
+              const res = siswaCtx.awardXp(totalXp, reason);
+              setAwardedXpInfo({
+                xp: totalXp,
+                bonus: bonusXP,
+                levelInfo: res?.levelInfo,
+              });
+            }
+          } else {
+            playTypingSound("error", isMuted);
           }
         }
       } else {
@@ -705,7 +693,8 @@ export default function TypingTrainerGame() {
         triggerPopup("Salah!", true);
       }
     }
-  }, [currentIndex, isFinished, isMuted, startTime, targetText, correctCount, errorCount, lesson.shortName, siswaCtx]);
+  }, [currentIndex, isFinished, isMuted, startTime, targetText, correctCount, errorCount, lesson, siswaCtx, siswaId, currentLevelId]);
+
 
   // Physical Keyup Event Handler
   const handleKeyUp = useCallback((e) => {
@@ -753,6 +742,21 @@ export default function TypingTrainerGame() {
     return 1;
   };
 
+  if (viewMode === "map") {
+    return (
+      <TypingStageMap
+        progress={progress}
+        siswaId={siswaId}
+        activeLevelId={currentLevelId}
+        onSelectLevel={(levelId) => {
+          setCurrentLevelId(levelId);
+          resetLesson(levelId);
+          setViewMode("play");
+        }}
+      />
+    );
+  }
+
   return (
     <div
       onClick={focusInput}
@@ -799,6 +803,18 @@ export default function TypingTrainerGame() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  setViewMode("map");
+                }}
+                title="Buka Peta Tahapan (Course Map)"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white hover:bg-cyan-100 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-black text-black cursor-pointer transition-all"
+              >
+                <Map className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-600" />
+                <span>Peta Level</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+
                   setShowHands(!showHands);
                 }}
                 title={showHands ? "Sembunyikan Panduan Tangan" : "Tampilkan Panduan Tangan"}
@@ -900,28 +916,89 @@ export default function TypingTrainerGame() {
             </div>
           </div>
 
-          {/* Level Selector Pills */}
-          <div className="mt-3 pt-2.5 border-t border-slate-200">
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono font-bold scrollbar-thin">
-              <span className="text-slate-500 mr-1 shrink-0 text-[11px]">Pilih Level:</span>
-              {LESSONS.map((l) => (
-                <button
-                  key={l.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    resetLesson(l.id);
-                  }}
-                  className={`px-2.5 py-1 rounded-md border-2 border-black shrink-0 transition-all cursor-pointer font-bold text-xs ${
-                    currentLevelId === l.id
-                      ? "bg-black text-white shadow-[2px_2px_0px_0px_#FF6B00] scale-105"
-                      : "bg-white text-slate-800 hover:bg-amber-100 shadow-[1px_1px_0px_0px_#000]"
-                  }`}
-                >
-                  {l.shortName}
-                </button>
-              ))}
+          {/* Level Quick Navigation Bar */}
+          <div className="mt-3 pt-2.5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentLevelId <= 1}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  resetLesson(currentLevelId - 1);
+                }}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-black rounded-md shadow-[1px_1px_0px_0px_#000] font-bold flex items-center gap-1 cursor-pointer"
+                title="Level Sebelumnya"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sebelumnya</span>
+              </button>
+
+              <div className="flex items-center gap-1.5 bg-slate-100 border-2 border-black px-2.5 py-1 rounded-md shadow-[1px_1px_0px_0px_#000] font-bold">
+                <span className="text-slate-500">Unit {lesson.unitId} ·</span>
+                <span className="text-black">Level {currentLevelId} / {TYPING_LESSONS.length}</span>
+              </div>
+
+              <button
+                disabled={
+                  currentLevelId >= TYPING_LESSONS.length ||
+                  !isLevelUnlocked(progress, currentLevelId + 1)
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  resetLesson(currentLevelId + 1);
+                }}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-black rounded-md shadow-[1px_1px_0px_0px_#000] font-bold flex items-center gap-1 cursor-pointer"
+                title={
+                  !isLevelUnlocked(progress, currentLevelId + 1)
+                    ? "Level berikutnya masih terkunci"
+                    : "Level Selanjutnya"
+                }
+              >
+                <span className="hidden sm:inline">Selanjutnya</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Quick Level Pills for Active Unit */}
+            <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-thin">
+              <span className="text-slate-500 text-[11px] font-bold shrink-0">
+                Unit {lesson.unitId}:
+              </span>
+              {getLessonsByUnit(lesson.unitId).map((l) => {
+                const isUnlocked = isLevelUnlocked(progress, l.id);
+                const isPassed = !!progress?.completedLevels?.[l.id]?.passed;
+                const stars = progress?.completedLevels?.[l.id]?.stars || 0;
+
+                return (
+                  <button
+                    key={l.id}
+                    disabled={!isUnlocked}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      resetLesson(l.id);
+                    }}
+                    title={`${l.title}${isPassed ? ` (⭐ ${stars} Bintang)` : !isUnlocked ? " (Terkunci)" : ""}`}
+                    className={`px-2 py-1 rounded-md border-2 border-black shrink-0 transition-all font-bold text-[11px] flex items-center gap-1 cursor-pointer ${
+                      currentLevelId === l.id
+                        ? "bg-black text-white shadow-[2px_2px_0px_0px_#FF6B00] scale-105"
+                        : isPassed
+                        ? "bg-emerald-100 text-emerald-950 hover:bg-emerald-200 shadow-[1px_1px_0px_0px_#000]"
+                        : isUnlocked
+                        ? "bg-white text-slate-800 hover:bg-amber-100 shadow-[1px_1px_0px_0px_#000]"
+                        : "bg-slate-100 text-slate-400 border-slate-300 opacity-60 cursor-not-allowed"
+                    }`}
+                  >
+                    {!isUnlocked ? (
+                      <Lock className="w-2.5 h-2.5 text-slate-400" />
+                    ) : isPassed ? (
+                      <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-400" />
+                    ) : null}
+                    <span>{l.id}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
+
 
           {/* Bottom Bar: Fullscreen Toggle */}
           <div className="mt-2.5 flex items-center justify-between gap-3 text-xs font-mono pt-2 border-t border-slate-100">
@@ -946,8 +1023,8 @@ export default function TypingTrainerGame() {
 
       {/* ── MAIN INTERACTIVE TYPING ARENA ────────────────── */}
       <div
-        className={`relative w-full bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl flex flex-col transition-all ${
-          isFullscreen ? "flex-1 w-full h-full max-h-full p-2 sm:p-3.5 overflow-hidden" : "p-3 sm:p-5"
+        className={`relative w-full bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl flex flex-col transition-all overflow-hidden ${
+          isFullscreen ? "flex-1 w-full h-full max-h-full p-2 sm:p-3.5" : "p-3 sm:p-5 pb-6 sm:pb-10"
         }`}
       >
         {/* Fullscreen Floating Top HUD */}
@@ -1004,6 +1081,18 @@ export default function TypingTrainerGame() {
                 title={isMuted ? "Nyalakan Suara" : "Matikan Suara"}
               >
                 {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-600" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-600" />}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isFullscreen) toggleFullscreen();
+                  setViewMode("map");
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-cyan-100 text-black border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] font-mono text-xs font-bold cursor-pointer"
+                title="Kembali ke Peta Level"
+              >
+                <Map className="w-3.5 h-3.5 text-cyan-600" />
+                <span className="hidden sm:inline">Peta</span>
               </button>
               <button
                 onClick={(e) => {
@@ -1254,38 +1343,67 @@ export default function TypingTrainerGame() {
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Trophy & Stars */}
-              <div className="space-y-2">
-                <div className="w-16 h-16 bg-amber-300 border-3 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_#000] -rotate-3">
-                  <Trophy className="w-9 h-9 text-black animate-bounce" />
-                </div>
-                {/* 5-Star Rating */}
-                <div className="flex items-center justify-center gap-1.5 pt-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-6 h-6 ${
-                        star <= calculateStars()
-                          ? "text-amber-400 fill-amber-400"
-                          : "text-slate-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
+              {/* Status Header: Lulus vs Belum Lulus */}
+              {completionResult?.isPassed ? (
+                <>
+                  <div className="space-y-2">
+                    <div className="w-16 h-16 bg-amber-300 border-3 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_#000] -rotate-3">
+                      <Trophy className="w-9 h-9 text-black animate-bounce" />
+                    </div>
+                    {/* 5-Star Rating */}
+                    <div className="flex items-center justify-center gap-1.5 pt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-6 h-6 ${
+                            star <= (completionResult.starsEarned || calculateStars(accuracy, wpm, lesson.minAccuracy || 80))
+                              ? "text-amber-400 fill-amber-400"
+                              : "text-slate-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
-              {/* Title & Badge */}
-              <div>
-                <span className="bg-emerald-400 text-black font-mono text-xs font-black px-3 py-1 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000] uppercase inline-block mb-1.5">
-                  🎉 Level Selesai!
-                </span>
-                <h2 className="font-heading font-black text-2xl text-black">
-                  Luar Biasa, Jari Anda Cepat!
-                </h2>
-                <p className="text-xs text-slate-600 font-medium mt-0.5">
-                  Anda telah menyelesaikan <strong>{lesson.title}</strong>
-                </p>
-              </div>
+                  <div>
+                    <span className="bg-emerald-400 text-black font-mono text-xs font-black px-3 py-1 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000] uppercase inline-block mb-1.5">
+                      🎉 Level Lulus!
+                    </span>
+                    <h2 className="font-heading font-black text-2xl text-black">
+                      Luar Biasa, Jari Anda Cepat!
+                    </h2>
+                    <p className="text-xs text-slate-600 font-medium mt-0.5">
+                      Anda berhasil menuntaskan <strong>{lesson.title}</strong>
+                    </p>
+                    {completionResult.isNewUnlock && currentLevelId < TYPING_LESSONS.length && (
+                      <div className="mt-2 inline-flex items-center gap-1.5 bg-cyan-100 border border-black px-2.5 py-1 rounded-md text-[11px] font-mono font-bold text-cyan-950">
+                        <Unlock className="w-3.5 h-3.5 text-cyan-600" />
+                        <span>Level {currentLevelId + 1} Berhasil Dibuka!</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <div className="w-16 h-16 bg-rose-100 border-3 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_#000]">
+                      <AlertCircle className="w-9 h-9 text-rose-600" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="bg-rose-500 text-white font-mono text-xs font-black px-3 py-1 border-2 border-black rounded-full shadow-[2px_2px_0px_0px_#000] uppercase inline-block mb-1.5">
+                      ⚠️ Belum Memenuhi Syarat Lulus
+                    </span>
+                    <h2 className="font-heading font-black text-xl text-black">
+                      Ayo Coba Sekali Lagi!
+                    </h2>
+                    <p className="text-xs text-slate-600 font-medium mt-1">
+                      Akurasi Anda <strong>{accuracy}%</strong> (syarat minimal: <strong>{lesson.minAccuracy || 80}%</strong>). Tetap rileks dan jangan terburu-buru.
+                    </p>
+                  </div>
+                </>
+              )}
 
               {/* Scorecard Stats Grid */}
               <div className="grid grid-cols-3 gap-2 bg-[#FFFDF5] border-2 border-black p-3 rounded-xl shadow-[3px_3px_0px_0px_#000]">
@@ -1295,7 +1413,9 @@ export default function TypingTrainerGame() {
                 </div>
                 <div className="p-2 bg-white border border-black rounded-lg">
                   <div className="text-[10px] font-mono font-bold text-slate-500 uppercase">Akurasi</div>
-                  <div className="font-heading font-black text-lg text-emerald-700 font-mono">{accuracy}%</div>
+                  <div className={`font-heading font-black text-lg font-mono ${accuracy >= (lesson.minAccuracy || 80) ? "text-emerald-700" : "text-rose-600"}`}>
+                    {accuracy}%
+                  </div>
                 </div>
                 <div className="p-2 bg-white border border-black rounded-lg">
                   <div className="text-[10px] font-mono font-bold text-slate-500 uppercase">Waktu</div>
@@ -1324,31 +1444,45 @@ export default function TypingTrainerGame() {
               )}
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
+              <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
                 <button
                   onClick={() => resetLesson()}
-                  className="w-full sm:flex-1 py-3 bg-white hover:bg-slate-100 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 py-2.5 bg-white hover:bg-slate-100 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Ulangi Level Ini</span>
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Ulangi</span>
                 </button>
 
-                {currentLevelId < LESSONS.length ? (
-                  <button
-                    onClick={() => resetLesson(currentLevelId + 1)}
-                    className="w-full sm:flex-1 py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span>Lanjut Level {currentLevelId + 1}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => resetLesson(1)}
-                    className="w-full sm:flex-1 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span>Mulai dari Level 1</span>
-                    <Sparkles className="w-4 h-4" />
-                  </button>
+                <button
+                  onClick={() => {
+                    setIsFinished(false);
+                    if (isFullscreen) toggleFullscreen();
+                    setViewMode("map");
+                  }}
+                  className="w-full sm:flex-1 py-2.5 bg-cyan-200 hover:bg-cyan-300 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Map className="w-3.5 h-3.5" />
+                  <span>Peta Level</span>
+                </button>
+
+                {completionResult?.isPassed && (
+                  currentLevelId < TYPING_LESSONS.length ? (
+                    <button
+                      onClick={() => resetLesson(currentLevelId + 1)}
+                      className="w-full sm:flex-1 py-2.5 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>Lanjut</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => resetLesson(1)}
+                      className="w-full sm:flex-1 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>Ulang dari Awal</span>
+                      <Sparkles className="w-3.5 h-3.5" />
+                    </button>
+                  )
                 )}
               </div>
             </div>

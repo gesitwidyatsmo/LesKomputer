@@ -28,6 +28,7 @@ import { useSiswa } from "@/context/SiswaContext";
 import { formatWhatsAppUrl } from "@/lib/landingService";
 import { getQuizByMateri } from "@/lib/quizService";
 import confetti from "canvas-confetti";
+import RichTipsRenderer from "@/components/common/RichTipsRenderer";
 
 /**
  * Helper to convert various video URLs (YouTube, Loom, Vimeo, direct mp4)
@@ -451,45 +452,7 @@ export default function MateriDropdownContent({ materi }) {
               )}
 
               {materi.tips && (
-                <div className="p-4 bg-amber-100 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000]">
-                  <div className="flex items-center gap-1.5 font-heading text-xs font-black text-black uppercase mb-3 border-b border-black/20 pb-2">
-                    <Lightbulb className="w-4 h-4 text-amber-700" />
-                    <span>Tips Cepat dari Guru</span>
-                  </div>
-                  {(() => {
-                    const lines = String(materi.tips)
-                      .split('\n')
-                      .map((l) => l.trim())
-                      .filter(Boolean);
-
-                    if (lines.length > 1) {
-                      return (
-                        <ul className="space-y-2.5">
-                          {lines.map((line, idx) => {
-                            const cleanLine = line.replace(/^[-*•\d+.]+\s*/, '').trim();
-                            return (
-                              <li
-                                key={idx}
-                                className="flex items-start gap-2.5 text-xs sm:text-sm font-medium text-slate-900"
-                              >
-                                <span className="w-4 h-4 bg-amber-300 text-amber-950 border border-black flex items-center justify-center text-[10px] shrink-0 mt-0.5 rounded font-black shadow-[1px_1px_0px_0px_#000]">
-                                  💡
-                                </span>
-                                <span className="flex-1 leading-relaxed">{cleanLine || line}</span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      );
-                    }
-
-                    return (
-                      <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium whitespace-pre-line">
-                        {materi.tips}
-                      </p>
-                    );
-                  })()}
-                </div>
+                <RichTipsRenderer content={materi.tips} />
               )}
             </div>
           )}

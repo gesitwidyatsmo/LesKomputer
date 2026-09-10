@@ -8,6 +8,8 @@ import { getSemuaModul, upsertModul, deleteModul, updateUrutanModul } from '@/li
 import { Plus, Edit2, Trash2, BookOpen, FileText, Brain, Upload, Loader2, X, Layers, ChevronRight, Save, GripVertical, AlertCircle, Package, Image as ImageIcon, Copy, Check, Sparkles } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ClientPortal from '@/components/ClientPortal';
+import RichTipsEditor from '@/components/admin/RichTipsEditor';
+import RichTipsRenderer from '@/components/common/RichTipsRenderer';
 
 // ─── Bulk Input Templates & Parsers ──────────────────────────────────────────
 const BULK_TEMPLATES = {
@@ -1427,35 +1429,7 @@ export default function ManajemenMateri() {
 															</div>
 														)}
 														{materi.tips && (
-															<div className='bg-yellow-100 border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
-																<p className='font-mono text-[10px] font-bold text-black uppercase tracking-wider mb-2'>💡 [TIPS_&_TRICKS]</p>
-																{(() => {
-																	const lines = String(materi.tips)
-																		.split('\n')
-																		.map((l) => l.trim())
-																		.filter(Boolean);
-
-																	if (lines.length > 1) {
-																		return (
-																			<ul className='space-y-1.5'>
-																				{lines.map((line, idx) => {
-																					const cleanLine = line.replace(/^[-*•\d+.]+\s*/, '').trim();
-																					return (
-																						<li key={idx} className='flex items-start gap-2 text-xs font-mono font-medium text-slate-800'>
-																							<span className='mt-1 w-1.5 h-1.5 bg-amber-500 border border-black shrink-0' />
-																							<span className='flex-1 leading-relaxed'>{cleanLine || line}</span>
-																						</li>
-																					);
-																				})}
-																			</ul>
-																		);
-																	}
-
-																	return (
-																		<p className='text-xs font-mono text-slate-800 leading-relaxed font-medium whitespace-pre-line'>{materi.tips}</p>
-																	);
-																})()}
-															</div>
+															<RichTipsRenderer content={materi.tips} compact={true} />
 														)}
 														{materi.lampiran?.length > 0 && (
 															<div className='bg-white border-2 border-black p-3.5 shadow-[2px_2px_0px_0px_#000]'>
@@ -1780,13 +1754,12 @@ export default function ManajemenMateri() {
 										</div>
 
 										<div>
-											<label className='block font-mono text-xs font-bold uppercase text-black mb-1'>💡 [TIPS] Tips &amp; Trik Tambahan</label>
-											<textarea
-												value={editData.tips}
-												onChange={(e) => setEditData({ ...editData, tips: e.target.value })}
-												rows={2}
+											<label className='block font-mono text-xs font-bold uppercase text-black mb-1'>[TIPS] Tips &amp; Trik Tambahan (Format ala Word)</label>
+											<RichTipsEditor
+												value={editData.tips || ''}
+												onChange={(newTips) => setEditData({ ...editData, tips: newTips })}
+												rows={3}
 												placeholder='Shortcut keyboard penting, tips efisiensi kerja...'
-												className='w-full border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-2 text-sm bg-white focus:bg-yellow-50 focus:outline-none font-mono text-xs'
 											/>
 										</div>
 
