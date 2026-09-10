@@ -65,7 +65,7 @@ export default function MouseGuideCard() {
                 : "text-slate-300 hover:text-white hover:bg-slate-800"
             }`}
           >
-            🎯 8 Tahap Latihan
+            🎯 9 Tahap Latihan
           </button>
         </div>
       </div>
@@ -219,11 +219,28 @@ export default function MouseGuideCard() {
                 </div>
               </div>
             </div>
+
+            <div className="bg-indigo-50 border-2 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000] space-y-2.5 md:col-span-2">
+              <div className="flex items-center gap-2 text-indigo-800 font-heading font-black text-sm">
+                <Sparkles className="w-5 h-5 shrink-0 text-indigo-600" />
+                <span>KOMBINASI TINGKAT LANJUT (MOUSE + KEYBOARD):</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-800 font-medium">
+                <div className="bg-white border border-black p-3 rounded-lg shadow-[2px_2px_0px_0px_#000]">
+                  <strong className="text-black block font-bold mb-1">⌨️ Ctrl + Klik (Pilih Banyak Berkas Acak):</strong>
+                  Tahan tombol <kbd className="bg-slate-200 px-1.5 py-0.5 rounded border border-slate-400 font-mono font-bold text-black">CTRL</kbd> sambil mengklik beberapa file terpisah untuk memilihnya sekaligus tanpa menghilangkan pilihan file sebelumnya.
+                </div>
+                <div className="bg-white border border-black p-3 rounded-lg shadow-[2px_2px_0px_0px_#000]">
+                  <strong className="text-black block font-bold mb-1">📋 Shift + Klik (Pilih Berkas Berurutan):</strong>
+                  Klik berkas pertama, lalu tahan tombol <kbd className="bg-slate-200 px-1.5 py-0.5 rounded border border-slate-400 font-mono font-bold text-black">SHIFT</kbd> dan klik berkas akhir untuk memilih seluruh deretan berkas secara instan.
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         {activeTab === "tahapan" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
               {
                 step: 1,
@@ -280,6 +297,13 @@ export default function MouseGuideCard() {
                 desc: "Bidik kotak yang sedang melayang memantul. Melatih ketangkasan dan refleks koordinasi mata-tangan.",
                 color: "bg-orange-200",
                 badge: "Tahap 8",
+              },
+              {
+                step: 9,
+                title: "Mouse + Keyboard (Combo)",
+                desc: "Gunakan tombol Ctrl atau Shift di keyboard sambil mengklik mouse untuk memilih berkas multi/rentang.",
+                color: "bg-indigo-200",
+                badge: "Tahap 9",
               },
             ].map((item) => (
               <div
