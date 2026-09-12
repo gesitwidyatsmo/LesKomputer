@@ -376,9 +376,9 @@ export default function MateriDropdownContent({ materi }) {
   ];
 
   return (
-    <div className="p-4 sm:p-6 bg-white space-y-5 animate-in fade-in duration-150">
+    <div className="p-3 sm:p-6 bg-white space-y-4 sm:space-y-5 animate-in fade-in duration-150">
       {/* ── Sub-Tab Navigation Bar (Neobrutalism Pills) ── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b-2 border-black/20 no-scrollbar">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 border-b-2 border-black/20 no-scrollbar scroll-smooth">
         {tabs.map((t) => {
           const isActive = activeTab === t.id;
           return (
@@ -386,16 +386,16 @@ export default function MateriDropdownContent({ materi }) {
               key={t.id}
               type="button"
               onClick={() => setActiveTab(t.id)}
-              className={`px-3.5 py-2 rounded-xl font-heading text-xs sm:text-sm font-black border-2 border-black transition-all shrink-0 cursor-pointer flex items-center gap-2 select-none ${
+              className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl font-heading text-xs sm:text-sm font-black border-2 border-black transition-all shrink-0 cursor-pointer flex items-center gap-1.5 sm:gap-2 select-none ${
                 isActive
-                  ? "bg-black text-amber-300 shadow-[3px_3px_0px_0px_#f59e0b] translate-x-0.5 translate-y-0.5"
-                  : "bg-[#FFFDF5] hover:bg-yellow-200 text-black shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                  ? "bg-black text-amber-300 shadow-[2px_2px_0px_0px_#f59e0b] sm:shadow-[3px_3px_0px_0px_#f59e0b] translate-x-0.5 translate-y-0.5"
+                  : "bg-[#FFFDF5] hover:bg-yellow-200 text-black shadow-[1.5px_1.5px_0px_0px_#000] sm:shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5"
               }`}
             >
               <span>{t.label}</span>
               {t.badge && (
                 <span
-                  className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border border-black ${
+                  className={`text-[9px] sm:text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border border-black ${
                     isActive
                       ? "bg-amber-300 text-black"
                       : t.badgeColor || "bg-yellow-100 text-black"
@@ -547,7 +547,7 @@ export default function MateriDropdownContent({ materi }) {
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-2.5 pt-1">
+              <div className="flex flex-wrap gap-2 sm:gap-2.5 pt-1">
                 {bahanLatihan.map((file, fIdx) => (
                   <a
                     key={fIdx}
@@ -555,12 +555,16 @@ export default function MateriDropdownContent({ materi }) {
                     download={file.nama_file || `Bahan_Praktik_P${materi.pertemuan}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-yellow-300 hover:bg-yellow-400 text-black text-xs font-heading font-black uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-between sm:justify-start gap-2 px-3 sm:px-3.5 py-2.5 bg-yellow-300 hover:bg-yellow-400 text-black text-xs font-heading font-black uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
                   >
-                    <Download className="w-4 h-4 text-black" />
-                    <span>Unduh: {file.nama_file || `Bahan Latihan P${materi.pertemuan}`}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Download className="w-4 h-4 text-black shrink-0" />
+                      <span className="truncate max-w-[200px] sm:max-w-xs">
+                        Unduh: {file.nama_file || `Bahan Latihan P${materi.pertemuan}`}
+                      </span>
+                    </div>
                     {file.ukuran_mb && (
-                      <span className="text-[10px] font-mono text-slate-800 bg-white/80 px-1.5 py-0.2 border border-black rounded">
+                      <span className="text-[10px] font-mono text-slate-800 bg-white/80 px-1.5 py-0.2 border border-black rounded shrink-0">
                         {file.ukuran_mb} MB
                       </span>
                     )}
@@ -706,7 +710,7 @@ export default function MateriDropdownContent({ materi }) {
               <div className="flex flex-col items-center">
                 {/* 3D Flip Card Container */}
                 <div
-                  className="w-full max-w-lg h-56 cursor-pointer select-none"
+                  className="w-full max-w-lg min-h-[240px] sm:h-56 cursor-pointer select-none"
                   style={{ perspective: "1000px" }}
                   onClick={handleFlipCard}
                   title="Klik untuk membalik kartu"
@@ -798,29 +802,33 @@ export default function MateriDropdownContent({ materi }) {
                 </div>
 
                 {/* Flashcard Navigation Bar */}
-                <div className="flex items-center gap-3 mt-4">
+                <div className="flex items-center justify-between w-full max-w-lg gap-2 mt-4">
                   <button
                     type="button"
                     onClick={handlePrevCard}
-                    className="px-3.5 py-1.5 bg-white hover:bg-amber-100 text-black font-heading font-black text-xs border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center gap-1"
+                    className="flex-1 sm:flex-initial px-2.5 sm:px-3.5 py-2 bg-white hover:bg-amber-100 text-black font-heading font-black text-xs border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-1 select-none"
                   >
-                    <ChevronLeft className="w-4 h-4" /> Kartu Sebelumnya
+                    <ChevronLeft className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Kartu Sebelumnya</span>
+                    <span className="sm:hidden">Sebelumnya</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={handleFlipCard}
-                    className="px-4 py-1.5 bg-purple-400 hover:bg-purple-300 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                    className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 bg-purple-400 hover:bg-purple-300 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer text-center select-none"
                   >
-                    {isFlipped ? "Tutup Jawaban" : "Buka Jawaban"}
+                    {isFlipped ? "Tutup" : "Buka Jawaban"}
                   </button>
 
                   <button
                     type="button"
                     onClick={handleNextCard}
-                    className="px-3.5 py-1.5 bg-white hover:bg-amber-100 text-black font-heading font-black text-xs border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center gap-1"
+                    className="flex-1 sm:flex-initial px-2.5 sm:px-3.5 py-2 bg-white hover:bg-amber-100 text-black font-heading font-black text-xs border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-1 select-none"
                   >
-                    Kartu Berikutnya <ChevronRight className="w-4 h-4" />
+                    <span className="hidden sm:inline">Kartu Berikutnya</span>
+                    <span className="sm:hidden">Berikutnya</span>
+                    <ChevronRight className="w-4 h-4 shrink-0" />
                   </button>
                 </div>
               </div>
@@ -1017,7 +1025,7 @@ export default function MateriDropdownContent({ materi }) {
       )}
 
       {/* ── Action Footer: Tanya Guru WhatsApp + Tombol Mulai Quiz (Selalu Tampak) ─ */}
-      <div className="pt-3 border-t-2 border-dashed border-black flex flex-col sm:flex-row items-center justify-between gap-3 bg-amber-50 p-4 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000]">
+      <div className="pt-3 border-t-2 border-dashed border-black flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-amber-50 p-3.5 sm:p-4 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000]">
         <div className="space-y-1">
           <span className="font-heading font-black text-xs sm:text-sm text-black block">
             🎮 Kuis &amp; Bantuan Belajar
@@ -1027,13 +1035,13 @@ export default function MateriDropdownContent({ materi }) {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           {/* Tombol Tanya Guru WhatsApp */}
           <a
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-heading text-xs font-bold border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-heading text-xs font-bold border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] sm:shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
           >
             <MessageCircle className="w-4 h-4 text-black" />
             <span>Tanya Guru</span>
@@ -1043,7 +1051,7 @@ export default function MateriDropdownContent({ materi }) {
           {showQuizButton && (
             <button
               onClick={() => router.push(`/siswa/quiz?materi=${materi.id}`)}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs sm:text-sm uppercase tracking-wide border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer shrink-0"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs sm:text-sm uppercase tracking-wide border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] sm:shadow-[3px_3px_0px_0px_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer shrink-0"
             >
               <Brain className="w-4 h-4" />
               <span>Mulai Kuis P{materi.pertemuan}</span>
