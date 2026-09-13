@@ -191,7 +191,7 @@ export default function SiswaDashboard() {
       </div>
 
       {/* ── 4 Stat Cards (Sederhana & Mudah Dipahami) ──────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           {
             label: "Pertemuan Selesai",
@@ -233,7 +233,7 @@ export default function SiswaDashboard() {
           return (
             <div
               key={i}
-              className="p-4 sm:p-5 bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl flex flex-col justify-between relative overflow-hidden"
+              className="p-3.5 sm:p-5 bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl flex flex-col justify-between relative overflow-hidden"
             >
               <div className={`absolute top-0 left-0 right-0 h-1.5 ${stat.stripColor}`} />
 
@@ -418,11 +418,11 @@ export default function SiswaDashboard() {
 
             <div className="p-5 space-y-4">
               <div className="p-4 bg-cyan-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg space-y-2.5">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs font-bold bg-cyan-200 px-2.5 py-0.5 border border-black rounded">
                     Kelas: {currentSiswa.kelas}
                   </span>
-                  <span className="text-xs font-bold text-slate-700">
+                  <span className="text-xs font-bold text-slate-700 bg-white/70 px-2.5 py-0.5 border border-black/30 rounded">
                     Modul: {currentSiswa.modul}
                   </span>
                 </div>
@@ -436,7 +436,7 @@ export default function SiswaDashboard() {
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 border border-black rounded-lg text-xs font-medium flex items-center justify-between">
+              <div className="p-3 bg-slate-50 border border-black rounded-lg text-xs font-medium flex flex-wrap items-center justify-between gap-2">
                 <span className="text-slate-600">Guru / Instruktur Kamu:</span>
                 <span className="font-bold text-black bg-white px-2.5 py-0.5 border border-black rounded">
                   {currentSiswa.mentor || "Instruktur GWA"}

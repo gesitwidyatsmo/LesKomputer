@@ -208,7 +208,7 @@ export default function NilaiPage() {
             <button
               onClick={generatePDF}
               disabled={isGenerating}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white hover:bg-slate-800 font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-black text-white hover:bg-slate-800 font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -220,7 +220,7 @@ export default function NilaiPage() {
 
             <button
               onClick={() => setShowSertifikat(!showSertifikat)}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-white text-black hover:bg-yellow-100 font-heading text-xs sm:text-sm font-bold uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-black hover:bg-yellow-100 font-heading text-xs sm:text-sm font-bold uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
             >
               {showSertifikat ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               <span>{showSertifikat ? "Sembunyikan Pratinjau" : "Buka Pratinjau Sertifikat"}</span>
@@ -285,6 +285,12 @@ export default function NilaiPage() {
                 <span>{isGenerating ? "Menyiapkan PDF..." : "Download PDF Cetak"}</span>
               </button>
             </div>
+          </div>
+
+          {/* Mobile tip for scrolling */}
+          <div className="sm:hidden px-4 py-2 bg-amber-100 border-b-2 border-black text-xs font-bold text-amber-900 flex items-center justify-between">
+            <span>👈 Geser layar untuk melihat sertifikat utuh 👉</span>
+            <span className="text-[10px] bg-amber-200 px-2 py-0.5 rounded border border-black font-mono">Scroll Horizontal</span>
           </div>
 
           <div className="p-4 sm:p-6 bg-slate-200 overflow-x-auto flex justify-center">
@@ -475,26 +481,26 @@ export default function NilaiPage() {
                     className="border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] overflow-hidden"
                   >
                     <button
-                      className="w-full flex items-center justify-between p-4 bg-amber-50 hover:bg-amber-100 transition-colors text-left cursor-pointer"
+                      className="w-full flex items-center justify-between p-4 bg-amber-50 hover:bg-amber-100 transition-colors text-left cursor-pointer gap-2"
                       onClick={() => setExpandedModul(isOpen ? null : modul)}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-cyan-300 border border-black rounded-lg flex items-center justify-center font-heading font-bold text-sm text-black">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 bg-cyan-300 border border-black rounded-lg flex items-center justify-center font-heading font-bold text-sm text-black shrink-0">
                           📖
                         </div>
-                        <div>
-                          <p className="font-heading font-black text-sm text-black">
+                        <div className="min-w-0">
+                          <p className="font-heading font-black text-sm text-black truncate sm:whitespace-normal">
                             {modul}
                           </p>
-                          <p className="text-xs text-slate-600 font-medium">
+                          <p className="text-xs text-slate-600 font-medium truncate">
                             {items.length} Kuis Sudah Dikerjakan
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <span
-                          className={`font-heading font-black text-xs px-3 py-1 border border-black rounded-md ${
+                          className={`font-heading font-black text-xs px-2.5 sm:px-3 py-1 border border-black rounded-md shrink-0 ${
                             avg >= 80
                               ? "bg-emerald-300 text-black"
                               : avg >= 60
@@ -502,9 +508,9 @@ export default function NilaiPage() {
                               : "bg-rose-300 text-black"
                           }`}
                         >
-                          Rata-rata: {avg}
+                          <span className="hidden sm:inline">Rata-rata: </span>{avg}
                         </span>
-                        <div className="p-1 bg-white border border-black rounded">
+                        <div className="p-1 bg-white border border-black rounded shrink-0">
                           {isOpen ? (
                             <ChevronUp className="w-4 h-4 text-black" />
                           ) : (
@@ -519,15 +525,15 @@ export default function NilaiPage() {
                         {items.map((q, i) => (
                           <div
                             key={i}
-                            className="p-3.5 sm:px-5 sm:py-3.5 flex items-center justify-between hover:bg-yellow-50 transition-colors"
+                            className="p-3.5 sm:px-5 sm:py-3.5 flex items-center justify-between gap-2 hover:bg-yellow-50 transition-colors"
                           >
-                            <div>
-                              <p className="font-heading font-bold text-xs sm:text-sm text-black">
+                            <div className="min-w-0">
+                              <p className="font-heading font-bold text-xs sm:text-sm text-black truncate">
                                 {q.quiz?.judul ||
                                   q.judul ||
                                   `Kuis Pertemuan ${q.quiz?.materi?.pertemuan || i + 1}`}
                               </p>
-                              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                              <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">
                                 Sesi Pertemuan {q.quiz?.materi?.pertemuan || q.pertemuan || i + 1} ·{" "}
                                 {q.dikerjakan_pada
                                   ? new Date(q.dikerjakan_pada).toLocaleDateString("id-ID")
@@ -536,7 +542,7 @@ export default function NilaiPage() {
                             </div>
 
                             <span
-                              className={`px-3 py-1 font-heading font-black text-xs border border-black rounded-md ${
+                              className={`px-2.5 sm:px-3 py-1 font-heading font-black text-xs border border-black rounded-md shrink-0 ${
                                 (q.nilai || 0) >= 80
                                   ? "bg-emerald-300 text-black"
                                   : (q.nilai || 0) >= 60

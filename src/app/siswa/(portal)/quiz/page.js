@@ -227,8 +227,8 @@ function QuizCard({ quiz, onFinish }) {
             </div>
 
             {/* Score box & stats */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-4 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-3 sm:col-span-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="p-4 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-2 sm:col-span-1">
                 <span className="text-[10px] font-bold text-slate-500 uppercase block">
                   Nilai Akhir
                 </span>
@@ -244,7 +244,7 @@ function QuizCard({ quiz, onFinish }) {
                 </p>
               </div>
 
-              <div className="p-4 bg-emerald-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-1.5 sm:col-span-1 flex flex-col justify-center">
+              <div className="p-4 bg-emerald-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-1 flex flex-col justify-center">
                 <span className="text-[10px] font-bold text-emerald-800 uppercase block">
                   Jawaban Benar
                 </span>
@@ -254,7 +254,7 @@ function QuizCard({ quiz, onFinish }) {
                 <p className="text-[10px] font-bold text-emerald-600">Soal</p>
               </div>
 
-              <div className="p-4 bg-rose-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-1.5 sm:col-span-1 flex flex-col justify-center">
+              <div className="p-4 bg-rose-50 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl space-y-1 col-span-1 flex flex-col justify-center">
                 <span className="text-[10px] font-bold text-rose-800 uppercase block">
                   Jawaban Salah
                 </span>
@@ -269,7 +269,7 @@ function QuizCard({ quiz, onFinish }) {
             <div className="flex flex-wrap gap-3 justify-center pt-2">
               <button
                 onClick={() => setShowReview((prev) => !prev)}
-                className="inline-flex items-center gap-2 px-5 py-3 bg-cyan-300 hover:bg-cyan-200 text-black font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-cyan-300 hover:bg-cyan-200 text-black font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
               >
                 {showReview ? (
                   <>
@@ -284,7 +284,7 @@ function QuizCard({ quiz, onFinish }) {
 
               <button
                 onClick={handleReset}
-                className="inline-flex items-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading text-xs sm:text-sm font-black uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" /> Main Kuis Lagi
               </button>
@@ -538,7 +538,7 @@ function QuizCard({ quiz, onFinish }) {
               <img
                 src={q.gambar_url}
                 alt="Gambar Soal"
-                className="max-h-64 sm:max-h-80 w-auto max-w-full object-contain rounded-lg border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000]"
+                className="max-h-52 sm:max-h-80 w-auto max-w-full object-contain rounded-lg border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000]"
               />
             </div>
           )}
@@ -644,6 +644,29 @@ function QuizCard({ quiz, onFinish }) {
   );
 }
 
+// Helper untuk mengurai ID modul siswa dari database
+function getEnrolledModulIds(siswa) {
+  if (!siswa) return [];
+  const ids = new Set();
+
+  const raw = siswa.modul_id;
+  if (Array.isArray(raw)) {
+    raw.forEach((id) => id && ids.add(String(id).trim()));
+  } else if (typeof raw === "string" && raw.trim()) {
+    raw
+      .split(/[,;|]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .forEach((id) => ids.add(id));
+  }
+
+  if (Array.isArray(siswa.modul_ids)) {
+    siswa.modul_ids.forEach((id) => id && ids.add(String(id).trim()));
+  }
+
+  return Array.from(ids);
+}
+
 function QuizPageContent() {
   const { currentSiswa, awardXp, triggerUnlockBadge } = useSiswa();
   const searchParams = useSearchParams();
@@ -679,6 +702,9 @@ function QuizPageContent() {
   }, []);
 
   const handleSelectModul = async (modulId) => {
+    // Hanya perbolehkan modul yang ada di daftar modul yang diambil siswa
+    if (modulList.length > 0 && !modulList.some((m) => m.id === modulId)) return;
+
     setSelectedModulId(modulId);
     setLoadingMateri(true);
     const { data: materiData } = await getMateriByModul(modulId);
@@ -694,22 +720,50 @@ function QuizPageContent() {
 
       setIsLoading(true);
 
-      // 1. Fetch active modules for switcher
+      // 1. Ambil seluruh data modul dari database
       const { data: allModul } = await getSemuaModul();
-      const activeModuls = (allModul || []).filter(
-        (m) => m.status === "Aktif" || !m.status
-      );
-      setModulList(activeModuls);
+      const allModulList = allModul || [];
 
-      // Default module target
-      const targetModulId =
-        selectedModulId ||
-        currentSiswa.modul_id ||
-        activeModuls[0]?.id ||
-        "";
-      if (!selectedModulId && targetModulId) {
-        setSelectedModulId(targetModulId);
+      // 2. Dapatkan ID modul yang diambil siswa dari database
+      const enrolledIds = getEnrolledModulIds(currentSiswa);
+
+      // 3. Filter HANYA modul yang diambil siswa sesuai database
+      // Siswa modul C & D TIDAK AKAN PERNAH muncul jika siswa hanya mengambil modul A & B
+      let studentModuls = allModulList.filter((m) => {
+        const matchId = enrolledIds.includes(m.id);
+        const matchName =
+          currentSiswa.modul &&
+          m.nama?.toLowerCase().trim() === currentSiswa.modul?.toLowerCase().trim();
+        return matchId || matchName;
+      });
+
+      // Fallback aman jika data modul belum terdaftar di tabel modul
+      if (studentModuls.length === 0 && (currentSiswa.modul_id || currentSiswa.modul)) {
+        studentModuls = [
+          {
+            id: currentSiswa.modul_id || "modul-utama",
+            nama: currentSiswa.modul || "Modul Siswa",
+            icon: "💻",
+            status: "Aktif",
+          },
+        ];
       }
+
+      // Urutkan modul agar modul utama siswa selalu di urutan pertama
+      const sortedModuls = [...studentModuls].sort((a, b) => {
+        if (a.id === currentSiswa.modul_id) return -1;
+        if (b.id === currentSiswa.modul_id) return 1;
+        return (a.urutan ?? 0) - (b.urutan ?? 0);
+      });
+      setModulList(sortedModuls);
+
+      // Modul target: utamakan modul yang dipilih (jika valid untuk siswa), atau modul siswa utama
+      const targetModulId =
+        (sortedModuls.some((m) => m.id === selectedModulId) ? selectedModulId : null) ||
+        (sortedModuls.some((m) => m.id === currentSiswa.modul_id) ? currentSiswa.modul_id : null) ||
+        sortedModuls[0]?.id ||
+        "";
+      setSelectedModulId(targetModulId);
 
       if (targetModulId) {
         const { data: materiData } = await getMateriByModul(targetModulId);
@@ -785,7 +839,7 @@ function QuizPageContent() {
             <span>Kembali ke Daftar Kuis</span>
           </button>
           <span className="text-xs font-bold bg-cyan-300 text-black px-3 py-1 border border-black rounded-full">
-            Modul: {currentSiswa.modul}
+            Modul: {modulList.find((m) => m.id === selectedModulId)?.nama || currentSiswa.modul}
           </span>
         </div>
 
@@ -810,9 +864,12 @@ function QuizPageContent() {
         <div className="p-5 sm:p-7 bg-[#FFFDF5]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <span className="bg-purple-400 text-black font-bold text-xs px-2.5 py-0.5 border border-black rounded">
                   Game & Kuis Siswa
+                </span>
+                <span className="bg-cyan-200 text-black font-bold text-xs px-2.5 py-0.5 border border-black rounded">
+                  Modul: {modulList.find((m) => m.id === selectedModulId)?.nama || currentSiswa.modul}
                 </span>
                 <span className="text-xs font-bold text-slate-600">
                   {currentSiswa.kelas}
@@ -822,7 +879,11 @@ function QuizPageContent() {
                 Kuis & Tantangan Belajar 🎮
               </h1>
               <p className="text-sm font-medium text-slate-700 mt-1">
-                Ayo uji kemampuan kamu dengan kuis pilihan ganda yang seru dan asyik!
+                Ayo uji kemampuan kamu pada modul{" "}
+                <strong className="text-black">
+                  {modulList.find((m) => m.id === selectedModulId)?.nama || currentSiswa.modul}
+                </strong>{" "}
+                dengan kuis pilihan ganda yang seru dan asyik!
               </p>
             </div>
 
@@ -860,8 +921,8 @@ function QuizPageContent() {
             <span className="font-heading text-xs font-black uppercase text-slate-700 flex items-center gap-1.5">
               <span>📂</span> Pilih Modul Kuis:
             </span>
-            <span className="text-[11px] font-mono font-bold text-slate-500">
-              {modulList.length} Modul Aktif
+            <span className="text-[11px] font-mono font-bold text-slate-600">
+              {modulList.length} Modul Terdaftar Kamu
             </span>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
@@ -886,10 +947,10 @@ function QuizPageContent() {
                       className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border border-black ${
                         isSelected
                           ? "bg-amber-300 text-black"
-                          : "bg-cyan-200 text-black"
+                          : "bg-emerald-300 text-black"
                       }`}
                     >
-                      Modul Saya
+                      Modul Kamu ✓
                     </span>
                   )}
                 </button>
@@ -901,11 +962,21 @@ function QuizPageContent() {
 
       {/* Pilih Topik Quiz */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🎯</span>
-          <h2 className="font-heading font-black text-lg text-black tracking-tight">
-            Pilih Topik Kuis yang Ingin Kamu Mainkan
-          </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🎯</span>
+            <h2 className="font-heading font-black text-lg text-black tracking-tight">
+              Topik Kuis {modulList.find((m) => m.id === selectedModulId)?.nama || currentSiswa.modul}
+            </h2>
+          </div>
+          {modulList.length > 1 && selectedModulId !== currentSiswa.modul_id && (
+            <button
+              onClick={() => handleSelectModul(currentSiswa.modul_id)}
+              className="text-xs font-heading font-black bg-cyan-300 hover:bg-cyan-200 text-black px-3 py-1.5 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] cursor-pointer w-fit transition-all active:translate-x-0.5 active:translate-y-0.5"
+            >
+              Kembali ke Modul Utama ({currentSiswa.modul}) ↩
+            </button>
+          )}
         </div>
 
         {loadingMateri ? (

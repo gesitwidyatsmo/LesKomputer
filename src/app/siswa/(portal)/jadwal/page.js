@@ -14,36 +14,36 @@ import {
 function StatusBadge({ status }) {
   if (status === "Hadir")
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000]">
+      <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 whitespace-nowrap">
         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-800" /> Hadir ✓
       </span>
     );
   if (status === "Tidak Hadir" || status === "Alpa")
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-bold bg-rose-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000]">
+      <span className="inline-flex items-center gap-1 text-xs font-bold bg-rose-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 whitespace-nowrap">
         <XCircle className="w-3.5 h-3.5 text-rose-800" /> Tidak Hadir
       </span>
     );
   if (status === "Izin" || status === "Sakit")
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-bold bg-cyan-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000]">
+      <span className="inline-flex items-center gap-1 text-xs font-bold bg-cyan-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 whitespace-nowrap">
         <Clock className="w-3.5 h-3.5 text-cyan-800" /> {status}
       </span>
     );
   if (status === "Libur" || status === "Libur / Batal")
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-bold bg-slate-200 text-slate-800 px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000]">
+      <span className="inline-flex items-center gap-1 text-xs font-bold bg-slate-200 text-slate-800 px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 whitespace-nowrap">
         Libur Kelas
       </span>
     );
   if (status === "Berlangsung")
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-bold bg-amber-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] animate-pulse">
+      <span className="inline-flex items-center gap-1 text-xs font-bold bg-amber-300 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] animate-pulse shrink-0 whitespace-nowrap">
         Sedang Berlangsung
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-bold bg-yellow-200 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000]">
+    <span className="inline-flex items-center gap-1 text-xs font-bold bg-yellow-200 text-black px-2.5 py-1 border border-black rounded shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 whitespace-nowrap">
       <Clock className="w-3.5 h-3.5 text-amber-800" /> Akan Datang
     </span>
   );
@@ -172,7 +172,7 @@ export default function JadwalPage() {
       </div>
 
       {/* ── Stats Presensi ─────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
         {[
           {
             label: "Total Pertemuan",
@@ -205,15 +205,15 @@ export default function JadwalPage() {
         ].map((s, i) => (
           <div
             key={i}
-            className={`${s.bg} border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl p-4 text-center space-y-1`}
+            className={`${s.bg} border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-xl p-3 sm:p-4 text-center space-y-1`}
           >
-            <span className="text-[11px] font-bold uppercase text-slate-600 block">
+            <span className="text-[11px] font-bold uppercase text-slate-600 block truncate">
               {s.tag}
             </span>
             <p className={`text-2xl sm:text-3xl font-heading font-black ${s.textColor}`}>
               {s.value}
             </p>
-            <p className="text-xs font-bold text-black uppercase">
+            <p className="text-xs font-bold text-black uppercase truncate">
               {s.label}
             </p>
           </div>
@@ -292,9 +292,9 @@ export default function JadwalPage() {
           </div>
         </div>
 
-        <div className="p-3.5 bg-white border-2 border-black rounded-lg text-xs font-bold flex items-center justify-between">
+        <div className="p-3.5 bg-white border-2 border-black rounded-lg text-xs font-bold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-slate-600">Guru / Instruktur Pendamping:</span>
-          <span className="text-black bg-yellow-200 px-3 py-1 border border-black rounded">
+          <span className="text-black bg-yellow-200 px-3 py-1 border border-black rounded w-fit">
             {currentSiswa.mentor || "Instruktur GWA"}
           </span>
         </div>

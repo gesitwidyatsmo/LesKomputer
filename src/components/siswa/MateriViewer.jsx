@@ -220,9 +220,12 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
                 >
                   <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
-                <span className="bg-black px-2 sm:px-3 py-1 border border-slate-600 rounded font-bold text-[11px] sm:text-xs">
-                  Hal. {pageNumber || (numPages ? 1 : "--")} / {numPages || "--"}
-                </span>
+                <div className="bg-black px-2.5 sm:px-3 py-1 border border-slate-600 rounded font-mono font-bold text-xs flex items-center gap-1 shrink-0 whitespace-nowrap select-none">
+                  <span className="text-slate-400">Hal.</span>
+                  <span className="text-amber-300">{pageNumber || (numPages ? 1 : "--")}</span>
+                  <span className="text-slate-500">/</span>
+                  <span className="text-slate-300">{numPages || "--"}</span>
+                </div>
                 <button
                   onClick={nextPage}
                   disabled={pageNumber >= numPages}
@@ -326,7 +329,7 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
                   PDF
                 </span>
                 <div className="min-w-0">
-                  <h2 className="font-heading font-black text-xs sm:text-sm text-white truncate max-w-[130px] xs:max-w-[180px] sm:max-w-md md:max-w-lg">
+                  <h2 className="font-heading font-black text-xs sm:text-sm text-white truncate max-w-[160px] xs:max-w-[220px] sm:max-w-md md:max-w-lg">
                     {fileName}
                   </h2>
                   <p className="text-[10px] sm:text-[11px] font-mono text-slate-400 hidden sm:block">
@@ -337,26 +340,28 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
 
               {/* Navigation & Zoom controls */}
               <div className="flex items-center gap-1.5 sm:gap-2">
-                {/* Page Prev / Next */}
-                <div className="flex items-center gap-1 bg-slate-900 px-1.5 sm:px-2 py-1 rounded-lg border border-slate-700">
+                {/* Page Prev / Next (Hidden on mobile as bottom floating bar handles it; shown on desktop) */}
+                <div className="hidden sm:flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-lg border border-slate-700 shrink-0">
                   <button
                     onClick={previousPage}
                     disabled={pageNumber <= 1}
-                    className="p-1 text-white hover:text-amber-300 disabled:opacity-30 cursor-pointer"
+                    className="p-1 text-white hover:text-amber-300 disabled:opacity-30 cursor-pointer transition-colors"
                     title="Halaman Sebelumnya"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="text-[11px] sm:text-xs font-mono font-bold px-1 sm:px-2 text-slate-200">
-                    {pageNumber} / {numPages || "--"}
-                  </span>
+                  <div className="flex items-center gap-1 text-xs font-mono font-bold px-2 shrink-0 whitespace-nowrap select-none">
+                    <span className="text-amber-300">{pageNumber}</span>
+                    <span className="text-slate-500">/</span>
+                    <span className="text-slate-300">{numPages || "--"}</span>
+                  </div>
                   <button
                     onClick={nextPage}
                     disabled={pageNumber >= numPages}
-                    className="p-1 text-white hover:text-amber-300 disabled:opacity-30 cursor-pointer"
+                    className="p-1 text-white hover:text-amber-300 disabled:opacity-30 cursor-pointer transition-colors"
                     title="Halaman Selanjutnya"
                   >
-                    <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
 
@@ -459,39 +464,68 @@ export default function MateriViewer({ fileUrl, fileName, fileSize }) {
               )}
             </div>
 
-            {/* Mobile Thumb-Friendly Floating Bar (Quick Flip & Fit) */}
-            <div className="sm:hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/90 backdrop-blur-md px-3.5 py-2 border-2 border-slate-600 rounded-full shadow-2xl text-white">
+            {/* Mobile Thumb-Friendly Floating Bar (Primary Single Pagination & Quick Zoom) */}
+            <div className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/95 backdrop-blur-md px-3 py-1.5 border-2 border-slate-600 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.5)] text-white select-none shrink-0">
+              {/* Previous Page */}
               <button
                 onClick={previousPage}
                 disabled={pageNumber <= 1}
-                className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-amber-300 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 disabled:opacity-25 text-amber-300 flex items-center justify-center transition-all cursor-pointer shrink-0 active:scale-90"
                 title="Halaman Sebelumnya"
+                aria-label="Halaman Sebelumnya"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-[11px] font-mono font-bold px-1.5">
-                {pageNumber} / {numPages || "--"}
-              </span>
+
+              {/* Page Number Display (Horizontal & Non-wrapping) */}
+              <div className="flex items-center justify-center gap-1.5 px-3 py-1 bg-slate-900 rounded-full border border-slate-700/80 shrink-0 whitespace-nowrap">
+                <span className="text-xs font-mono font-black text-amber-300 tabular-nums">
+                  {pageNumber}
+                </span>
+                <span className="text-[11px] font-bold text-slate-500">
+                  /
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-300 tabular-nums">
+                  {numPages || "--"}
+                </span>
+              </div>
+
+              {/* Next Page */}
               <button
                 onClick={nextPage}
                 disabled={pageNumber >= numPages}
-                className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-amber-300 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 disabled:opacity-25 text-amber-300 flex items-center justify-center transition-all cursor-pointer shrink-0 active:scale-90"
                 title="Halaman Selanjutnya"
+                aria-label="Halaman Selanjutnya"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
-              <div className="w-[1px] h-3.5 bg-slate-600 mx-0.5" />
+
+              <div className="w-[1px] h-4 bg-slate-700 mx-1 shrink-0" />
+
+              {/* Fit Width */}
               <button
                 onClick={resetZoom}
-                className="text-[10px] font-mono font-bold px-1 text-slate-300 hover:text-white"
-                title="Fit Width"
+                className="px-2 py-1 text-[11px] font-mono font-bold text-slate-200 hover:text-amber-300 bg-slate-800 hover:bg-slate-700 rounded-md border border-slate-700 transition-colors cursor-pointer shrink-0 active:scale-95"
+                title="Sesuaikan Lebar Layar (Fit)"
               >
                 Fit
               </button>
+
+              {/* Zoom Out & Zoom In */}
+              <button
+                onClick={zoomOut}
+                className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-all cursor-pointer shrink-0 active:scale-90"
+                title="Perkecil Zoom"
+                aria-label="Perkecil Zoom"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={zoomIn}
-                className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-white cursor-pointer"
-                title="Perbesar"
+                className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-all cursor-pointer shrink-0 active:scale-90"
+                title="Perbesar Zoom"
+                aria-label="Perbesar Zoom"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>

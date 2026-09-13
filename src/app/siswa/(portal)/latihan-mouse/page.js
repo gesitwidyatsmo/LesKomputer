@@ -49,6 +49,21 @@ export default function SiswaLatihanMousePage() {
         </div>
       </div>
 
+      {/* ── Mobile Friendly Advisory Banner ────────────────── */}
+      <div className="md:hidden p-4 bg-amber-100 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] flex items-start gap-3">
+        <div className="p-2 bg-amber-300 border border-black rounded-lg shrink-0 text-base">
+          💡
+        </div>
+        <div className="text-xs space-y-1">
+          <p className="font-heading font-black text-black">
+            Tips Penggunaan di Smartphone / HP:
+          </p>
+          <p className="text-slate-700 leading-relaxed font-medium">
+            Latihan interaktif ini dirancang optimal untuk perangkat <strong>Komputer / Laptop</strong> dengan mouse fisik. Di HP, kamu tetap bisa membaca panduan teori dan tips di bawah!
+          </p>
+        </div>
+      </div>
+
       {/* ── Main Game Component ────────────────── */}
       <section aria-label="Game Interaktif Mouse">
         <MouseTrainerGame />
