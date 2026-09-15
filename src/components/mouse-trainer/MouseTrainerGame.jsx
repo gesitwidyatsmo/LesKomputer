@@ -40,6 +40,9 @@ import {
 	ZoomOut,
 	Copy,
 	FolderPlus,
+	HelpCircle,
+	Lightbulb,
+	BookOpen,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
@@ -643,6 +646,214 @@ const DUPLICATE_ITEMS = [
 	},
 ];
 
+// Panduan Edukasi Tiap Tahap (Fungsi di Dunia Nyata, Posisi Jari & Trik Sukses)
+const STAGE_BRIEFINGS = {
+	1: {
+		id: 1,
+		badge: 'Tahap 1 • Dasar Pointer',
+		summary: 'Mengarahkan kursor tepat pada sasaran tanpa perlu mengklik.',
+		realWorld: [
+			'Melihat keterangan tombol tersembunyi (Tooltip) di aplikasi kantor.',
+			'Membuka sub-menu dropdown website secara otomatis saat disorot.',
+			'Melihat pratinjau (preview) tab browser atau ikon taskbar Windows.',
+		],
+		fingerGuide: {
+			main: 'Gerakan Pergelangan Tangan & Lengan Rileks',
+			detail: 'Pegang mouse dengan santai. Jangan menekan tombol apapun, cukup biarkan kursor diam stabil di atas sasaran.',
+		},
+		proTips: [
+			'Tahan kursor diam sejenak di dalam kotak agar sistem komputer sempat mengenali posisi pointer.',
+			'Hindari menggenggam mouse terlalu kencang agar tangan tidak cepat pegal.',
+		],
+	},
+	2: {
+		id: 2,
+		badge: 'Tahap 2 • Aksi Dasar',
+		summary: 'Menekan tombol kiri mouse 1 kali dengan stabil dan mantap.',
+		realWorld: [
+			'Memilih ikon aplikasi, file, atau folder di Windows Explorer.',
+			'Menekan tombol konfirmasi (OK, Batal, Simpan, Kirim Formulir).',
+			'Membuka link / tautan artikel di internet.',
+			'Meletakkan garis kursor ketik pada dokumen Word atau lembar Excel.',
+		],
+		fingerGuide: {
+			main: 'Ujung Jari Telunjuk (Klik & Lepas)',
+			detail: 'Gunakan ujung jari telunjuk untuk menekan tombol kiri 1 kali dengan lembut lalu segera lepaskan jari.',
+		},
+		proTips: [
+			'Jangan menyeret mouse saat tombol sedang ditekan agar file tidak bergeser tidak sengaja.',
+			'Cukup tekan lembut sampai terdengar bunyi klik; tidak perlu tenaga berlebih.',
+		],
+	},
+	3: {
+		id: 3,
+		badge: 'Tahap 3 • Menu Konteks',
+		summary: 'Membuka menu rahasia / jalan pintas perintah di komputer.',
+		realWorld: [
+			'Memunculkan menu Copy, Paste, Cut pada file atau teks tulisan.',
+			'Mengganti nama file (Rename) atau menghapus berkas (Delete).',
+			'Membuka menu Properties untuk melihat rincian ukuran berkas.',
+			'Melakukan Refresh tampilan layar desktop Windows.',
+		],
+		fingerGuide: {
+			main: 'Jari Tengah Tangan Kanan',
+			detail: 'Tekan tombol kanan mouse menggunakan jari tengah. Jari telunjuk tetap rileks bersandar di tombol kiri.',
+		},
+		proTips: [
+			'Banyak pemula salah menggeser jari telunjuk ke kanan. Biasakan gunakan jari tengah agar posisi mouse tetap stabil.',
+			'Klik kanan hanya memunculkan menu opsi. Untuk memilih salah satu perintah di menunya, gunakan klik kiri biasa.',
+		],
+	},
+	4: {
+		id: 4,
+		badge: 'Tahap 4 • Akselerasi Klik',
+		summary: 'Menekan tombol kiri 2 kali berturut-turut secara cepat dan stabil.',
+		realWorld: [
+			'Membuka aplikasi atau game langsung dari layar utama desktop.',
+			'Membuka isi folder di Windows Explorer.',
+			'Membuka file dokumen Word, presentasi PPT, atau foto.',
+			'Memblok 1 kata lengkap di Microsoft Word dengan sekali klik ganda.',
+		],
+		fingerGuide: {
+			main: 'Jari Telunjuk (Irama Cepat "Klik-Klik")',
+			detail: 'Ketuk tombol kiri 2 kali secara berurutan dengan cepat tanpa jeda panjang di antara kedua klik.',
+		},
+		proTips: [
+			'Jaga badan mouse tetap diam stabil saat klik kedua. Jika bergeser, komputer akan mengiranya aksi seret (drag).',
+			'Jika ketukan terlalu lambat, Windows akan mengira kamu ingin mengubah nama file (Rename), bukan membukanya.',
+		],
+	},
+	5: {
+		id: 5,
+		badge: 'Tahap 5 • Manipulasi Objek',
+		summary: 'Memindahkan file atau objek dari satu lokasi ke lokasi sasaran.',
+		realWorld: [
+			'Memindahkan dokumen ke dalam folder arsip lain.',
+			'Membuang file tidak terpakai ke Recycle Bin (tempat sampah).',
+			'Mengatur urutan slide presentasi di PowerPoint atau Canva.',
+			'Melampirkan dokumen ke email atau WhatsApp Web.',
+		],
+		fingerGuide: {
+			main: 'Tahan Jari Telunjuk & Geser Mouse',
+			detail: 'Klik dan tahan tombol kiri pada file, geser mouse ke tempat tujuan, lalu angkat jari dari tombol mouse.',
+		},
+		proTips: [
+			'Pastikan ikon file sudah benar-benar berada di dalam kotak folder sasaran sebelum melepaskan jari.',
+			'Jika jari terlepas di tengah jalan, file akan terjatuh dan tersimpan di tempat yang salah.',
+		],
+	},
+	6: {
+		id: 6,
+		badge: 'Tahap 6 • Penataan Tulisan',
+		summary: 'Menandai kata atau kalimat untuk diolah lebih lanjut.',
+		realWorld: [
+			'Menandai kalimat untuk disalin (Copy) atau dipindahkan ke dokumen lain.',
+			'Memilih teks untuk ditebalkan (Bold), diganti warna, atau diubah jenis hurufnya di Word.',
+			'Menghapus satu paragraf tulisan yang salah sekaligus dengan tombol Delete.',
+			'Menyalin kutipan materi pelajaran atau alamat link dari internet.',
+		],
+		fingerGuide: {
+			main: 'Tahan Klik Kiri dari Huruf Awal ke Akhir',
+			detail: 'Arahkan kursor tepat di depan huruf pertama, tahan klik kiri, tarik mendatar melewati kata, lalu lepaskan.',
+		},
+		proTips: [
+			'Trik Pro: Kamu juga bisa klik 2x cepat tepat di atas kata untuk langsung memblok kata tersebut tanpa perlu menyeret!',
+			'Jangan menyeret kursor terlalu jauh agar tanda baca atau kata setelahnya tidak ikut terblok.',
+		],
+	},
+	7: {
+		id: 7,
+		badge: 'Tahap 7 • Navigasi Halaman',
+		summary: 'Menjelajahi halaman panjang ke atas dan ke bawah dengan roda putar.',
+		realWorld: [
+			'Membaca artikel berita, media sosial, atau website dari atas ke bawah.',
+			'Membaca dokumen modul tugas, e-book, atau PDF berpuluh-puluh halaman.',
+			'Menjelajahi baris tabel data nilai yang panjang di Excel.',
+		],
+		fingerGuide: {
+			main: 'Jari Telunjuk pada Roda Putar (Scroll Wheel)',
+			detail: 'Putar roda mouse ke arah badanmu (ke bawah) untuk membaca ke bawah, putar menjauh (ke atas) untuk kembali ke atas.',
+		},
+		proTips: [
+			'Putar roda mouse secara bertahap dan tenang agar pandangan mata tidak kehilangan posisi bacaan.',
+			'Tidak perlu repot menggeser batang scrollbar kecil di pojok layar jika mouse memiliki roda putar.',
+		],
+	},
+	8: {
+		id: 8,
+		badge: 'Tahap 8 • Refleks & Koordinasi',
+		summary: 'Membidik objek bergerak dinamis dengan ketepatan dan ketenangan.',
+		realWorld: [
+			'Menutup iklan popup atau jendela notifikasi yang melayang di website.',
+			'Memilih tombol navigasi video player saat sedang diputar.',
+			'Melatih koordinasi mata-tangan dan kecepatan refleks untuk game edukatif.',
+		],
+		fingerGuide: {
+			main: 'Koordinasi Mata & Gerak Halus Tangan',
+			detail: 'Kunci sasaran dengan mata, gerakkan kursor mengikuti jalur pergerakan target, lalu klik tepat sasaran.',
+		},
+		proTips: [
+			'Jangan mengejar dari belakang! Perkirakan arah pantulannya (antisipasi) dan tunggu target mendekati kursormu.',
+			'Klik yang meleset akan mengurangi akurasi, jadi pastikan kursor sudah pas di atas target sebelum mengklik.',
+		],
+	},
+	9: {
+		id: 9,
+		badge: 'Tahap 9 • Kombinasi Cerdas',
+		summary: 'Memilih banyak berkas sekaligus secara efisien dengan tombol modifier.',
+		realWorld: [
+			'CTRL + Klik: Memilih 5 foto acak yang mau dicetak tanpa memilih foto lainnya.',
+			'SHIFT + Klik: Memilih berkas dari urutan #1 s/d #100 sekaligus dalam 1 detik.',
+			'Membatalkan pilihan file tertentu (Deselect via CTRL+Klik) tanpa mengulang dari awal.',
+		],
+		fingerGuide: {
+			main: 'Tangan Kiri di Keyboard + Tangan Kanan di Mouse',
+			detail: 'Tangan kiri menekan tombol CTRL atau SHIFT di keyboard, tangan kanan mengklik berkas sasaran dengan mouse.',
+		},
+		proTips: [
+			'Selalu tahan tombol keyboard terlebih dahulu sebelum mengklik mouse.',
+			'Rumus Cepat: CTRL = Pilih berkas acak / batal pilih. SHIFT = Pilih rentang berurutan.',
+		],
+	},
+	10: {
+		id: 10,
+		badge: 'Tahap 10 • Pengatur Ukuran',
+		summary: 'Mengatur skala perbesaran tampilan lembar kerja dengan instan.',
+		realWorld: [
+			'Memperbesar lembar kerja Excel agar angka tabel kecil terbaca jelas.',
+			'Mengecilkan tampilan halaman Word agar 2 halaman muat berdampingan di layar.',
+			'Memperbesar gambar denah peta atau grafik detail di dokumen PDF.',
+			'Mengatur ukuran ikon di desktop Windows (besar, sedang, atau kecil).',
+		],
+		fingerGuide: {
+			main: 'Tangan Kiri Tahan CTRL + Jari Kanan Putar Wheel',
+			detail: 'Tahan tombol CTRL di keyboard fisik, lalu putar roda mouse ke atas (Zoom In) atau ke bawah (Zoom Out).',
+		},
+		proTips: [
+			'Pastikan tombol CTRL sudah ditekan sebelum memutar roda agar halaman luar tidak ikut tergeser.',
+			'Lepaskan roda mouse saat jarum meteran sudah masuk ke area sasaran emas.',
+		],
+	},
+	11: {
+		id: 11,
+		badge: 'Tahap 11 • Jalan Pintas Produktivitas',
+		summary: 'Menggandakan berkas secara instan tanpa perlu menu Copy-Paste.',
+		realWorld: [
+			'Membuat file salinan cadangan (backup) ke folder arsip atau flashdisk secara cepat.',
+			'Menduplikasi objek gambar atau bentuk (shapes) di PowerPoint atau Canva.',
+			'Menyalin berkas tugas penting sebelum diedit agar file aslinya tetap aman.',
+		],
+		fingerGuide: {
+			main: 'Tahan CTRL + Seret File dengan Klik Kiri',
+			detail: 'Tahan tombol CTRL, klik & seret file ke folder sasaran. Perhatikan lencana kursor berubah jadi [+] Salin.',
+		},
+		proTips: [
+			'Kunci Utama: Lepaskan tombol mouse terlebih dahulu di folder tujuan, BARU lepaskan tombol CTRL di keyboard!',
+			'Jika tombol CTRL dilepas duluan sebelum klik mouse dilepas, file akan berpindah (Move), bukan tersalin (Copy).',
+		],
+	},
+};
+
 // Target sizes (Width x Height)
 const SIZES = {
 	large: { name: 'Besar (Mudah)', width: 180, height: 60, font: 'text-base font-bold' },
@@ -779,6 +990,32 @@ export default function MouseTrainerGame() {
 	const ctrlTargetFolderRef = useRef(null);
 	const stage10HintThrottleRef = useRef(false);
 
+	// Stage Started State (Controls whether the current stage is actively being played or showing Start Card)
+	const [isStageStarted, setIsStageStarted] = useState(false);
+
+	// Stage Briefing Modal State (Panduan Edukatif Tiap Tahap)
+	const [showStageBriefing, setShowStageBriefing] = useState(false);
+	const [autoShowBriefing, setAutoShowBriefing] = useState(() => {
+		if (typeof window !== 'undefined') {
+			try {
+				const saved = localStorage.getItem('mouse_trainer_auto_briefing');
+				return saved !== null ? saved === 'true' : true;
+			} catch (e) {
+				return true;
+			}
+		}
+		return true;
+	});
+
+	const handleToggleAutoBriefing = (checked) => {
+		setAutoShowBriefing(checked);
+		if (typeof window !== 'undefined') {
+			try {
+				localStorage.setItem('mouse_trainer_auto_briefing', checked ? 'true' : 'false');
+			} catch (e) {}
+		}
+	};
+
 	// Stage 9 Combo (Mouse + Keyboard) state - Unified Mission Object with Balanced Deck (100% Synchronized)
 	const comboDeckRef = useRef(null);
 	if (!comboDeckRef.current) {
@@ -824,11 +1061,13 @@ export default function MouseTrainerGame() {
 		};
 	}, []);
 
+
 	const stage = STAGES.find((s) => s.id === currentStageId) || STAGES[0];
 	const sizeConfig = SIZES[selectedSize] || SIZES.medium;
 	const currentTextItem = TEXT_SELECTION_ITEMS[textItemIndex % TEXT_SELECTION_ITEMS.length] || TEXT_SELECTION_ITEMS[0];
 	const currentZoomItem = ZOOM_TARGET_ITEMS[zoomItemIndex % ZOOM_TARGET_ITEMS.length] || ZOOM_TARGET_ITEMS[0];
 	const currentDuplicateItem = DUPLICATE_ITEMS[duplicateItemIndex % DUPLICATE_ITEMS.length] || DUPLICATE_ITEMS[0];
+	const briefingData = STAGE_BRIEFINGS[stage.id] || STAGE_BRIEFINGS[1];
 
 	// Utility to generate random coordinates within container (Excluding top HUD area)
 	const getRandomPosition = useCallback(
@@ -936,9 +1175,27 @@ export default function MouseTrainerGame() {
 
 	// Start / Reset Session
 	const resetGame = useCallback(
-		(newStageId = null, newCount = null) => {
+		(newStageId = null, newCount = null, forceBriefing = false, fromNextStage = false) => {
 			const sId = newStageId !== null ? newStageId : currentStageId;
 			const count = newCount !== null ? newCount : targetCount;
+
+			if (fromNextStage) {
+				// Berurutan / tombol Lanjut Tahap Berikutnya di popup selesai:
+				// Langsung tampilkan Popup Panduan, tanpa tombol Mulai di kanvas
+				setShowStageBriefing(true);
+				setIsStageStarted(false);
+			} else if (newStageId !== null) {
+				// Klik tahap secara manual:
+				// JANGAN tampilkan Popup Panduan langsung! Tampilkan tombol Mulai di kanvas
+				setShowStageBriefing(false);
+				setIsStageStarted(false);
+			} else if (forceBriefing) {
+				setShowStageBriefing(true);
+			} else {
+				// Reset tahap saat ini (tombol Reset di toolbar atau "Ulangi Tahap Ini")
+				setIsStageStarted((prev) => prev);
+				setShowStageBriefing(false);
+			}
 
 			setCurrentStageId(sId);
 			setTargetCount(count);
@@ -1006,6 +1263,56 @@ export default function MouseTrainerGame() {
 		[currentStageId, targetCount, spawnTarget],
 	);
 
+	// Tutup modal panduan & mulai tahap latihan jika belum dimulai
+	const closeBriefingModal = useCallback(() => {
+		setShowStageBriefing(false);
+		if (!isStageStarted) {
+			setIsStageStarted(true);
+			spawnTarget();
+			playTone('hit', isMuted);
+		}
+	}, [isStageStarted, spawnTarget, isMuted]);
+
+	// Handler tombol Mulai di kanvas (Membuka modal panduan)
+	const handleCanvasStartClick = useCallback((e) => {
+		if (e) e.stopPropagation();
+		setShowStageBriefing(true);
+	}, []);
+
+	// Keyboard shortcut untuk Modal Panduan (Spasi / Enter / Esc untuk tutup & mulai)
+	useEffect(() => {
+		if (!showStageBriefing) return;
+
+		const handleBriefingKeyDown = (e) => {
+			if (e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') {
+				e.preventDefault();
+				closeBriefingModal();
+			}
+		};
+
+		window.addEventListener('keydown', handleBriefingKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleBriefingKeyDown);
+		};
+	}, [showStageBriefing, closeBriefingModal]);
+
+	// Keyboard shortcut untuk Tombol Mulai di Kanvas (Spasi / Enter membuka panduan)
+	useEffect(() => {
+		if (isStageStarted || showStageBriefing || isFinished) return;
+
+		const handleCanvasKeyDown = (e) => {
+			if (e.key === ' ' || e.key === 'Enter') {
+				e.preventDefault();
+				setShowStageBriefing(true);
+			}
+		};
+
+		window.addEventListener('keydown', handleCanvasKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleCanvasKeyDown);
+		};
+	}, [isStageStarted, showStageBriefing, isFinished]);
+
 	// Handle closing victory modal with confirmation
 	const handleCloseVictory = async () => {
 		const res = await Swal.fire({
@@ -1064,7 +1371,7 @@ export default function MouseTrainerGame() {
 
 	// Moving target animation loop for Stage 7
 	useEffect(() => {
-		if (stage.type !== 'moving' || isFinished) return;
+		if (stage.type !== 'moving' || !isStageStarted || isFinished) return;
 
 		let localPos = { ...targetPosRef.current };
 		let localVel = { ...movingVelocity };
@@ -1106,7 +1413,7 @@ export default function MouseTrainerGame() {
 		return () => {
 			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 		};
-	}, [stage.type, isFinished, movingVelocity, sizeConfig.width, sizeConfig.height, isFullscreen]);
+	}, [stage.type, isStageStarted, isFinished, movingVelocity, sizeConfig.width, sizeConfig.height, isFullscreen]);
 
 	// Trigger popup animation on hit
 	const triggerHitEffect = (x, y, text = '+1') => {
@@ -1171,7 +1478,7 @@ export default function MouseTrainerGame() {
 	// Stage 10 Wheel Event Listener (CTRL + Scroll Zoom) with { passive: false } to prevent browser zoom
 	useEffect(() => {
 		const gameArea = gameAreaRef.current;
-		if (!gameArea || stage.type !== 'zoom' || isFinished) return;
+		if (!gameArea || stage.type !== 'zoom' || !isStageStarted || isFinished) return;
 
 		const handleWheel = (e) => {
 			const isCtrl = Boolean(e.ctrlKey || e.metaKey || activeModifiers.ctrl);
@@ -1200,11 +1507,11 @@ export default function MouseTrainerGame() {
 		return () => {
 			gameArea.removeEventListener('wheel', handleWheel);
 		};
-	}, [stage.type, isFinished, activeModifiers.ctrl, startTime]);
+	}, [stage.type, isStageStarted, isFinished, activeModifiers.ctrl, startTime]);
 
 	// Stage 10 Tolerance & Auto-Success Check
 	useEffect(() => {
-		if (stage.type !== 'zoom' || isFinished) return;
+		if (stage.type !== 'zoom' || !isStageStarted || isFinished) return;
 
 		const targetZ = currentZoomItem.targetZoom;
 		const diff = Math.abs(currentZoom - targetZ);
@@ -1233,7 +1540,7 @@ export default function MouseTrainerGame() {
 
 	// Background Click (Miss Click detection)
 	const handleAreaClick = (e) => {
-		if (isFinished || justDraggedRef.current || stage.type === 'select' || stage.type === 'combo' || stage.type === 'zoom' || stage.type === 'ctrl_drag') return;
+		if (showStageBriefing || !isStageStarted || isFinished || justDraggedRef.current || stage.type === 'select' || stage.type === 'combo' || stage.type === 'zoom' || stage.type === 'ctrl_drag') return;
 
 		// Abaikan jika yang diklik adalah tombol kontrol (Layar Penuh, Mute, Reset, dsb)
 		if (e && e.target && typeof e.target.closest === 'function') {
@@ -1259,7 +1566,7 @@ export default function MouseTrainerGame() {
 	// Prevent default right-click and detect Right-Click Misses
 	const handleContextMenu = (e) => {
 		e.preventDefault();
-		if (isFinished || justDraggedRef.current) return;
+		if (showStageBriefing || !isStageStarted || isFinished || justDraggedRef.current) return;
 
 		// Abaikan jika yang diklik adalah tombol kontrol
 		if (e && e.target && typeof e.target.closest === 'function') {
@@ -1753,6 +2060,13 @@ export default function MouseTrainerGame() {
 						{/* Quick Actions in Normal Mode */}
 						<div className='flex items-center gap-2'>
 							<button
+								onClick={() => setShowStageBriefing(true)}
+								title='Buka Panduan & Fungsi Tahap Ini'
+								className='flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] hover:shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer font-mono text-xs font-black text-black'>
+								<HelpCircle className='w-4 h-4 text-indigo-600' />
+								<span>Panduan</span>
+							</button>
+							<button
 								onClick={() => setIsMuted(!isMuted)}
 								title={isMuted ? 'Nyalakan Suara' : 'Matikan Suara'}
 								className='p-2 bg-white hover:bg-slate-100 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] hover:shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer text-slate-800'>
@@ -1950,6 +2264,16 @@ export default function MouseTrainerGame() {
 							<button
 								onClick={(e) => {
 									e.stopPropagation();
+									setShowStageBriefing(true);
+								}}
+								title='Buka Panduan & Fungsi Tahap Ini'
+								className='flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100 border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 font-mono text-xs font-black transition-all cursor-pointer text-black'>
+								<HelpCircle className='w-4 h-4 text-indigo-600' />
+								<span className='hidden sm:inline'>Panduan</span>
+							</button>
+							<button
+								onClick={(e) => {
+									e.stopPropagation();
 									setIsMuted(!isMuted);
 								}}
 								title={isMuted ? 'Nyalakan Suara' : 'Matikan Suara'}
@@ -1986,7 +2310,9 @@ export default function MouseTrainerGame() {
 						className='absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10'>
 						<div className='bg-white/95 backdrop-blur border-2 border-black px-3.5 py-2 rounded-lg shadow-[3px_3px_0px_0px_#000] flex items-center gap-2'>
 							<span className='w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping'></span>
-							<span className='font-mono text-xs font-bold text-slate-900'>{stage.desc}</span>
+							<span className='font-mono text-xs font-bold text-slate-900'>
+								{!isStageStarted ? 'Klik tombol Mulai di tengah kanvas untuk membuka panduan & memulai latihan!' : stage.desc}
+							</span>
 						</div>
 
 						{/* Quick fullscreen trigger inside canvas */}
@@ -2019,8 +2345,60 @@ export default function MouseTrainerGame() {
 					</div>
 				)}
 
+				{/* ── START CARD DI TENGAH KANVAS (Saat tahap belum dimulai) ── */}
+				{!isStageStarted && !showStageBriefing && !isFinished && (
+					<div
+						onClick={(e) => e.stopPropagation()}
+						className='absolute inset-0 flex flex-col items-center justify-center p-4 select-none z-20 animate-in fade-in zoom-in-95 duration-200'>
+						<div className='bg-white/95 backdrop-blur border-3 border-black rounded-2xl shadow-[8px_8px_0px_0px_#000] p-6 sm:p-7 max-w-md w-full text-center space-y-4'>
+							{/* Icon */}
+							<div className='w-16 h-16 bg-amber-400 border-3 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_#000] text-black -rotate-2'>
+								{currentStageId === 1 && <MousePointer className='w-8 h-8 animate-bounce text-black' />}
+								{currentStageId === 2 && <MousePointer className='w-8 h-8 animate-bounce text-black' />}
+								{currentStageId === 3 && <Mouse className='w-8 h-8 animate-bounce text-black' />}
+								{currentStageId === 4 && <MousePointer className='w-8 h-8 animate-bounce text-black' />}
+								{currentStageId === 5 && <FolderDown className='w-8 h-8 animate-bounce text-black' />}
+								{currentStageId === 6 && <Highlighter className='w-8 h-8 animate-pulse text-black' />}
+								{currentStageId === 7 && <Move className='w-8 h-8 animate-bounce text-black' />}
+								{currentStageId === 8 && <Target className='w-8 h-8 animate-spin text-black' />}
+								{currentStageId === 9 && <Keyboard className='w-8 h-8 animate-pulse text-black' />}
+								{currentStageId === 10 && <ZoomIn className='w-8 h-8 animate-pulse text-black' />}
+								{currentStageId === 11 && <Copy className='w-8 h-8 animate-bounce text-black' />}
+							</div>
+
+							<div>
+								<div className='flex items-center justify-center gap-1.5 mb-1.5'>
+									<span className='bg-black text-amber-300 font-mono text-[10px] font-black px-2.5 py-0.5 rounded uppercase shadow-[1px_1px_0px_0px_#000]'>
+										Tahap {stage.id} dari {STAGES.length}
+									</span>
+									<span className='bg-amber-100 text-amber-900 border border-amber-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded'>
+										{stage.shortName}
+									</span>
+								</div>
+								<h3 className='font-heading font-black text-xl sm:text-2xl text-black mt-1'>
+									Siap Memulai Latihan?
+								</h3>
+								<p className='text-xs text-slate-600 font-medium mt-1 leading-relaxed'>
+									Klik tombol Mulai di bawah untuk membaca panduan penting dan memulai latihan!
+								</p>
+							</div>
+
+							<button
+								type='button'
+								onClick={handleCanvasStartClick}
+								className='w-full py-3.5 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-sm uppercase tracking-wider border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#000] transition-all cursor-pointer flex items-center justify-center gap-2'>
+								<Play className='w-5 h-5 fill-black' />
+								<span>Mulai</span>
+								<kbd className='hidden sm:inline-block bg-black text-white text-[10px] px-1.5 py-0.5 rounded font-mono ml-1 shadow-xs'>
+									Spasi / Enter
+								</kbd>
+							</button>
+						</div>
+					</div>
+				)}
+
 				{/* ── STAGES 1, 2, 3, 4, 8: Standard Target Box ────────────────── */}
-				{stage.type !== 'drag' && stage.type !== 'scroll' && stage.type !== 'select' && stage.type !== 'combo' && stage.type !== 'zoom' && stage.type !== 'ctrl_drag' && !isFinished && (
+				{stage.type !== 'drag' && stage.type !== 'scroll' && stage.type !== 'select' && stage.type !== 'combo' && stage.type !== 'zoom' && stage.type !== 'ctrl_drag' && isStageStarted && !isFinished && (
 					<div
 						onClick={(e) => {
 							e.stopPropagation();
@@ -2084,7 +2462,7 @@ export default function MouseTrainerGame() {
 				)}
 
 				{/* ── STAGE 5: Drag and Drop Interaction ────────────────── */}
-				{stage.type === 'drag' && !isFinished && (
+				{stage.type === 'drag' && isStageStarted && !isFinished && (
 					<>
 						{/* Drop Zone (Target Folder) */}
 						<div
@@ -2124,7 +2502,7 @@ export default function MouseTrainerGame() {
 				)}
 
 				{/* ── STAGE 6: Seleksi & Blok Teks (Text Selection) ────────────────── */}
-				{stage.type === 'select' && !isFinished && (
+				{stage.type === 'select' && isStageStarted && !isFinished && (
 					<div className={`absolute inset-0 flex flex-col items-center justify-center p-3 select-none overflow-y-auto ${isFullscreen ? 'pt-20 pb-4' : 'pt-2 pb-2'}`}>
 						<div
 							onClick={(e) => e.stopPropagation()}
@@ -2180,7 +2558,7 @@ export default function MouseTrainerGame() {
 				)}
 
 				{/* ── STAGE 7: Scroll Wheel Playground (10 Sektor dengan Latihan Scroll Ke Atas & Ke Bawah) ── */}
-				{stage.type === 'scroll' && !isFinished && (
+				{stage.type === 'scroll' && isStageStarted && !isFinished && (
 					<div
 						ref={scrollContainerRef}
 						onClick={handleAreaClick}
@@ -2254,7 +2632,7 @@ export default function MouseTrainerGame() {
 				)}
 
 				{/* ── STAGE 9: Kombinasi Mouse + Keyboard (Ctrl / Shift + Klik) ────────────────── */}
-				{stage.type === 'combo' && !isFinished && (
+				{stage.type === 'combo' && isStageStarted && !isFinished && (
 					<div className={`absolute inset-0 flex flex-col items-center justify-center p-3 select-none overflow-y-auto ${isFullscreen ? 'pt-20 pb-4' : 'pt-2 pb-2'}`}>
 						<div
 							onClick={(e) => e.stopPropagation()}
@@ -2423,7 +2801,7 @@ export default function MouseTrainerGame() {
 				)}
 
 				{/* ── STAGE 10: Zoom Dokumen & Halaman (CTRL + Scroll Wheel) ────────────────── */}
-				{stage.type === 'zoom' && !isFinished && (
+				{stage.type === 'zoom' && isStageStarted && !isFinished && (
 					<div className={`absolute inset-0 flex flex-col items-center justify-center p-3 select-none overflow-y-auto ${isFullscreen ? 'pt-20 pb-4' : 'pt-2 pb-2'}`}>
 						<div
 							onClick={(e) => e.stopPropagation()}
@@ -2588,7 +2966,7 @@ export default function MouseTrainerGame() {
 				)}
 
 				{/* ── STAGE 11: Duplikasi Berkas Instan (CTRL + Drag & Drop) ────────────────── */}
-				{stage.type === 'ctrl_drag' && !isFinished && (
+				{stage.type === 'ctrl_drag' && isStageStarted && !isFinished && (
 					<div className={`absolute inset-0 flex flex-col items-center justify-center p-3 select-none overflow-y-auto ${isFullscreen ? 'pt-20 pb-4' : 'pt-2 pb-2'}`}>
 						<div
 							onClick={(e) => e.stopPropagation()}
@@ -2853,14 +3231,14 @@ export default function MouseTrainerGame() {
 
 								{currentStageId < STAGES.length ? (
 									<button
-										onClick={() => resetGame(currentStageId + 1)}
+										onClick={() => resetGame(currentStageId + 1, null, false, true)}
 										className='w-full sm:flex-1 py-3 bg-orange-500 hover:bg-orange-400 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2'>
 										<span>Lanjut Tahap {currentStageId + 1}</span>
 										<ArrowRight className='w-4 h-4' />
 									</button>
 								) : (
 									<button
-										onClick={() => resetGame(1)}
+										onClick={() => resetGame(1, null, false, true)}
 										className='w-full sm:flex-1 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2'>
 										<span>Mulai dari Tahap 1</span>
 										<Sparkles className='w-4 h-4' />
@@ -2871,6 +3249,131 @@ export default function MouseTrainerGame() {
 					</div>
 				)}
 			</div>
+
+			{/* ── STAGE BRIEFING MODAL (Panduan Edukasi & Misi Tahap) ── */}
+			{showStageBriefing && !isFinished && (
+				<div
+					className='fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-[10000] animate-in fade-in duration-150 overflow-y-auto'
+					onClick={(e) => {
+						if (e.target === e.currentTarget) closeBriefingModal();
+					}}>
+					<div className='relative bg-white border-4 border-black shadow-[10px_10px_0px_0px_#000] rounded-2xl max-w-2xl w-full p-4 sm:p-6 my-auto space-y-4 animate-in zoom-in-95 duration-200 select-none'>
+						{/* Close Button (X) */}
+						<button
+							type='button'
+							onClick={closeBriefingModal}
+							title='Tutup Panduan (Esc)'
+							className='absolute top-3.5 right-3.5 w-8 h-8 bg-white hover:bg-rose-500 hover:text-white text-black border-2 border-black rounded-lg flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer z-10'>
+							<X className='w-4 h-4' />
+						</button>
+
+						{/* Header: Badge, Stage Name, and Summary */}
+						<div className='border-b-2 border-black pb-3 pr-8'>
+							<div className='flex items-center gap-2 mb-1.5 flex-wrap'>
+								<span className='bg-black text-amber-300 font-mono text-[11px] font-black px-2.5 py-0.5 rounded border border-black shadow-[2px_2px_0px_0px_#000] uppercase'>
+									{briefingData.badge}
+								</span>
+								<span className='bg-amber-100 text-amber-900 border border-amber-300 font-mono text-[11px] font-bold px-2 py-0.5 rounded'>
+									Tahap {stage.id} dari {STAGES.length}
+								</span>
+							</div>
+							<h2 className='font-heading font-black text-xl sm:text-2xl text-black leading-tight'>
+								{stage.name}
+							</h2>
+							<p className='text-xs sm:text-sm text-slate-600 font-medium mt-1 leading-snug'>
+								{briefingData.summary}
+							</p>
+						</div>
+
+						{/* 3 Information Cards Grid */}
+						<div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+							{/* Card 1: Fungsi di Dunia Nyata */}
+							<div className='bg-blue-50 border-2 border-black rounded-xl p-3 sm:p-3.5 shadow-[3px_3px_0px_0px_#000] flex flex-col'>
+								<div className='flex items-center gap-2 mb-2'>
+									<div className='w-7 h-7 rounded-lg bg-blue-600 border border-black flex items-center justify-center text-white shrink-0 shadow-[1px_1px_0px_0px_#000]'>
+										<Target className='w-4 h-4' />
+									</div>
+									<h3 className='font-heading font-black text-xs sm:text-sm text-blue-950 uppercase'>
+										Fungsi di Dunia Nyata
+									</h3>
+								</div>
+								<ul className='space-y-1.5 text-[11px] sm:text-xs text-slate-700 leading-relaxed font-medium flex-1'>
+									{briefingData.realWorld.map((item, idx) => (
+										<li key={idx} className='flex items-start gap-1.5'>
+											<span className='text-blue-600 font-bold shrink-0 mt-0.5'>•</span>
+											<span>{item}</span>
+										</li>
+									))}
+								</ul>
+							</div>
+
+							{/* Card 2: Panduan Jari & Tangan */}
+							<div className='bg-emerald-50 border-2 border-black rounded-xl p-3 sm:p-3.5 shadow-[3px_3px_0px_0px_#000] flex flex-col'>
+								<div className='flex items-center gap-2 mb-2'>
+									<div className='w-7 h-7 rounded-lg bg-emerald-600 border border-black flex items-center justify-center text-white shrink-0 shadow-[1px_1px_0px_0px_#000]'>
+										<MousePointer className='w-4 h-4' />
+									</div>
+									<h3 className='font-heading font-black text-xs sm:text-sm text-emerald-950 uppercase'>
+										Posisi Jari & Tangan
+									</h3>
+								</div>
+								<div className='space-y-1.5 text-[11px] sm:text-xs text-slate-700 leading-relaxed font-medium flex-1'>
+									<div className='font-bold text-emerald-900 bg-emerald-100/90 px-2 py-1 rounded border border-emerald-300 text-[11px]'>
+										👉 {briefingData.fingerGuide.main}
+									</div>
+									<p className='text-slate-600 pt-0.5'>{briefingData.fingerGuide.detail}</p>
+								</div>
+							</div>
+
+							{/* Card 3: Trik Sukses & Hindari */}
+							<div className='bg-amber-50 border-2 border-black rounded-xl p-3 sm:p-3.5 shadow-[3px_3px_0px_0px_#000] flex flex-col'>
+								<div className='flex items-center gap-2 mb-2'>
+									<div className='w-7 h-7 rounded-lg bg-amber-400 border border-black flex items-center justify-center text-black shrink-0 shadow-[1px_1px_0px_0px_#000]'>
+										<Lightbulb className='w-4 h-4' />
+									</div>
+									<h3 className='font-heading font-black text-xs sm:text-sm text-amber-950 uppercase'>
+										Trik & Hindari Ini
+									</h3>
+								</div>
+								<ul className='space-y-1.5 text-[11px] sm:text-xs text-slate-700 leading-relaxed font-medium flex-1'>
+									{briefingData.proTips.map((tip, idx) => (
+										<li key={idx} className='flex items-start gap-1.5'>
+											<span className='text-amber-700 font-bold shrink-0 mt-0.5'>💡</span>
+											<span>{tip}</span>
+										</li>
+									))}
+								</ul>
+							</div>
+						</div>
+
+						{/* Footer Actions */}
+						<div className='pt-2 border-t-2 border-black flex flex-col sm:flex-row items-center justify-between gap-3'>
+							{/* Auto-show checkbox */}
+							<label className='flex items-center gap-2 text-xs font-mono text-slate-700 cursor-pointer select-none order-2 sm:order-1'>
+								<input
+									type='checkbox'
+									checked={autoShowBriefing}
+									onChange={(e) => handleToggleAutoBriefing(e.target.checked)}
+									className='w-4 h-4 accent-amber-500 rounded border-2 border-black cursor-pointer'
+								/>
+								<span>Tampilkan otomatis setiap ganti tahap</span>
+							</label>
+
+							{/* Primary Start Button */}
+							<button
+								type='button'
+								onClick={closeBriefingModal}
+								className='w-full sm:w-auto px-6 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-sm border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2 transition-all order-1 sm:order-2'>
+								<Play className='w-4 h-4 fill-black' />
+								<span>Mulai Latihan Tahap Ini!</span>
+								<kbd className='hidden md:inline-block bg-black text-white text-[10px] px-1.5 py-0.5 rounded font-mono ml-1 shadow-xs'>
+									Spasi / Enter
+								</kbd>
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
