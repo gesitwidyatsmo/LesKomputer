@@ -27,6 +27,7 @@ import {
   Star,
   Mouse,
   Keyboard,
+  Gamepad2,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
@@ -45,18 +46,18 @@ const latihanDropdownItems = [
     color: "bg-purple-300",
   },
   {
-    name: "Latihan Mouse",
-    href: "/siswa/latihan-mouse",
-    icon: Mouse,
-    desc: "Latihan klik, drag & koordinasi",
+    name: "Game Balon Mouse",
+    href: "/game-mouse",
+    icon: Gamepad2,
+    desc: "Buru Balon Terbang 5 babak & refleks",
     color: "bg-amber-300",
   },
   {
-    name: "Latihan Mengetik",
-    href: "/siswa/latihan-mengetik",
-    icon: Keyboard,
-    desc: "Latihan 10 jari & akurasi WPM",
-    color: "bg-cyan-300",
+    name: "Latihan Mouse Formal",
+    href: "/siswa/latihan-mouse",
+    icon: Mouse,
+    desc: "Latihan klik, drag & koordinasi",
+    color: "bg-rose-300",
   },
   {
     name: "Latihan Shortcut",
@@ -64,6 +65,13 @@ const latihanDropdownItems = [
     icon: Zap,
     desc: "Kombinasi Ctrl, Alt, Shift & Navigasi",
     color: "bg-emerald-300",
+  },
+  {
+    name: "Latihan Mengetik",
+    href: "/siswa/latihan-mengetik",
+    icon: Keyboard,
+    desc: "Latihan 10 jari & akurasi WPM",
+    color: "bg-cyan-300",
   },
 ];
 
@@ -76,7 +84,8 @@ export default function SiswaNavbar() {
     pathname.startsWith("/siswa/quiz") ||
     pathname.startsWith("/siswa/latihan-mouse") ||
     pathname.startsWith("/siswa/latihan-mengetik") ||
-    pathname.startsWith("/siswa/latihan-shortcut");
+    pathname.startsWith("/siswa/latihan-shortcut") ||
+    pathname.startsWith("/game-mouse");
 
   // State untuk modal ganti kata sandi
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);

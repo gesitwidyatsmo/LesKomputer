@@ -12,7 +12,8 @@ import {
   GraduationCap, 
   CheckCircle2, 
   ArrowRight,
-  Monitor
+  Monitor,
+  Gamepad2
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -50,9 +51,16 @@ export default async function LatihanMousePage() {
               <span>Kembali ke Beranda</span>
             </Link>
 
-            <div className="flex items-center gap-2">
-              <span className="bg-amber-300 border-2 border-black px-2.5 py-1 text-[11px] font-mono font-bold shadow-[2px_2px_0px_0px_#000] rounded-md flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-black" />
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/game-mouse"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-black font-mono text-[11px] font-black rounded-md border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              >
+                <Gamepad2 className="w-3.5 h-3.5" />
+                <span>🎈 Arena Game Anak (Buru Balon)</span>
+              </Link>
+              <span className="bg-white border-2 border-black px-2.5 py-1 text-[11px] font-mono font-bold shadow-[2px_2px_0px_0px_#000] rounded-md hidden sm:flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>Modul Praktik Komputer Dasar</span>
               </span>
               <Link

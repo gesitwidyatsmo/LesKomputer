@@ -19,6 +19,7 @@ import {
   Zap,
   Mouse,
   Keyboard,
+  Gamepad2,
 } from "lucide-react";
 
 export default function SiswaDashboard() {
@@ -87,13 +88,22 @@ export default function SiswaDashboard() {
       badgeBg: "bg-orange-100",
     },
     {
+      href: "/game-mouse",
+      label: "Game Buru Balon",
+      icon: Gamepad2,
+      desc: "Petualangan 5 babak melatih akurasi klik kiri & refleks",
+      bg: "bg-yellow-300 hover:bg-yellow-200",
+      badge: "Game Balon 🎈",
+      badgeBg: "bg-yellow-100",
+    },
+    {
       href: "/siswa/latihan-shortcut",
       label: "Latihan Shortcut",
       icon: Zap,
       desc: "Kuasai kombinasi Ctrl, Alt, Shift & Text Navigator",
-      bg: "bg-amber-300 hover:bg-amber-200",
-      badge: "Combo Ninja",
-      badgeBg: "bg-amber-100",
+      bg: "bg-emerald-300 hover:bg-emerald-200",
+      badge: "Combo Ninja ⚡",
+      badgeBg: "bg-emerald-100",
     },
     {
       href: "/siswa/jadwal",
@@ -365,6 +375,37 @@ export default function SiswaDashboard() {
           </div>
         </div>
       )}
+
+      {/* ── Banner Khusus: Game Balon & Latihan Shortcut ───────── */}
+      <div className="bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-200 border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-black text-amber-300 text-[10px] font-mono font-black uppercase rounded shadow-[1px_1px_0px_0px_#fff]">
+            <span>🎮 WAHANA PRAKTIK &amp; GAME CEPAT</span>
+          </div>
+          <h3 className="font-heading font-black text-base sm:text-lg text-black">
+            Asah Refleks Mouse &amp; Kecepatan Shortcut Keyboard!
+          </h3>
+          <p className="text-xs text-slate-800 font-medium max-w-xl">
+            Selesaikan game 5 babak <strong>Buru Balon Terbang</strong> (4-5 menit) untuk melatih akurasi klik kirimu, atau taklukkan <strong>Latihan Shortcut Ninja</strong> untuk memacu kecepatan mengetik kombinasi tombol.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto">
+          <Link
+            href="/game-mouse"
+            className="flex-1 md:flex-initial px-4 py-2.5 bg-black hover:bg-slate-800 text-amber-300 font-heading font-black text-xs uppercase border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all text-center flex items-center justify-center gap-2"
+          >
+            <span>🎈</span>
+            <span>Main Game Balon</span>
+          </Link>
+          <Link
+            href="/siswa/latihan-shortcut"
+            className="flex-1 md:flex-initial px-4 py-2.5 bg-white hover:bg-amber-100 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all text-center flex items-center justify-center gap-2"
+          >
+            <span>⚡</span>
+            <span>Latihan Shortcut</span>
+          </Link>
+        </div>
+      </div>
 
       {/* ── 4 Big Chunky Action Cards (Paling Mudah Diakses) ── */}
       <div>

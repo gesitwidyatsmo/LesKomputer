@@ -70,12 +70,6 @@ export default function Navbar({ globalWhatsapp, brandName }) {
             >
               FAQ
             </Link>
-            <Link 
-              href="/latihan-shortcut" 
-              className="px-3 py-1.5 font-mono text-xs font-bold text-slate-900 uppercase bg-amber-200 hover:bg-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1"
-            >
-              <span>⚡</span> Latihan Shortcut
-            </Link>
           </nav>
 
           {/* Right Action CTA */}
@@ -153,13 +147,6 @@ export default function Navbar({ globalWhatsapp, brandName }) {
               <span className="text-[10px] font-mono font-bold text-slate-500 uppercase px-1">
                 Modul Praktik Komputer:
               </span>
-              <Link 
-                href="/latihan-shortcut" 
-                className="block px-3 py-2 bg-amber-200 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-bold text-black uppercase hover:bg-amber-300"
-                onClick={() => setIsOpen(false)}
-              >
-                ⚡ Latihan Shortcut Keyboard
-              </Link>
               <Link 
                 href="/latihan-mengetik" 
                 className="block px-3 py-2 bg-cyan-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] font-bold text-black uppercase hover:bg-cyan-200"
