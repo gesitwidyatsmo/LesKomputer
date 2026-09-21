@@ -58,6 +58,13 @@ const latihanDropdownItems = [
     desc: "Latihan 10 jari & akurasi WPM",
     color: "bg-cyan-300",
   },
+  {
+    name: "Latihan Shortcut",
+    href: "/siswa/latihan-shortcut",
+    icon: Zap,
+    desc: "Kombinasi Ctrl, Alt, Shift & Navigasi",
+    color: "bg-emerald-300",
+  },
 ];
 
 export default function SiswaNavbar() {
@@ -68,7 +75,8 @@ export default function SiswaNavbar() {
   const isLatihanActive =
     pathname.startsWith("/siswa/quiz") ||
     pathname.startsWith("/siswa/latihan-mouse") ||
-    pathname.startsWith("/siswa/latihan-mengetik");
+    pathname.startsWith("/siswa/latihan-mengetik") ||
+    pathname.startsWith("/siswa/latihan-shortcut");
 
   // State untuk modal ganti kata sandi
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);

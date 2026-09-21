@@ -87,6 +87,15 @@ export default function SiswaDashboard() {
       badgeBg: "bg-orange-100",
     },
     {
+      href: "/siswa/latihan-shortcut",
+      label: "Latihan Shortcut",
+      icon: Zap,
+      desc: "Kuasai kombinasi Ctrl, Alt, Shift & Text Navigator",
+      bg: "bg-amber-300 hover:bg-amber-200",
+      badge: "Combo Ninja",
+      badgeBg: "bg-amber-100",
+    },
+    {
       href: "/siswa/jadwal",
       label: "Jadwal & Kehadiran",
       icon: Calendar,
