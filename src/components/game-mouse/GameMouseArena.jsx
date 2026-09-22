@@ -4,6 +4,7 @@ import { useState } from 'react';
 import BalloonHuntGame from './BalloonHuntGame';
 import TreasureHuntGame from './TreasureHuntGame';
 import BurgerFactoryGame from './BurgerFactoryGame';
+import MagicLensGame from './MagicLensGame';
 import GameHubSelector from './GameHubSelector';
 
 export default function GameMouseArena() {
@@ -68,6 +69,21 @@ export default function GameMouseArena() {
                 Drag & Drop
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveGame('kaca-pembesar')}
+              className={`px-3.5 sm:px-4 py-2 rounded-xl font-heading font-black text-xs sm:text-sm uppercase border-3 border-black transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
+                activeGame === 'kaca-pembesar'
+                  ? 'bg-cyan-400 text-black shadow-[4px_4px_0px_0px_#000] -translate-y-0.5'
+                  : 'bg-white hover:bg-cyan-100 text-slate-800 shadow-[2px_2px_0px_0px_#000]'
+              }`}
+            >
+              <span>🔍</span>
+              <span>Game 4: Kaca Pembesar</span>
+              <span className="hidden sm:inline text-[10px] font-mono font-bold bg-white/80 px-1.5 py-0.5 rounded border border-black/30">
+                Klik Kanan
+              </span>
+            </button>
           </div>
 
           <div className="text-xs font-mono font-bold text-slate-600 bg-white border border-black px-2.5 py-1 rounded shadow-[1px_1px_0px_0px_#000]">
@@ -75,7 +91,9 @@ export default function GameMouseArena() {
               ? 'Fokus: Klik Kiri & Akurasi • 5 Babak'
               : activeGame === 'harta-karun'
               ? 'Fokus: Double Click & Kestabilan • 5 Ruang'
-              : 'Fokus: Drag & Drop (Seret & Lepas) • 5 Shift'}
+              : activeGame === 'pabrik-burger'
+              ? 'Fokus: Drag & Drop (Seret & Lepas) • 5 Shift'
+              : 'Fokus: Klik Kanan & Menu Rahasia • 5 Lokasi'}
           </div>
         </div>
 
@@ -83,6 +101,7 @@ export default function GameMouseArena() {
         {activeGame === 'balon-terbang' && <BalloonHuntGame />}
         {activeGame === 'harta-karun' && <TreasureHuntGame />}
         {activeGame === 'pabrik-burger' && <BurgerFactoryGame />}
+        {activeGame === 'kaca-pembesar' && <MagicLensGame />}
       </section>
 
       {/* ── ETALASE 6 GAME PENGUASAAN MOUSE ──────────────────────── */}
