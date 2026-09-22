@@ -46,10 +46,10 @@ const latihanDropdownItems = [
     color: "bg-purple-300",
   },
   {
-    name: "Game Balon Mouse",
-    href: "/game-mouse",
+    name: "Game Penguasaan Mouse",
+    href: "/siswa/game-mouse",
     icon: Gamepad2,
-    desc: "Buru Balon Terbang 5 babak & refleks",
+    desc: "Buru Balon & Detektif Harta Karun",
     color: "bg-amber-300",
   },
   {
@@ -82,10 +82,10 @@ export default function SiswaNavbar() {
 
   const isLatihanActive =
     pathname.startsWith("/siswa/quiz") ||
+    pathname.startsWith("/siswa/game-mouse") ||
     pathname.startsWith("/siswa/latihan-mouse") ||
     pathname.startsWith("/siswa/latihan-mengetik") ||
-    pathname.startsWith("/siswa/latihan-shortcut") ||
-    pathname.startsWith("/game-mouse");
+    pathname.startsWith("/siswa/latihan-shortcut");
 
   // State untuk modal ganti kata sandi
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);

@@ -34,11 +34,11 @@ const MOUSE_GAMES = [
     desc: 'Buka peti rahasia, cangkang mutiara, dan pintu gua misterius menggunakan ketukan double-click yang cepat dan stabil.',
     icon: '💎',
     duration: '4-5 Menit',
-    status: 'upcoming',
+    status: 'ready',
     color: 'bg-purple-200',
     borderColor: 'border-purple-900',
-    tagColor: 'bg-slate-200 text-slate-700',
-    tagText: 'SEGERA HADIR',
+    tagColor: 'bg-purple-300 text-black',
+    tagText: 'SIAP DIMAINKAN',
   },
   {
     id: 'pabrik-burger',
@@ -168,8 +168,8 @@ export default function GameHubSelector({ activeGameId = 'balon-terbang', onSele
               <div className="mt-4 pt-3 border-t border-black/10 flex items-center justify-between">
                 {isReady ? (
                   <div className="flex items-center gap-1 text-xs font-mono font-black text-black">
-                    <Play className="w-3.5 h-3.5 fill-black" />
-                    <span>Sedang Aktif</span>
+                    <Play className={`w-3.5 h-3.5 ${isCurrentActive ? 'fill-black' : ''}`} />
+                    <span>{isCurrentActive ? 'Sedang Dimainkan' : 'Klik untuk Main'}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-slate-500">

@@ -88,12 +88,12 @@ export default function SiswaDashboard() {
       badgeBg: "bg-orange-100",
     },
     {
-      href: "/game-mouse",
-      label: "Game Buru Balon",
+      href: "/siswa/game-mouse",
+      label: "Game Penguasaan Mouse",
       icon: Gamepad2,
-      desc: "Petualangan 5 babak melatih akurasi klik kiri & refleks",
+      desc: "Petualangan Buru Balon & Detektif Harta Karun",
       bg: "bg-yellow-300 hover:bg-yellow-200",
-      badge: "Game Balon 🎈",
+      badge: "Game Edukasi 🎈",
       badgeBg: "bg-yellow-100",
     },
     {
@@ -391,11 +391,11 @@ export default function SiswaDashboard() {
         </div>
         <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto">
           <Link
-            href="/game-mouse"
+            href="/siswa/game-mouse"
             className="flex-1 md:flex-initial px-4 py-2.5 bg-black hover:bg-slate-800 text-amber-300 font-heading font-black text-xs uppercase border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all text-center flex items-center justify-center gap-2"
           >
-            <span>🎈</span>
-            <span>Main Game Balon</span>
+            <span>🎮</span>
+            <span>Main Game Mouse</span>
           </Link>
           <Link
             href="/siswa/latihan-shortcut"

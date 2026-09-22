@@ -771,44 +771,44 @@ export default function BalloonHuntGame() {
       }`}
     >
       {/* ─── HUD / HEADER ATAS GAME ──────────────────────────────── */}
-      <div className="bg-[#FFFDF5] border-b-3 border-black p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 select-none">
+      <div className="relative z-10 bg-[#FFFDF5] border-b-3 border-black p-2.5 sm:p-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3 select-none">
         {/* Kolom Kiri: Indikator Babak */}
-        <div className="flex items-center gap-3">
-          <div className="bg-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-1.5 rounded-lg flex items-center gap-2">
-            <span className="font-heading font-black text-sm text-black">
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="bg-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2">
+            <span className="font-heading font-black text-xs sm:text-sm text-black">
               BABAK {currentWave.wave} / {WAVES_CONFIG.length}
             </span>
-            <span className="hidden md:inline text-xs font-mono font-bold text-slate-700">
+            <span className="hidden xl:inline text-xs font-mono font-bold text-slate-700">
               ({currentWave.title.split(':')[1]})
             </span>
           </div>
 
           {/* Sisa Waktu Babak */}
           <div
-            className={`border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-mono font-black text-sm ${
+            className={`border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 font-mono font-black text-xs sm:text-sm ${
               timeLeft <= 10 ? 'bg-rose-400 text-white animate-pulse' : 'bg-white text-black'
             }`}
           >
-            <Clock className="w-4 h-4" />
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{timeLeft} dtk</span>
           </div>
         </div>
 
         {/* Kolom Tengah: Statistik Poin & Akurasi */}
-        <div className="flex items-center gap-2 sm:gap-4 font-mono text-xs sm:text-sm">
+        <div className="flex items-center gap-2 sm:gap-3 font-mono text-xs sm:text-sm">
           {/* Skor */}
-          <div className="bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-1 rounded-md flex items-center gap-1.5">
-            <Trophy className="w-4 h-4 text-amber-500" />
+          <div className="bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 rounded-md flex items-center gap-1.5">
+            <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
             <span className="font-bold">Skor:</span>
-            <span className="font-black text-black text-sm sm:text-base">{score}</span>
+            <span className="font-black text-black text-xs sm:text-sm">{score}</span>
           </div>
 
           {/* Akurasi */}
-          <div className="bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-1 rounded-md flex items-center gap-1.5">
-            <Target className="w-4 h-4 text-blue-500" />
+          <div className="bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 rounded-md flex items-center gap-1.5">
+            <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
             <span className="font-bold hidden sm:inline">Akurasi:</span>
             <span
-              className={`font-black ${
+              className={`font-black text-xs sm:text-sm ${
                 accuracy >= 80
                   ? 'text-emerald-600'
                   : accuracy >= 60
@@ -822,8 +822,8 @@ export default function BalloonHuntGame() {
 
           {/* Combo */}
           {combo > 1 && (
-            <div className="bg-rose-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 py-1 rounded-md flex items-center gap-1 font-black animate-bounce">
-              <Flame className="w-4 h-4" />
+            <div className="bg-rose-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md flex items-center gap-1 font-black animate-bounce text-xs">
+              <Flame className="w-3.5 h-3.5" />
               <span>x{combo}</span>
             </div>
           )}
@@ -847,7 +847,7 @@ export default function BalloonHuntGame() {
           {/* Toggle Kursor Pin / Crosshair */}
           <button
             onClick={() => setUsePinCursor(!usePinCursor)}
-            className={`p-1.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md transition-all ${
+            className={`p-1.5 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md transition-all cursor-pointer ${
               usePinCursor ? 'bg-cyan-300' : 'bg-white'
             }`}
             title={usePinCursor ? 'Kursor Target Aktif' : 'Kursor Standar'}
@@ -858,7 +858,7 @@ export default function BalloonHuntGame() {
           {/* Toggle Suara */}
           <button
             onClick={handleToggleSound}
-            className="p-1.5 bg-white hover:bg-amber-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md transition-all"
+            className="p-1.5 bg-white hover:bg-amber-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md transition-all cursor-pointer"
             title={soundEnabled ? 'Matikan Suara' : 'Nyalakan Suara'}
           >
             {soundEnabled ? (
@@ -872,7 +872,7 @@ export default function BalloonHuntGame() {
           {gameState === 'playing' && (
             <button
               onClick={() => setGameState('paused')}
-              className="p-1.5 bg-amber-300 hover:bg-amber-400 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md font-mono font-bold text-xs flex items-center gap-1"
+              className="p-1.5 bg-amber-300 hover:bg-amber-400 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md font-mono font-bold text-xs flex items-center gap-1 cursor-pointer"
               title="Jeda Game"
             >
               <Pause className="w-4 h-4" />
@@ -882,7 +882,7 @@ export default function BalloonHuntGame() {
           {gameState === 'paused' && (
             <button
               onClick={() => setGameState('playing')}
-              className="p-1.5 bg-emerald-400 hover:bg-emerald-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md font-mono font-bold text-xs flex items-center gap-1"
+              className="p-1.5 bg-emerald-400 hover:bg-emerald-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md font-mono font-bold text-xs flex items-center gap-1 cursor-pointer"
               title="Lanjut Main"
             >
               <Play className="w-4 h-4" />
@@ -892,7 +892,7 @@ export default function BalloonHuntGame() {
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
-            className="p-1.5 bg-white hover:bg-slate-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md transition-all hidden sm:flex"
+            className="p-1.5 bg-white hover:bg-slate-100 border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-md transition-all hidden sm:flex cursor-pointer"
             title="Layar Penuh"
           >
             {isFullscreen ? (
@@ -905,7 +905,7 @@ export default function BalloonHuntGame() {
       </div>
 
       {/* ─── KANVAS UTAMA GAME ───────────────────────────────────── */}
-      <div className="relative flex-1 bg-sky-100 overflow-hidden select-none">
+      <div className="relative flex-1 bg-sky-100 overflow-hidden select-none min-h-[480px] sm:min-h-[520px]">
         <canvas
           ref={canvasRef}
           onClick={handleCanvasClick}
@@ -917,63 +917,63 @@ export default function BalloonHuntGame() {
 
         {/* ─── OVERLAY 1: IDLE / WELCOME SCREEN ─────────────────── */}
         {gameState === 'idle' && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-20">
-            <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_#000] rounded-2xl p-6 sm:p-8 max-w-lg w-full text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
-              <div className="w-16 h-16 bg-amber-300 border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-2xl mx-auto flex items-center justify-center text-3xl">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-20 overflow-y-auto">
+            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-md w-full text-center space-y-3.5 sm:space-y-4 my-auto animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-13 h-13 sm:w-14 sm:h-14 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center text-2xl sm:text-3xl">
                 🎈
               </div>
 
-              <div className="space-y-2">
-                <div className="inline-block bg-cyan-300 border-2 border-black px-2.5 py-0.5 rounded text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
+              <div className="space-y-1 sm:space-y-1.5">
+                <div className="inline-block bg-cyan-300 border-2 border-black px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
                   Game 1 • Klik Kiri & Akurasi
                 </div>
-                <h2 className="font-heading font-black text-2xl sm:text-3xl text-black">
+                <h2 className="font-heading font-black text-xl sm:text-2xl text-black">
                   Buru Balon Terbang
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                  Arahkan kursor dan klik kiri tepat pada balon sebelum mereka terbang tinggi ke langit! Game ini terdiri dari <strong>5 Babak bertahap (~4-5 menit)</strong> untuk melatih refleks tanganmu.
+                <p className="text-[11px] sm:text-xs text-slate-600 font-medium leading-relaxed max-w-sm mx-auto">
+                  Arahkan kursor dan klik kiri tepat pada balon sebelum terbang tinggi ke langit! Terdiri dari <strong>5 Babak (~4.5 - 5 menit)</strong> untuk melatih refleks jemarimu.
                 </p>
               </div>
 
               {/* Panduan Jenis Balon */}
-              <div className="bg-[#FFFDF5] border-2 border-black rounded-xl p-3 text-left space-y-2 text-xs font-mono">
-                <div className="font-black text-black border-b border-black pb-1 flex items-center gap-1.5">
-                  <Info className="w-3.5 h-3.5" />
-                  <span>Kamus Balon:</span>
+              <div className="bg-[#FFFDF5] border-2 border-black rounded-xl p-2.5 sm:p-3 text-left space-y-1.5 text-xs font-mono">
+                <div className="font-black text-black border-b border-black pb-1 flex items-center gap-1.5 text-[11px]">
+                  <Info className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Kamus Sasaran Balon:</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full bg-red-500 border border-black shrink-0"></span>
-                    <span>Balon Biasa (+50)</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px] sm:text-[11px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-red-500 border border-black shrink-0"></span>
+                    <span className="truncate">Biasa (+50)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full bg-orange-500 border border-black shrink-0"></span>
-                    <span>⚡ Kancil Cepat (+90)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-orange-500 border border-black shrink-0"></span>
+                    <span className="truncate">⚡ Cepat (+90)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full bg-purple-500 border border-black shrink-0"></span>
-                    <span>🌬️ Angin Liuk (+110)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-purple-500 border border-black shrink-0"></span>
+                    <span className="truncate">🌬️ Angin (+110)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full bg-amber-400 border border-black shrink-0"></span>
-                    <span>⭐ Emas Slow-Mo (+250)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-amber-400 border border-black shrink-0"></span>
+                    <span className="truncate">⭐ Emas (+250)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full bg-slate-800 border border-black shrink-0"></span>
-                    <span>⚠️ Duri (HINDARI!)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-slate-800 border border-black shrink-0"></span>
+                    <span className="truncate">⚠️ Duri (Hindari)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full bg-pink-500 border border-black shrink-0"></span>
-                    <span>💥 Raksasa (Klik 3x)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-pink-500 border border-black shrink-0"></span>
+                    <span className="truncate">💥 Jumbo (Klik 3x)</span>
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={startGame}
-                className="w-full py-3.5 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-base uppercase border-3 border-black rounded-xl shadow-[5px_5px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 sm:py-3 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-xs sm:text-sm uppercase border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#000] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Play className="w-5 h-5 fill-current" />
+                <Play className="w-4 h-4 fill-current" />
                 <span>MULAI PETUALANGAN BALON</span>
               </button>
             </div>
@@ -982,16 +982,16 @@ export default function BalloonHuntGame() {
 
         {/* ─── OVERLAY 2: COUNTDOWN ANTAR BABAK ─────────────────── */}
         {gameState === 'countdown' && (
-          <div className="absolute inset-0 bg-black/35 backdrop-blur-sm flex items-center justify-center p-4 z-20">
-            <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl p-6 max-w-md w-full text-center space-y-4 animate-in zoom-in-90 duration-200">
-              <div className="inline-block bg-amber-300 border-2 border-black px-3 py-1 rounded text-xs font-mono font-black uppercase">
+          <div className="absolute inset-0 bg-black/45 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-20 overflow-y-auto">
+            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-sm w-full text-center space-y-3 my-auto animate-in zoom-in-90 duration-200">
+              <div className="inline-block bg-amber-300 border-2 border-black px-2.5 py-1 rounded text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
                 {currentWave.title}
               </div>
-              <p className="text-xs font-mono font-bold text-slate-700">
+              <p className="text-xs font-mono font-bold text-slate-700 leading-snug">
                 {currentWave.tip}
               </p>
-              <div className="py-2">
-                <span className="inline-block font-heading font-black text-6xl text-amber-500 animate-ping duration-1000">
+              <div className="py-1">
+                <span className="inline-block font-heading font-black text-5xl sm:text-6xl text-amber-500 animate-ping duration-1000">
                   {waveCountdown > 0 ? waveCountdown : 'GO!'}
                 </span>
               </div>
@@ -1004,13 +1004,13 @@ export default function BalloonHuntGame() {
 
         {/* ─── OVERLAY 3: WAVE CLEAR SCREEN ─────────────────────── */}
         {gameState === 'wave_clear' && (
-          <div className="absolute inset-0 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4 z-20">
-            <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl p-6 max-w-md w-full text-center space-y-4">
-              <div className="w-14 h-14 bg-emerald-300 border-3 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center">
-                <CheckCircle2 className="w-8 h-8 text-black" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-20 overflow-y-auto">
+            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-sm w-full text-center space-y-3.5 my-auto">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center">
+                <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-black" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-heading font-black text-xl text-black">
+                <h3 className="font-heading font-black text-lg sm:text-xl text-black">
                   Babak {currentWave.wave} Selesai! 🎉
                 </h3>
                 <p className="text-xs font-mono text-slate-600">
@@ -1018,23 +1018,23 @@ export default function BalloonHuntGame() {
                 </p>
               </div>
 
-              <div className="bg-slate-50 border-2 border-black rounded-lg p-3 grid grid-cols-2 gap-2 text-xs font-mono">
+              <div className="bg-slate-50 border-2 border-black rounded-lg p-2.5 grid grid-cols-2 gap-2 text-xs font-mono">
                 <div>
                   <span className="text-slate-500 block text-[10px]">Skor Sementara</span>
-                  <span className="font-black text-base text-black">{score}</span>
+                  <span className="font-black text-sm sm:text-base text-black">{score}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">Akurasi Klik</span>
-                  <span className="font-black text-base text-emerald-600">{accuracy}%</span>
+                  <span className="font-black text-sm sm:text-base text-emerald-600">{accuracy}%</span>
                 </div>
               </div>
 
               <button
                 onClick={() => startWaveCountdown(currentWaveIdx + 1)}
-                className="w-full py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-sm uppercase border-3 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs sm:text-sm uppercase border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>LANJUT KE BABAK {currentWave.wave + 1}</span>
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -1042,25 +1042,25 @@ export default function BalloonHuntGame() {
 
         {/* ─── OVERLAY 4: PAUSED SCREEN ─────────────────────────── */}
         {gameState === 'paused' && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-20">
-            <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl p-6 max-w-xs w-full text-center space-y-4">
-              <div className="w-12 h-12 bg-amber-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center">
-                <Pause className="w-6 h-6 text-black" />
+          <div className="absolute inset-0 bg-black/45 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-20 overflow-y-auto">
+            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 max-w-xs w-full text-center space-y-3 my-auto">
+              <div className="w-11 h-11 bg-amber-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center shadow-[2px_2px_0px_0px_#000]">
+                <Pause className="w-5 h-5 text-black" />
               </div>
-              <h3 className="font-heading font-black text-xl text-black">Game Dijeda</h3>
+              <h3 className="font-heading font-black text-lg text-black">Game Dijeda</h3>
               <p className="text-xs font-mono text-slate-600">
                 Istirahat sejenak sambil melemaskan pergelangan tangan.
               </p>
-              <div className="space-y-2">
+              <div className="space-y-2 pt-1">
                 <button
                   onClick={() => setGameState('playing')}
-                  className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000]"
+                  className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] cursor-pointer"
                 >
                   Lanjut Main
                 </button>
                 <button
                   onClick={startGame}
-                  className="w-full py-2 bg-white hover:bg-slate-100 text-black font-mono font-bold text-xs uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000]"
+                  className="w-full py-2 bg-white hover:bg-slate-100 text-black font-mono font-bold text-xs uppercase border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000] cursor-pointer"
                 >
                   Ulangi dari Awal
                 </button>
@@ -1071,31 +1071,31 @@ export default function BalloonHuntGame() {
 
         {/* ─── OVERLAY 5: GAME OVER / VICTORY RAPOR SCREEN ──────── */}
         {gameState === 'gameover' && (
-          <div className="absolute inset-0 bg-black/55 backdrop-blur-md flex items-center justify-center p-4 z-30 overflow-y-auto">
-            <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_#000] rounded-2xl p-6 sm:p-8 max-w-lg w-full text-center space-y-5 animate-in zoom-in-95 duration-200 my-auto">
-              <div className="w-16 h-16 bg-amber-300 border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-2xl mx-auto flex items-center justify-center text-3xl">
+          <div className="absolute inset-0 bg-black/55 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-30 overflow-y-auto">
+            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-md w-full text-center space-y-3.5 my-auto animate-in zoom-in-95 duration-200">
+              <div className="w-13 h-13 sm:w-14 sm:h-14 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center text-2xl sm:text-3xl">
                 🏆
               </div>
 
               <div className="space-y-1">
-                <div className="inline-block bg-emerald-300 border-2 border-black px-3 py-0.5 rounded text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
+                <div className="inline-block bg-emerald-300 border-2 border-black px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
                   Pelatihan Mouse Selesai!
                 </div>
-                <h2 className="font-heading font-black text-2xl sm:text-3xl text-black">
+                <h2 className="font-heading font-black text-xl sm:text-2xl text-black">
                   Rapor Pemburu Balon
                 </h2>
-                <p className="text-xs font-mono text-slate-600">
+                <p className="text-[11px] sm:text-xs font-mono text-slate-600">
                   Selamat! Kamu telah menyelesaikan seluruh 5 babak latihan mouse.
                 </p>
               </div>
 
               {/* Bintang Penghargaan (1 - 3 Bintang) */}
-              <div className="bg-amber-50 border-2 border-black rounded-xl p-3 flex flex-col items-center justify-center gap-1.5">
-                <div className="flex items-center gap-2">
+              <div className="bg-amber-50 border-2 border-black rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center gap-1">
+                <div className="flex items-center gap-1.5">
                   {[1, 2, 3].map((star) => (
                     <Star
                       key={star}
-                      className={`w-8 h-8 ${
+                      className={`w-6 h-6 sm:w-7 sm:h-7 ${
                         star <= getStarRating()
                           ? 'text-amber-400 fill-amber-400 filter drop-shadow-[2px_2px_0px_#000]'
                           : 'text-slate-300'
@@ -1103,7 +1103,7 @@ export default function BalloonHuntGame() {
                     />
                   ))}
                 </div>
-                <span className="font-heading font-black text-sm text-black">
+                <span className="font-heading font-black text-xs sm:text-sm text-black">
                   {getStarRating() === 3
                     ? '🌟 LUAR BIASA! MASTER AKURASI'
                     : getStarRating() === 2
@@ -1114,42 +1114,42 @@ export default function BalloonHuntGame() {
 
               {/* Rincian Statistik Rapor */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-left font-mono">
-                <div className="bg-slate-50 border-2 border-black rounded-lg p-2.5">
+                <div className="bg-slate-50 border-2 border-black rounded-lg p-2">
                   <span className="text-slate-500 text-[10px] block font-bold">Total Skor</span>
-                  <span className="font-black text-lg text-black">{score}</span>
+                  <span className="font-black text-base sm:text-lg text-black">{score}</span>
                 </div>
-                <div className="bg-slate-50 border-2 border-black rounded-lg p-2.5">
-                  <span className="text-slate-500 text-[10px] block font-bold">Akurasi Klik</span>
+                <div className="bg-slate-50 border-2 border-black rounded-lg p-2">
+                  <span className="text-slate-500 text-[10px] block font-bold">Akurasi</span>
                   <span
-                    className={`font-black text-lg ${
+                    className={`font-black text-base sm:text-lg ${
                       accuracy >= 80 ? 'text-emerald-600' : 'text-amber-600'
                     }`}
                   >
                     {accuracy}%
                   </span>
                 </div>
-                <div className="bg-slate-50 border-2 border-black rounded-lg p-2.5">
+                <div className="bg-slate-50 border-2 border-black rounded-lg p-2">
                   <span className="text-slate-500 text-[10px] block font-bold">Balon Pecah</span>
-                  <span className="font-black text-lg text-black">{poppedCount}</span>
+                  <span className="font-black text-base sm:text-lg text-black">{poppedCount}</span>
                 </div>
-                <div className="bg-slate-50 border-2 border-black rounded-lg p-2.5">
-                  <span className="text-slate-500 text-[10px] block font-bold">Kombo Terpanjang</span>
-                  <span className="font-black text-lg text-rose-600">x{maxCombo}</span>
+                <div className="bg-slate-50 border-2 border-black rounded-lg p-2">
+                  <span className="text-slate-500 text-[10px] block font-bold">Kombo Maks</span>
+                  <span className="font-black text-base sm:text-lg text-rose-600">x{maxCombo}</span>
                 </div>
               </div>
 
               {/* Tombol Aksi */}
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2 pt-1">
                 <button
                   onClick={startGame}
-                  className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-sm uppercase border-3 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-xs sm:text-sm uppercase border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>MAIN LAGI & TINGKATKAN SKOR</span>
                 </button>
                 <Link
                   href="/siswa"
-                  className="w-full py-2.5 bg-white hover:bg-slate-100 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2 bg-white hover:bg-slate-100 text-black font-heading font-black text-xs uppercase border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>KEMBALI KE BERANDA SISWA</span>
                 </Link>
@@ -1160,13 +1160,13 @@ export default function BalloonHuntGame() {
       </div>
 
       {/* ─── FOOTER BAR GAME TIPS ─────────────────────────────────── */}
-      <div className="bg-[#FFFDF5] border-t-2 border-black px-4 py-2.5 flex flex-wrap items-center justify-between text-xs font-mono text-slate-700 gap-2">
-        <div className="flex items-center gap-2">
+      <div className="relative z-10 bg-[#FFFDF5] border-t-2 border-black px-3.5 sm:px-4 py-2 flex flex-wrap items-center justify-between text-xs font-mono text-slate-700 gap-2 select-none">
+        <div className="flex items-center gap-2 min-w-0 max-w-xl">
           <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-          <span className="font-bold">Tips Guru:</span>
-          <span>{currentWave.tip}</span>
+          <span className="font-bold shrink-0">Tips Guru:</span>
+          <span className="truncate">{currentWave.tip}</span>
         </div>
-        <div className="text-[11px] text-slate-500 hidden md:block">
+        <div className="text-[11px] text-slate-500 hidden md:block shrink-0">
           Total 5 Babak • Durasi ~4.5 Menit • Melatih Motorik Halus
         </div>
       </div>
