@@ -5,6 +5,7 @@ import BalloonHuntGame from './BalloonHuntGame';
 import TreasureHuntGame from './TreasureHuntGame';
 import BurgerFactoryGame from './BurgerFactoryGame';
 import MagicLensGame from './MagicLensGame';
+import DeepSeaDiverGame from './DeepSeaDiverGame';
 import GameHubSelector from './GameHubSelector';
 
 export default function GameMouseArena() {
@@ -22,7 +23,7 @@ export default function GameMouseArena() {
   return (
     <div className="space-y-8">
       {/* ── SELECTOR TAB WAHANA GAME AKTIF ───────────────────────── */}
-      <section id="arena-game-section" className="space-y-4">
+      <section id="arena-game-section" className="space-y-4 scroll-mt-24 sm:scroll-mt-28">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black/20 pb-3">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -84,6 +85,21 @@ export default function GameMouseArena() {
                 Klik Kanan
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveGame('penyelam-laut')}
+              className={`px-3.5 sm:px-4 py-2 rounded-xl font-heading font-black text-xs sm:text-sm uppercase border-3 border-black transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
+                activeGame === 'penyelam-laut'
+                  ? 'bg-blue-400 text-black shadow-[4px_4px_0px_0px_#000] -translate-y-0.5'
+                  : 'bg-white hover:bg-blue-100 text-slate-800 shadow-[2px_2px_0px_0px_#000]'
+              }`}
+            >
+              <span>🌊</span>
+              <span>Game 5: Penyelam Laut</span>
+              <span className="hidden sm:inline text-[10px] font-mono font-bold bg-white/80 px-1.5 py-0.5 rounded border border-black/30">
+                Scroll Wheel
+              </span>
+            </button>
           </div>
 
           <div className="text-xs font-mono font-bold text-slate-600 bg-white border border-black px-2.5 py-1 rounded shadow-[1px_1px_0px_0px_#000]">
@@ -93,7 +109,9 @@ export default function GameMouseArena() {
               ? 'Fokus: Double Click & Kestabilan • 5 Ruang'
               : activeGame === 'pabrik-burger'
               ? 'Fokus: Drag & Drop (Seret & Lepas) • 5 Shift'
-              : 'Fokus: Klik Kanan & Menu Rahasia • 5 Lokasi'}
+              : activeGame === 'kaca-pembesar'
+              ? 'Fokus: Klik Kanan & Menu Rahasia • 5 Lokasi'
+              : 'Fokus: Roda Gulir (Scroll Wheel) • 5 Ekspedisi'}
           </div>
         </div>
 
@@ -102,6 +120,7 @@ export default function GameMouseArena() {
         {activeGame === 'harta-karun' && <TreasureHuntGame />}
         {activeGame === 'pabrik-burger' && <BurgerFactoryGame />}
         {activeGame === 'kaca-pembesar' && <MagicLensGame />}
+        {activeGame === 'penyelam-laut' && <DeepSeaDiverGame />}
       </section>
 
       {/* ── ETALASE 6 GAME PENGUASAAN MOUSE ──────────────────────── */}

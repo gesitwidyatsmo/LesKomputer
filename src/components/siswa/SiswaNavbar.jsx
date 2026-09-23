@@ -188,7 +188,7 @@ export default function SiswaNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#FFFDF5] border-b-3 border-black">
+      <header className="sticky top-0 z-[100] bg-[#FFFDF5] border-b-3 border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo Neobrutalis Ramah */}

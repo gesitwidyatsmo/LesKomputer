@@ -766,8 +766,8 @@ export default function BalloonHuntGame() {
   return (
     <div
       ref={containerRef}
-      className={`relative bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
+      className={`relative isolate bg-white border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col ${
+        isFullscreen ? 'fixed inset-0 z-[90] rounded-none' : ''
       }`}
     >
       {/* ─── HUD / HEADER ATAS GAME ──────────────────────────────── */}

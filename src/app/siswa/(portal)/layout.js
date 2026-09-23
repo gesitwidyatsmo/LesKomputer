@@ -40,7 +40,7 @@ export default function PortalSiswaLayout({ children }) {
       <PortalGuard>
         <div className="min-h-screen bg-[#FFFDF5] text-slate-950 flex flex-col">
           <SiswaNavbar />
-          <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-0 isolate">
             {children}
           </main>
           <footer className="border-t-3 border-black bg-white py-4 px-4 text-center mt-6">

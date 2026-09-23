@@ -854,8 +854,8 @@ export default function MagicLensGame() {
     <div
       ref={containerRef}
       onContextMenu={(e) => e.preventDefault()}
-      className={`relative bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col select-none ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
+      className={`relative isolate bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col select-none ${
+        isFullscreen ? 'fixed inset-0 z-[90] rounded-none' : ''
       }`}
     >
       {/* ─── TOP HUD HEADER ──────────────────────────────────────── */}
