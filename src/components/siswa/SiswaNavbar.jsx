@@ -53,6 +53,13 @@ const latihanDropdownItems = [
     color: "bg-amber-300",
   },
   {
+    name: "Game Penguasaan Keyboard",
+    href: "/siswa/game-keyboard",
+    icon: Keyboard,
+    desc: "Katak Melompat & Peluncuran Roket",
+    color: "bg-emerald-300",
+  },
+  {
     name: "Latihan Mouse Formal",
     href: "/siswa/latihan-mouse",
     icon: Mouse,
@@ -64,7 +71,7 @@ const latihanDropdownItems = [
     href: "/siswa/latihan-shortcut",
     icon: Zap,
     desc: "Kombinasi Ctrl, Alt, Shift & Navigasi",
-    color: "bg-emerald-300",
+    color: "bg-teal-300",
   },
   {
     name: "Latihan Mengetik",
@@ -83,6 +90,7 @@ export default function SiswaNavbar() {
   const isLatihanActive =
     pathname.startsWith("/siswa/quiz") ||
     pathname.startsWith("/siswa/game-mouse") ||
+    pathname.startsWith("/siswa/game-keyboard") ||
     pathname.startsWith("/siswa/latihan-mouse") ||
     pathname.startsWith("/siswa/latihan-mengetik") ||
     pathname.startsWith("/siswa/latihan-shortcut");
