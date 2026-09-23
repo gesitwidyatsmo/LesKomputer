@@ -23,10 +23,10 @@ export const KEYBOARD_GAMES = [
     desc: 'Isi tekanan bahan bakar dengan mengetik kata sandi peluncuran lalu tekan tombol ENTER pada zona hijau untuk ignisi roket menuju orbit luar angkasa.',
     icon: '🚀',
     duration: '4-5 Menit',
-    status: 'upcoming',
+    status: 'ready',
     color: 'bg-blue-200',
-    tagColor: 'bg-amber-200 text-amber-900',
-    tagText: 'SEGERA HADIR',
+    tagColor: 'bg-blue-300 text-black',
+    tagText: 'SIAP DIMAINKAN',
     waves: '5 Lapisan Orbit',
   },
   {

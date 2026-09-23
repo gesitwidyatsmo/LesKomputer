@@ -1692,7 +1692,11 @@ export default function FrogJumpGame() {
                 onClick={handleNextWave}
                 className="w-full py-2.5 sm:py-3 bg-emerald-400 hover:bg-emerald-300 border-3 border-black font-heading font-black text-xs sm:text-sm text-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>LANJUT KE BABAK {currentWave.wave + 1} ({transitionCountdown}s)</span>
+                <span>
+                  {currentWaveIdx + 1 < WAVES_CONFIG.length
+                    ? `LANJUT KE BABAK ${currentWave.wave + 1} (${transitionCountdown}s)`
+                    : `LIHAT KEMENANGAN AKHIR (${transitionCountdown}s)`}
+                </span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
