@@ -4,6 +4,7 @@ import { useState } from 'react';
 import FrogJumpGame from './FrogJumpGame';
 import RocketLaunchGame from './RocketLaunchGame';
 import MonsterHurufGame from './MonsterHurufGame';
+import TeriakBisikGame from './TeriakBisikGame';
 import GameKeyboardHubSelector from './GameKeyboardHubSelector';
 import { Sparkles, Clock, Lock, Play, ArrowRight } from 'lucide-react';
 
@@ -134,8 +135,12 @@ export default function GameKeyboardArena() {
         {activeGame === 'katak-melompat' && <FrogJumpGame />}
         {activeGame === 'peluncuran-roket' && <RocketLaunchGame />}
         {activeGame === 'monster-huruf' && <MonsterHurufGame />}
+        {activeGame === 'teriak-bisik' && <TeriakBisikGame />}
 
-        {activeGame !== 'katak-melompat' && activeGame !== 'peluncuran-roket' && activeGame !== 'monster-huruf' && (
+        {activeGame !== 'katak-melompat' &&
+          activeGame !== 'peluncuran-roket' &&
+          activeGame !== 'monster-huruf' &&
+          activeGame !== 'teriak-bisik' && (
           <div className="bg-white border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_#000] p-8 sm:p-12 text-center space-y-5">
             <div className="w-20 h-20 bg-amber-200 border-3 border-black rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-[4px_4px_0px_0px_#000]">
               {activeGame === 'teriak-bisik'
