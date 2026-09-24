@@ -5,6 +5,7 @@ import FrogJumpGame from './FrogJumpGame';
 import RocketLaunchGame from './RocketLaunchGame';
 import MonsterHurufGame from './MonsterHurufGame';
 import TeriakBisikGame from './TeriakBisikGame';
+import LampuSorotGame from './LampuSorotGame';
 import GameKeyboardHubSelector from './GameKeyboardHubSelector';
 import { Sparkles, Clock, Lock, Play, ArrowRight } from 'lucide-react';
 
@@ -136,18 +137,16 @@ export default function GameKeyboardArena() {
         {activeGame === 'peluncuran-roket' && <RocketLaunchGame />}
         {activeGame === 'monster-huruf' && <MonsterHurufGame />}
         {activeGame === 'teriak-bisik' && <TeriakBisikGame />}
+        {activeGame === 'lampu-sorot' && <LampuSorotGame />}
 
         {activeGame !== 'katak-melompat' &&
           activeGame !== 'peluncuran-roket' &&
           activeGame !== 'monster-huruf' &&
-          activeGame !== 'teriak-bisik' && (
+          activeGame !== 'teriak-bisik' &&
+          activeGame !== 'lampu-sorot' && (
           <div className="bg-white border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_#000] p-8 sm:p-12 text-center space-y-5">
             <div className="w-20 h-20 bg-amber-200 border-3 border-black rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-[4px_4px_0px_0px_#000]">
-              {activeGame === 'teriak-bisik'
-                ? '📢'
-                : activeGame === 'lampu-sorot'
-                ? '🔦'
-                : '🤖'}
+              🤖
             </div>
 
             <div className="max-w-xl mx-auto space-y-2">
@@ -155,14 +154,10 @@ export default function GameKeyboardArena() {
                 Dalam Tahap Persiapan Rilis
               </span>
               <h3 className="font-heading font-black text-2xl sm:text-3xl text-black">
-                {activeGame === 'teriak-bisik'
-                  ? 'Game 4: Mode Berteriak vs Berbisik (Fokus: Caps Lock)'
-                  : activeGame === 'lampu-sorot'
-                  ? 'Game 5: Lampu Sorot Jari (Fokus: Shift & Simbol Khusus)'
-                  : 'Game 6: Mesin Pengganda (Fokus: Ctrl+C & Ctrl+V)'}
+                Game 6: Mesin Pengganda (Fokus: Ctrl+C & Ctrl+V)
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                Modul ini sedang disiapkan dengan tantangan 5 babak (4–5 menit) untuk memperkuat penguasaan tombol fungsi keyboard. Silakan mainkan <strong>Game 1: Katak Melompat</strong>, <strong>Game 2: Peluncuran Roket</strong>, atau <strong>Game 3: Monster Pemakan Huruf</strong> terlebih dahulu!
+                Modul ini sedang disiapkan dengan tantangan 5 babak (4–5 menit) untuk memperkuat penguasaan tombol fungsi keyboard. Silakan mainkan <strong>Game 1 s/d 5</strong> yang telah siap dimainkan!
               </p>
             </div>
 
