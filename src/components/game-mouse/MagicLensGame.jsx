@@ -850,12 +850,24 @@ export default function MagicLensGame() {
     }
   };
 
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
       onContextMenu={(e) => e.preventDefault()}
       className={`relative isolate bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col select-none ${
-        isFullscreen ? 'fixed inset-0 z-[90] rounded-none' : ''
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none h-screen w-screen' : ''
       }`}
     >
       {/* ─── TOP HUD HEADER ──────────────────────────────────────── */}
@@ -864,20 +876,20 @@ export default function MagicLensGame() {
         <div className="flex items-center gap-2 sm:gap-2.5">
           <div className="bg-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2">
             <span className="font-heading font-black text-xs sm:text-sm text-black">
-              BABAK {currentScene.scene} / {SCENES_CONFIG.length}
+              {gameState === 'idle' ? 'PERSIAPAN MISI' : `BABAK ${currentScene.scene} / ${SCENES_CONFIG.length}`}
             </span>
             <span className="hidden xl:inline text-xs font-mono font-bold text-slate-700">
-              ({currentScene.title.split(':')[1]})
+              ({gameState === 'idle' ? 'Latihan Refleks: Ketangkasan Klik Kanan' : currentScene.title.split(':')[1]})
             </span>
           </div>
 
           <div
             className={`border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 font-mono font-black text-xs sm:text-sm ${
-              timeLeft <= 10 ? 'bg-rose-400 text-white animate-pulse' : 'bg-white text-black'
+              timeLeft <= 10 && gameState === 'playing' ? 'bg-rose-400 text-white animate-pulse' : 'bg-white text-black'
             }`}
           >
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{timeLeft} dtk</span>
+            <span>{gameState === 'idle' ? '5 Babak' : `${timeLeft} dtk`}</span>
           </div>
         </div>
 
@@ -970,17 +982,103 @@ export default function MagicLensGame() {
         ref={sceneAreaRef}
         onMouseMove={handleMouseMove}
         onClick={handleSceneClick}
-        className={`relative flex-1 bg-gradient-to-b ${currentScene.bgGradient} min-h-[480px] sm:min-h-[520px] overflow-hidden select-none cursor-crosshair`}
+        className={`relative flex-1 bg-gradient-to-b ${currentScene.bgGradient} flex items-center justify-center overflow-hidden select-none cursor-crosshair ${
+          isFullscreen ? 'min-h-0 w-full h-full' : 'min-h-[480px] sm:min-h-[520px]'
+        }`}
       >
-        {/* BARIS ATAS: CHECKLIST OBJEK MISTERI YANG DICARI */}
-        <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between gap-2 bg-white/95 backdrop-blur-sm border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-xl p-2 sm:px-3 overflow-x-auto">
-          <div className="flex items-center gap-1 text-[11px] font-mono font-black text-black shrink-0 mr-1">
-            <Search className="w-3.5 h-3.5 text-cyan-600" />
-            <span>Target Misteri:</span>
-          </div>
+        {gameState === 'idle' ? (
+          /* ─── IN-ARENA WELCOME SCREEN (BUKAN POPUP MODAL) ─── */
+          <div className="flex-1 w-full h-full flex flex-col justify-between items-center text-center py-4 sm:py-6 px-4 sm:px-6 relative z-10 my-auto max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            {/* Header Judul Game */}
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-3 duration-300">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-300 border-2 border-black rounded-full text-xs font-mono font-black shadow-[2px_2px_0px_#000] uppercase text-black">
+                <span>🔍</span>
+                <span>Game 4 • Fokus Motorik: Klik Kanan (Right-Click)</span>
+              </div>
+              <h1 className="font-heading font-black text-2xl sm:text-4xl text-black drop-shadow-[2px_2px_0px_#fff]">
+                Kaca Pembesar Ajaib
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-800 font-bold max-w-xl mx-auto leading-relaxed">
+                Sisir pemandangan ramai menggunakan kaca pembesar. Temukan objek tersembunyi dan tekan <strong>KLIK KANAN</strong> mouse untuk memunculkan menu rahasia dalam <strong>5 Babak Detektif (~4.5 Menit)</strong>!
+              </p>
+            </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {currentScene.targets.map((tgt) => {
+            {/* Panggung Tiga Kolom Edukasi */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-stretch">
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-cyan-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🔍
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-cyan-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    1. SISIR PEMANDANGAN
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Lensa Mata Elang
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Gerakkan mouse untuk mengarahkan lingkaran lensa ke berbagai sudut pemandangan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-amber-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🖱️
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-amber-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    2. KLIK KANAN RAHASIA
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Gunakan Jari Tengah
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Tekan tombol kanan mouse tepat di atas objek berkilau untuk memunculkan menu rahasia.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-emerald-400 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🔓
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-emerald-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    3. BUKA RAHASIA
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Pilih Menu Konteks
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Klik kiri pada opsi &ldquo;Buka Kunci&rdquo; atau &ldquo;Beri Warna&rdquo; untuk mengungkap misterinya!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tombol Mulai Permainan */}
+            <div className="pt-2">
+              <button
+                onClick={startGame}
+                className="py-3 px-8 bg-amber-400 hover:bg-amber-300 border-3 border-black font-heading font-black text-sm sm:text-base text-black rounded-2xl shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                <Play className="w-5 h-5 fill-black" />
+                <span>MULAI PETUALANGAN MATA ELANG</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* BARIS ATAS: CHECKLIST OBJEK MISTERI YANG DICARI */}
+            <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between gap-2 bg-white/95 backdrop-blur-sm border-2 border-black shadow-[2px_2px_0px_0px_#000] rounded-xl p-2 sm:px-3 overflow-x-auto">
+              <div className="flex items-center gap-1 text-[11px] font-mono font-black text-black shrink-0 mr-1">
+                <Search className="w-3.5 h-3.5 text-cyan-600" />
+                <span>Target Misteri:</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {currentScene.targets.map((tgt) => {
               const isFound = foundInCurrentScene.includes(tgt.id);
 
               return (
@@ -1129,59 +1227,8 @@ export default function MagicLensGame() {
             ))}
           </div>
         )}
-
-        {/* ─── OVERLAY 1: IDLE WELCOME SCREEN ─────────────────────── */}
-        {gameState === 'idle' && (
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-40 overflow-y-auto">
-            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-md w-full text-center space-y-3.5 sm:space-y-4 my-auto animate-in fade-in zoom-in-95 duration-200">
-              <div className="w-13 h-13 sm:w-14 sm:h-14 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center text-2xl sm:text-3xl">
-                🔍
-              </div>
-
-              <div className="space-y-1 sm:space-y-1.5">
-                <div className="inline-block bg-cyan-300 border-2 border-black px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
-                  Game 4 • Fokus: Klik Kanan (Right-Click)
-                </div>
-                <h2 className="font-heading font-black text-xl sm:text-2xl text-black">
-                  Kaca Pembesar Ajaib
-                </h2>
-                <p className="text-[11px] sm:text-xs text-slate-600 font-medium leading-relaxed max-w-sm mx-auto">
-                  Sisir pemandangan ramai menggunakan kaca pembesar. Temukan objek tersembunyi dan tekan <strong>KLIK KANAN</strong> mouse untuk memunculkan menu rahasia! Terdiri dari <strong>5 Babak (~4.5 - 5 menit)</strong>.
-                </p>
-              </div>
-
-              {/* Panduan Singkat Aturan Main */}
-              <div className="bg-[#FFFDF5] border-2 border-black rounded-xl p-2.5 sm:p-3 text-left space-y-1.5 text-xs font-mono">
-                <div className="font-black text-black border-b border-black pb-1 flex items-center gap-1.5 text-[11px]">
-                  <Info className="w-3.5 h-3.5 text-cyan-600" />
-                  <span>Aturan Detektif Lensa:</span>
-                </div>
-                <ul className="space-y-1 text-[10px] sm:text-[11px] text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">🖱️</span>
-                    <span><strong>Gunakan Jari Tengah:</strong> Tekan tombol kanan mouse tepat di atas objek berkilau.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">🔓</span>
-                    <span><strong>Menu Rahasia:</strong> Pilih opsi <em>&ldquo;Buka Kunci&rdquo;</em> atau <em>&ldquo;Beri Warna&rdquo;</em> dengan klik kiri.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">✨</span>
-                    <span><strong>Perhatikan Kilau:</strong> Objek misteri memancarkan bintang halus saat disorot lensa.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <button
-                onClick={startGame}
-                className="w-full py-2.5 sm:py-3 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-xs sm:text-sm uppercase border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#000] transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Play className="w-4 h-4 fill-current" />
-                <span>MULAI PETUALANGAN MATA ELANG</span>
-              </button>
-            </div>
-          </div>
-        )}
+      </>
+    )}
 
         {/* ─── OVERLAY 2: COUNTDOWN ANTAR BABAK ─────────────────── */}
         {gameState === 'countdown' && (

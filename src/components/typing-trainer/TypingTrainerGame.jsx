@@ -334,6 +334,7 @@ export default function TypingTrainerGame() {
   const timerIntervalRef = useRef(null);
   const hiddenInputRef = useRef(null);
   const promptContainerRef = useRef(null);
+  const containerRef = useRef(null);
 
   const lesson = useMemo(() => getLessonById(currentLevelId), [currentLevelId]);
   const targetText = lesson.text;
@@ -454,16 +455,16 @@ export default function TypingTrainerGame() {
       );
 
       if (!isCurrentlyFs && !isFullscreen) {
-        // Request true browser fullscreen (mirip pencet F11)
-        const docEl = document.documentElement;
-        if (docEl.requestFullscreen) {
-          await docEl.requestFullscreen();
-        } else if (docEl.webkitRequestFullscreen) {
-          await docEl.webkitRequestFullscreen();
-        } else if (docEl.mozRequestFullScreen) {
-          await docEl.mozRequestFullScreen();
-        } else if (docEl.msRequestFullscreen) {
-          await docEl.msRequestFullscreen();
+        // Request element fullscreen on game container (so header/footer aren't included)
+        const el = containerRef.current || document.documentElement;
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          await el.webkitRequestFullscreen();
+        } else if (el.mozRequestFullScreen) {
+          await el.mozRequestFullScreen();
+        } else if (el.msRequestFullscreen) {
+          await el.msRequestFullscreen();
         }
         setIsFullscreen(true);
       } else {
@@ -759,6 +760,7 @@ export default function TypingTrainerGame() {
 
   return (
     <div
+      ref={containerRef}
       onClick={focusInput}
       className={`flex flex-col transition-all select-none ${
         isFullscreen

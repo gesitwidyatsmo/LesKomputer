@@ -195,6 +195,18 @@ export default function TreasureHuntGame() {
     }
   };
 
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+    };
+  }, []);
+
   // ─── INISIALISASI ITEM RUANGAN ──────────────────────────────────
   const setupRoomItems = useCallback((roomIdx) => {
     const config = ROOMS_CONFIG[roomIdx] || ROOMS_CONFIG[0];
@@ -426,7 +438,7 @@ export default function TreasureHuntGame() {
     <div
       ref={containerRef}
       className={`relative isolate bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col ${
-        isFullscreen ? 'fixed inset-0 z-[90] rounded-none' : ''
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none h-screen w-screen' : ''
       }`}
     >
       {/* ─── TOP HUD HEADER ──────────────────────────────────────── */}
@@ -435,20 +447,20 @@ export default function TreasureHuntGame() {
         <div className="flex items-center gap-2 sm:gap-2.5">
           <div className="bg-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2">
             <span className="font-heading font-black text-xs sm:text-sm text-black">
-              RUANG {currentRoom.room} / {ROOMS_CONFIG.length}
+              {gameState === 'idle' ? 'PERSIAPAN MISI' : `RUANG ${currentRoom.room} / ${ROOMS_CONFIG.length}`}
             </span>
             <span className="hidden xl:inline text-xs font-mono font-bold text-slate-700">
-              ({currentRoom.title.split(':')[1]})
+              ({gameState === 'idle' ? 'Latihan Refleks: Ketangkasan Double Click' : currentRoom.title.split(':')[1]})
             </span>
           </div>
 
           <div
             className={`border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 font-mono font-black text-xs sm:text-sm ${
-              timeLeft <= 10 ? 'bg-rose-400 text-white animate-pulse' : 'bg-white text-black'
+              timeLeft <= 10 && gameState === 'playing' ? 'bg-rose-400 text-white animate-pulse' : 'bg-white text-black'
             }`}
           >
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{timeLeft} dtk</span>
+            <span>{gameState === 'idle' ? '5 Ruang' : `${timeLeft} dtk`}</span>
           </div>
         </div>
 
@@ -537,155 +549,188 @@ export default function TreasureHuntGame() {
       </div>
 
       {/* ─── ARENA PETI & PINTU HARTA KARUN ──────────────────────── */}
-      <div className="relative flex-1 p-4 sm:p-6 bg-gradient-to-b from-amber-50/60 via-stone-100 to-amber-100 min-h-[480px] sm:min-h-[520px] flex items-center justify-center select-none overflow-hidden">
-        {/* Grid Peti Harta Karun */}
-        <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 z-10">
-          {roomItems.map((item) => {
-            const isWobble = wobblingId === item.id;
-            const bubble = feedbackBubbles[item.id];
+      <div className={`relative flex-1 p-4 sm:p-6 bg-gradient-to-b from-amber-50/60 via-stone-100 to-amber-100 flex items-center justify-center select-none overflow-hidden ${
+        isFullscreen ? 'min-h-0 w-full h-full' : 'min-h-[480px] sm:min-h-[520px]'
+      }`}>
+        {gameState === 'idle' ? (
+          /* ─── IN-ARENA WELCOME SCREEN (BUKAN POPUP MODAL) ─── */
+          <div className="flex-1 w-full h-full flex flex-col justify-between items-center text-center py-4 sm:py-6 px-4 sm:px-6 relative z-10 my-auto max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            {/* Header Judul Game */}
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-3 duration-300">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-300 border-2 border-black rounded-full text-xs font-mono font-black shadow-[2px_2px_0px_#000] uppercase text-black">
+                <span>💎</span>
+                <span>Game 2 • Fokus Motorik: Double Click (Klik Ganda)</span>
+              </div>
+              <h1 className="font-heading font-black text-2xl sm:text-4xl text-black drop-shadow-[2px_2px_0px_#fff]">
+                Detektif Harta Karun
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-800 font-bold max-w-xl mx-auto leading-relaxed">
+                Buka peti rahasia, brankas mutiara, dan pintu gua kuno menggunakan <strong>Double-Click (Klik 2x cepat)</strong>! Jelajahi <strong>5 Ruang Misteri (~4.5 Menit)</strong> untuk melatih tempo jarimu.
+              </p>
+            </div>
 
-            return (
-              <div
-                key={item.id}
-                onClick={(e) => handleItemClick(item.id, e)}
-                className={`relative group rounded-xl p-3 sm:p-4 border-3 border-black text-center flex flex-col items-center justify-between transition-all select-none ${
-                  item.isOpen
-                    ? item.isTrapExploded
-                      ? 'bg-slate-800 border-slate-900 opacity-60'
-                      : 'bg-emerald-100/80 border-emerald-800 shadow-inner'
-                    : isWobble
-                    ? 'bg-amber-200 shadow-[2px_2px_0px_0px_#000] translate-x-1 animate-wiggle'
-                    : 'bg-white hover:bg-amber-50 shadow-[4px_4px_0px_0px_#000] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
-                } ${item.floating && !item.isOpen ? 'animate-bounce duration-1000' : ''}`}
-                style={{
-                  animationDuration: item.floating ? '2.5s' : undefined,
-                }}
-              >
-                {/* Bubble Feedback Cepat (⚡ KLIK 1X LAGI!) */}
-                {bubble && (
-                  <div
-                    className={`absolute -top-7 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-md text-[11px] font-mono font-black shadow-[2px_2px_0px_0px_#000] whitespace-nowrap z-20 animate-in fade-in zoom-in-95 duration-150 ${bubble.className}`}
-                  >
-                    {bubble.text}
-                  </div>
-                )}
-
-                {/* Ikon Representasi Objek */}
-                <div className="text-3xl sm:text-4xl my-1 sm:my-2 transition-transform duration-200 group-hover:scale-110 select-none">
-                  {item.isOpen ? (
-                    item.isTrapExploded ? (
-                      '💥'
-                    ) : item.type === 'diamond_safe' ? (
-                      '💎'
-                    ) : item.type === 'floating_pearl' ? (
-                      '🦪'
-                    ) : item.type === 'secret_door' ? (
-                      '🚪'
-                    ) : item.type === 'crown_safe' ? (
-                      '👑'
-                    ) : (
-                      '🪙'
-                    )
-                  ) : item.type === 'wood_chest' ? (
-                    '📦'
-                  ) : item.type === 'silver_chest' ? (
-                    '🥈'
-                  ) : item.type === 'secret_door' ? (
-                    '🚪'
-                  ) : item.type === 'floating_pearl' ? (
-                    '🫧'
-                  ) : item.type === 'coral_chest' ? (
-                    '🪸'
-                  ) : item.type === 'diamond_safe' ? (
-                    '💠'
-                  ) : item.type === 'gold_chest' ? (
-                    '💰'
-                  ) : item.type === 'bomb_chest' ? (
-                    '💣'
-                  ) : item.type === 'crown_safe' ? (
-                    '🏛️'
-                  ) : (
-                    '🎁'
-                  )}
+            {/* Panggung Tiga Kolom Edukasi */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-stretch">
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-purple-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🖱️
                 </div>
-
-                {/* Status Keterangan Peti */}
-                <div className="w-full space-y-1 mt-1">
-                  <p className="font-heading font-black text-xs text-black truncate">
-                    {item.name}
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-purple-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    1. DOUBLE-CLICK
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Ketuk 2x Beruntun
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Ketuk tombol kiri mouse 2x cepat dan stabil tanpa jeda lama agar gembok terbuka.
                   </p>
-
-                  <div className="flex items-center justify-center gap-1">
-                    {item.isOpen ? (
-                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-200 px-1.5 py-0.5 rounded">
-                        {item.isTrapExploded ? 'Jebakan Meletus' : 'Terbuka!'}
-                      </span>
-                    ) : item.locksLeft > 1 ? (
-                      <span className="text-[10px] font-mono font-bold bg-amber-300 text-black px-1.5 py-0.5 rounded border border-black shadow-[1px_1px_0px_0px_#000]">
-                        Sisa {item.locksLeft}x 2-Klik
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                        Double-Click
-                      </span>
-                    )}
-                  </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
 
-        {/* ─── OVERLAY 1: IDLE WELCOME SCREEN ─────────────────────── */}
-        {gameState === 'idle' && (
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-20 overflow-y-auto">
-            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-md w-full text-center space-y-3.5 sm:space-y-4 my-auto animate-in fade-in zoom-in-95 duration-200">
-              <div className="w-13 h-13 sm:w-14 sm:h-14 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center text-2xl sm:text-3xl">
-                💎
-              </div>
-
-              <div className="space-y-1 sm:space-y-1.5">
-                <div className="inline-block bg-purple-300 border-2 border-black px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
-                  Game 2 • Fokus: Double Click (Klik Ganda)
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-amber-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  📦
                 </div>
-                <h2 className="font-heading font-black text-xl sm:text-2xl text-black">
-                  Detektif Harta Karun
-                </h2>
-                <p className="text-[11px] sm:text-xs text-slate-600 font-medium leading-relaxed max-w-sm mx-auto">
-                  Buka peti rahasia, brankas berlian, dan pintu gua kuno menggunakan <strong>Double-Click (Klik 2x cepat)</strong>! Jelajahi <strong>5 Ruang (~4.5 - 5 menit)</strong> untuk melatih tempo jarimu.
-                </p>
-              </div>
-
-              {/* Panduan Singkat */}
-              <div className="bg-[#FFFDF5] border-2 border-black rounded-xl p-2.5 sm:p-3 text-left space-y-1.5 text-xs font-mono">
-                <div className="font-black text-black border-b border-black pb-1 flex items-center gap-1.5 text-[11px]">
-                  <Info className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Aturan Detektif:</span>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-amber-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    2. GEMBOK TEBAL
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Peti Bertingkat
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Peti perak &amp; emas membutuhkan beberapa kali 2-klik berurutan untuk dipecahkan!
+                  </p>
                 </div>
-                <ul className="space-y-1 text-[10px] sm:text-[11px] text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">🖱️</span>
-                    <span><strong>Double-Click Cepat:</strong> Ketuk tombol kiri 2x beruntun tanpa jeda lama.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">⚠️</span>
-                    <span><strong>Jika Klik 1x:</strong> Peti hanya bergetar dan tidak akan terbuka.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">☠️</span>
-                    <span><strong>Hindari Peti Bom:</strong> Jangan double-click peti bertanda tengkorak!</span>
-                  </li>
-                </ul>
               </div>
 
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-rose-400 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  💣
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-rose-400 border border-black rounded-md text-[11px] font-mono font-black text-white shadow-[1px_1px_0px_#000]">
+                    3. WASPADA JEBAKAN
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Hindari Peti Bom
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Jangan double-click peti bom bertanda tengkorak agar skor dan kombo kamu tetap aman.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tombol Mulai Permainan */}
+            <div className="pt-2">
               <button
                 onClick={startGame}
-                className="w-full py-2.5 sm:py-3 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-xs sm:text-sm uppercase border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#000] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="py-3 px-8 bg-amber-400 hover:bg-amber-300 border-3 border-black font-heading font-black text-sm sm:text-base text-black rounded-2xl shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
               >
-                <Play className="w-4 h-4 fill-current" />
+                <Play className="w-5 h-5 fill-black" />
                 <span>MULAI EKSPEDISI HARTA KARUN</span>
               </button>
             </div>
+          </div>
+        ) : (
+          /* Grid Peti Harta Karun */
+          <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 z-10">
+            {roomItems.map((item) => {
+              const isWobble = wobblingId === item.id;
+              const bubble = feedbackBubbles[item.id];
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={(e) => handleItemClick(item.id, e)}
+                  className={`relative group rounded-xl p-3 sm:p-4 border-3 border-black text-center flex flex-col items-center justify-between transition-all select-none ${
+                    item.isOpen
+                      ? item.isTrapExploded
+                        ? 'bg-slate-800 border-slate-900 opacity-60'
+                        : 'bg-emerald-100/80 border-emerald-800 shadow-inner'
+                      : isWobble
+                      ? 'bg-amber-200 shadow-[2px_2px_0px_0px_#000] translate-x-1 animate-wiggle'
+                      : 'bg-white hover:bg-amber-50 shadow-[4px_4px_0px_0px_#000] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#000] cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
+                  } ${item.floating && !item.isOpen ? 'animate-bounce duration-1000' : ''}`}
+                  style={{
+                    animationDuration: item.floating ? '2.5s' : undefined,
+                  }}
+                >
+                  {/* Bubble Feedback Cepat (⚡ KLIK 1X LAGI!) */}
+                  {bubble && (
+                    <div
+                      className={`absolute -top-7 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-md text-[11px] font-mono font-black shadow-[2px_2px_0px_0px_#000] whitespace-nowrap z-20 animate-in fade-in zoom-in-95 duration-150 ${bubble.className}`}
+                    >
+                      {bubble.text}
+                    </div>
+                  )}
+
+                  {/* Ikon Representasi Objek */}
+                  <div className="text-3xl sm:text-4xl my-1 sm:my-2 transition-transform duration-200 group-hover:scale-110 select-none">
+                    {item.isOpen ? (
+                      item.isTrapExploded ? (
+                        '💥'
+                      ) : item.type === 'diamond_safe' ? (
+                        '💎'
+                      ) : item.type === 'floating_pearl' ? (
+                        '🦪'
+                      ) : item.type === 'secret_door' ? (
+                        '🚪'
+                      ) : item.type === 'crown_safe' ? (
+                        '👑'
+                      ) : (
+                        '🪙'
+                      )
+                    ) : item.type === 'wood_chest' ? (
+                      '📦'
+                    ) : item.type === 'silver_chest' ? (
+                      '🥈'
+                    ) : item.type === 'secret_door' ? (
+                      '🚪'
+                    ) : item.type === 'floating_pearl' ? (
+                      '🫧'
+                    ) : item.type === 'coral_chest' ? (
+                      '🪸'
+                    ) : item.type === 'diamond_safe' ? (
+                      '💠'
+                    ) : item.type === 'gold_chest' ? (
+                      '💰'
+                    ) : item.type === 'bomb_chest' ? (
+                      '💣'
+                    ) : item.type === 'crown_safe' ? (
+                      '🏛️'
+                    ) : (
+                      '🎁'
+                    )}
+                  </div>
+
+                  {/* Status Keterangan Peti */}
+                  <div className="w-full space-y-1 mt-1">
+                    <p className="font-heading font-black text-xs text-black truncate">
+                      {item.name}
+                    </p>
+
+                    <div className="flex items-center justify-center gap-1">
+                      {item.isOpen ? (
+                        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-200 px-1.5 py-0.5 rounded">
+                          {item.isTrapExploded ? 'Jebakan Meletus' : 'Terbuka!'}
+                        </span>
+                      ) : item.locksLeft > 1 ? (
+                        <span className="text-[10px] font-mono font-bold bg-amber-300 text-black px-1.5 py-0.5 rounded border border-black shadow-[1px_1px_0px_0px_#000]">
+                          Sisa {item.locksLeft}x 2-Klik
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          Double-Click
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

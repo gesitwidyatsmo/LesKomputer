@@ -139,4 +139,12 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 100000 !important;
 }
 
+/* Sembunyikan header navigasi & navbar portal siswa secara mutlak saat mode layar penuh aktif */
+:fullscreen header.sticky,
+:-webkit-full-screen header.sticky,
+:-moz-full-screen header.sticky,
+:-ms-fullscreen header.sticky {
+  display: none !important;
+}
+
 

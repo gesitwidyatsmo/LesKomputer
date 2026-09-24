@@ -788,7 +788,7 @@ export default function MonsterHurufGame() {
     <div
       ref={containerRef}
       className={`relative w-full bg-slate-950 border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_#000] overflow-hidden select-none font-sans flex flex-col ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none border-none h-screen bg-slate-950' : ''
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none border-none h-screen bg-slate-950' : ''
       }`}
     >
       {/* ── TOP HUD NAVIGATION & STATUS BAR ─────────────────────────── */}

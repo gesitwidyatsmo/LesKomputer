@@ -203,7 +203,7 @@ export default function PaintArtistGame() {
     syncCanvasSize();
     window.addEventListener('resize', syncCanvasSize);
     return () => window.removeEventListener('resize', syncCanvasSize);
-  }, [syncCanvasSize, currentStageIdx]);
+  }, [syncCanvasSize, currentStageIdx, gameState]);
 
   // ─── AKSI KLIK EMBER TUMPAH (FILL COLOR REGION) ────────────────────
   const handleRegionClick = (regionId) => {
@@ -464,12 +464,12 @@ export default function PaintArtistGame() {
   return (
     <div
       ref={containerRef}
-      className={`relative isolate w-full max-w-4xl mx-auto rounded-3xl border-3 border-black shadow-[6px_6px_0px_0px_#000] overflow-hidden select-none bg-[#FFFDF5] text-slate-900 font-sans flex flex-col ${
-        isFullscreen ? 'fixed inset-0 z-[90] rounded-none max-w-none h-screen' : 'min-h-[640px]'
+      className={`relative isolate bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col select-none ${
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none h-screen w-screen' : ''
       }`}
     >
       {/* ─── RETRO MS PAINT TITLE BAR HEADER ─────────────────────── */}
-      <header className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white border-b-3 border-black shadow-sm">
+      <div role="banner" className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white border-b-3 border-black shadow-sm">
         <div className="flex items-center gap-2">
           <Link
             href="/siswa/game-mouse"
@@ -488,7 +488,7 @@ export default function PaintArtistGame() {
                 </span>
               </h1>
               <p className="text-[10px] font-mono text-cyan-200 line-clamp-1">
-                {currentStage.title}
+                {gameState === 'idle' ? 'PERSIAPAN STUDIO LUKIS' : currentStage.title}
               </p>
             </div>
           </div>
@@ -499,36 +499,36 @@ export default function PaintArtistGame() {
           {/* Timer */}
           <div
             className={`border-2 border-black px-2 sm:px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_#000] flex items-center gap-1 font-mono font-black text-xs sm:text-sm transition-colors ${
-              timeLeft <= 10 ? 'bg-rose-500 text-white animate-pulse' : 'bg-amber-400 text-black'
+              timeLeft <= 10 && gameState !== 'idle' ? 'bg-rose-500 text-white animate-pulse' : 'bg-amber-400 text-black'
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
-            <span>{timeLeft}s</span>
+            <span>{gameState === 'idle' ? '5 Kanvas' : `${timeLeft}s`}</span>
           </div>
 
           {/* Target Pewarnaan Ember */}
           <div
             className={`border-2 border-black px-2 sm:px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_#000] font-mono font-black text-xs sm:text-sm flex items-center gap-1 ${
-              filledCount >= currentStage.minFillTarget ? 'bg-emerald-400 text-black' : 'bg-white text-black'
+              filledCount >= currentStage.minFillTarget && gameState !== 'idle' ? 'bg-emerald-400 text-black' : 'bg-white text-black'
             }`}
             title="Area Diwarnai dengan Ember"
           >
             <PaintBucket className="w-3.5 h-3.5" />
             <span>
-              {filledCount}/{totalAreas}
+              {gameState === 'idle' ? 'Ember Fill' : `${filledCount}/${totalAreas}`}
             </span>
           </div>
 
           {/* Target Goresan Kuas */}
           <div
             className={`border-2 border-black px-2 sm:px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_#000] font-mono font-black text-xs sm:text-sm hidden sm:flex items-center gap-1 ${
-              strokeCount >= currentStage.minStrokeTarget ? 'bg-emerald-400 text-black' : 'bg-white text-black'
+              strokeCount >= currentStage.minStrokeTarget && gameState !== 'idle' ? 'bg-emerald-400 text-black' : 'bg-white text-black'
             }`}
             title="Goresan Kuas Bebas"
           >
             <Brush className="w-3.5 h-3.5" />
             <span>
-              {strokeCount}/{currentStage.minStrokeTarget}
+              {gameState === 'idle' ? 'Kuas Lukis' : `${strokeCount}/${currentStage.minStrokeTarget}`}
             </span>
           </div>
 
@@ -567,10 +567,11 @@ export default function PaintArtistGame() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ─── RETRO RIBBON TOOLBAR & COLOR PALETTE ─────────────────── */}
-      <div className="bg-slate-100 border-b-3 border-black p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-inner">
+      {gameState !== 'idle' && (
+        <div className="bg-slate-100 border-b-3 border-black p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-inner">
         {/* Grup 1: Pilihan Alat Lukis */}
         <div className="flex items-center gap-1 sm:gap-1.5 bg-white border-2 border-black p-1 rounded-xl shadow-[2px_2px_0px_0px_#000]">
           <button
@@ -758,9 +759,11 @@ export default function PaintArtistGame() {
           </button>
         </div>
       </div>
+      )}
 
       {/* ─── PANDUAN MISI KANVAS AKTIF ────────────────────────────── */}
-      <div className="bg-amber-100/70 border-b-2 border-black px-4 py-1.5 text-xs font-mono flex items-center justify-between gap-2">
+      {gameState !== 'idle' && (
+        <div className="bg-amber-100/70 border-b-2 border-black px-4 py-1.5 text-xs font-mono flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 text-slate-800 truncate">
           <Info className="w-3.5 h-3.5 text-blue-700 shrink-0" />
           {activeTool === 'fill' && hoveredRegion ? (
@@ -790,17 +793,103 @@ export default function PaintArtistGame() {
           </span>
         </div>
       </div>
+      )}
 
       {/* ─── KANVAS UTAMA BERKUALITAS (DUAL LAYER) ────────────────── */}
-      <main className="relative flex-1 bg-white overflow-hidden flex items-center justify-center p-2 sm:p-4 select-none">
-        {/* Frame Pigura Kertas Gambar - Lebar menyesuaikan proporsi gambar asli */}
-        <div
-          className="relative w-full max-h-[500px] bg-white border-3 border-black rounded-2xl shadow-[5px_5px_0px_0px_#000] overflow-hidden transition-all duration-300"
-          style={{
-            aspectRatio: currentStage?.aspectRatio || '8/5',
-            maxWidth: currentStage?.maxWidth || '800px',
-          }}
-        >
+      <main className={`relative flex-1 bg-white overflow-hidden flex items-center justify-center select-none ${
+        gameState === 'idle' ? 'p-4 sm:p-6' : 'p-2 sm:p-4'
+      } ${isFullscreen ? 'min-h-0 w-full h-full' : 'min-h-[500px] sm:min-h-[540px]'}`}>
+        {gameState === 'idle' ? (
+          /* ─── IN-ARENA WELCOME SCREEN (BUKAN POPUP MODAL) ─── */
+          <div className="flex-1 w-full h-full flex flex-col justify-between items-center text-center py-4 sm:py-6 px-4 sm:px-6 relative z-10 my-auto max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            {/* Header Judul Game */}
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-3 duration-300">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-300 border-2 border-black rounded-full text-xs font-mono font-black shadow-[2px_2px_0px_#000] uppercase text-black">
+                <span>🎨</span>
+                <span>Game 6 • Fokus Motorik: Koordinasi Motorik Total</span>
+              </div>
+              <h1 className="font-heading font-black text-2xl sm:text-4xl text-black drop-shadow-[2px_2px_0px_#fff]">
+                Seniman Cilik Paint
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-800 font-bold max-w-xl mx-auto leading-relaxed">
+                Asah kelenturan jemari dan stabilitas memegang mouse! Warnai template pemandangan dengan <strong>alat Ember (Fill)</strong> dan gambar goresan indah dengan <strong>Kuas (Brush)</strong>. Terdiri dari <strong>5 Kanvas (~5 Menit)</strong>.
+              </p>
+            </div>
+
+            {/* Panggung Tiga Kolom Edukasi */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-stretch">
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-amber-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🪣
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-amber-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    1. EMBER TUMPAH
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Isi Warna Cepat
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Klik 1x pada area tertutup untuk mengisi seluruh bidang dengan warna pilihan secara instan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-cyan-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🖌️
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-cyan-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    2. KUAS &amp; PENSIL
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Goresan Bebas
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Tahan klik kiri dan geser mouse dengan halus untuk membuat detail, bayangan, atau lukisan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-rose-400 text-white border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🎨
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-rose-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    3. 16 WARNA CERAH
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Pajang Karya Galeri
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Penuhi target warna &amp; goresan kuas untuk mengunduh dan memajang karyamu di galeri emas!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tombol Mulai Besar */}
+            <div className="w-full max-w-md pt-1">
+              <button
+                onClick={startGame}
+                className="w-full py-3.5 sm:py-4 px-6 bg-amber-400 hover:bg-amber-300 active:translate-x-0.5 active:translate-y-0.5 text-black border-3 border-black rounded-2xl font-heading font-black text-base sm:text-lg shadow-[5px_5px_0px_#000] flex items-center justify-center gap-3 cursor-pointer uppercase transition-all tracking-wider animate-pulse hover:animate-none"
+              >
+                <Play className="w-5 h-5 fill-black" />
+                <span>Buka Studio Lukis Sekarang</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Frame Pigura Kertas Gambar - Lebar menyesuaikan proporsi gambar asli */
+          <div
+            className="relative w-full max-h-[520px] sm:max-h-[560px] bg-white border-3 border-black rounded-2xl shadow-[5px_5px_0px_0px_#000] overflow-hidden transition-all duration-300 mx-auto"
+            style={{
+              aspectRatio: currentStage?.aspectRatio || '8/5',
+              maxWidth: '960px',
+            }}
+          >
           {/* LAYER 1: TEMPLATE VEKTOR SVG HITAM PUTIH (FILL BUCKET TARGET) */}
           <svg
             id="paint-svg-template"
@@ -879,60 +968,8 @@ export default function PaintArtistGame() {
             style={{ touchAction: 'none' }}
           />
         </div>
+        )}
       </main>
-
-      {/* ─── MODAL 1: IDLE WELCOME & TUTORIAL ──────────────────────── */}
-      {gameState === 'idle' && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-40 overflow-y-auto">
-          <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-md w-full text-center space-y-3.5 sm:space-y-4 my-auto animate-in fade-in zoom-in-95 duration-200 text-black">
-            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center text-3xl">
-              🎨
-            </div>
-
-            <div className="space-y-1 sm:space-y-1.5">
-              <div className="inline-block bg-rose-300 border-2 border-black px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
-                Game 6 • Fokus: Koordinasi Motorik Total
-              </div>
-              <h2 className="font-heading font-black text-xl sm:text-2xl text-black">
-                Seniman Cilik Paint
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-700 font-sans leading-relaxed">
-                Asah kelenturan jemari dan stabilitas memegang mouse! Warnai template pemandangan dengan <strong>alat Ember (Fill)</strong> dan gambar goresan indah dengan <strong>Kuas (Brush)</strong>.
-              </p>
-            </div>
-
-            {/* Kotak Petunjuk Praktis */}
-            <div className="bg-sky-50 border-2 border-black rounded-xl p-3 text-left space-y-1.5">
-              <div className="flex items-center gap-1.5 font-mono font-bold text-xs text-sky-900">
-                <Info className="w-3.5 h-3.5 text-sky-600" />
-                <span>Panduan Alat Pelukis:</span>
-              </div>
-              <ul className="space-y-1 text-[10px] sm:text-[11px] text-slate-700">
-                <li className="flex items-center gap-2">
-                  <span className="text-sm">🪣</span>
-                  <span><strong>Ember Tumpah (Fill):</strong> Klik 1x pada area tertutup untuk mengisi warna secara instan.</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-sm">🖌️</span>
-                  <span><strong>Kuas Lukis (Brush):</strong> Tahan klik kiri dan geser mouse untuk menggambar bebas di atas kanvas.</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-sm">🎨</span>
-                  <span><strong>16 Warna Cerah:</strong> Pilih warna favoritmu dan penuhi target untuk memajang karya di galeri!</span>
-                </li>
-              </ul>
-            </div>
-
-            <button
-              onClick={startGame}
-              className="w-full bg-amber-400 hover:bg-amber-300 active:translate-x-0.5 active:translate-y-0.5 text-black border-3 border-black font-heading font-black text-sm sm:text-base py-2.5 sm:py-3 rounded-xl shadow-[4px_4px_0px_0px_#000] flex items-center justify-center gap-2 cursor-pointer uppercase transition-all"
-            >
-              <Play className="w-4 h-4 fill-black" />
-              <span>Buka Studio Lukis Sekarang</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ─── MODAL 2: PAUSED SCREEN ─────────────────────────────────── */}
       {gameState === 'paused' && (

@@ -961,6 +961,7 @@ export default function MouseTrainerGame() {
 	const [popups, setPopups] = useState([]);
 
 	// DOM Refs
+	const containerRef = useRef(null);
 	const gameAreaRef = useRef(null);
 	const scrollContainerRef = useRef(null);
 	const hoverTimerRef = useRef(null);
@@ -1969,16 +1970,16 @@ export default function MouseTrainerGame() {
 			const isCurrentlyFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
 
 			if (!isCurrentlyFs && !isFullscreen) {
-				// Request true browser fullscreen (seperti F11)
-				const docEl = document.documentElement;
-				if (docEl.requestFullscreen) {
-					await docEl.requestFullscreen();
-				} else if (docEl.webkitRequestFullscreen) {
-					await docEl.webkitRequestFullscreen();
-				} else if (docEl.mozRequestFullScreen) {
-					await docEl.mozRequestFullScreen();
-				} else if (docEl.msRequestFullscreen) {
-					await docEl.msRequestFullscreen();
+				// Request element fullscreen on game container (so header/footer aren't included)
+				const el = containerRef.current || document.documentElement;
+				if (el.requestFullscreen) {
+					await el.requestFullscreen();
+				} else if (el.webkitRequestFullscreen) {
+					await el.webkitRequestFullscreen();
+				} else if (el.mozRequestFullScreen) {
+					await el.mozRequestFullScreen();
+				} else if (el.msRequestFullscreen) {
+					await el.msRequestFullscreen();
 				}
 				setIsFullscreen(true);
 			} else {
@@ -2038,7 +2039,7 @@ export default function MouseTrainerGame() {
 	};
 
 	return (
-		<div className={`flex flex-col transition-all select-none ${isFullscreen ? 'fixed inset-0 z-[9999] bg-[#FFFDF5] p-2 sm:p-3 overflow-hidden flex flex-col justify-between' : 'w-full'}`}>
+		<div ref={containerRef} className={`flex flex-col transition-all select-none ${isFullscreen ? 'fixed inset-0 z-[9999] bg-[#FFFDF5] p-2 sm:p-3 overflow-hidden flex flex-col justify-between' : 'w-full'}`}>
 			{/* ── TOP CONTROL PANEL (Hanya Tampil Saat Mode Normal, Tersembunyi di Fullscreen) ── */}
 			{!isFullscreen && (
 				<div className='bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl p-4 sm:p-5 mb-4'>

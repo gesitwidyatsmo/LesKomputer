@@ -533,11 +533,11 @@ export default function MesinPenggandaGame() {
     <div
       ref={containerRef}
       className={`relative w-full rounded-2xl border-4 border-black overflow-hidden font-sans select-none bg-slate-950 text-white ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'shadow-[8px_8px_0px_0px_#000]'
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none border-0' : 'shadow-[8px_8px_0px_0px_#000]'
       }`}
     >
       {/* ── HEADER PANEL KONTROL & STATISTIK ─────────────────────────── */}
-      <header className="bg-slate-900/90 border-b-3 border-black/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-mono backdrop-blur-sm z-20 relative">
+      <div role="banner" className="bg-slate-900/90 border-b-3 border-black/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-mono backdrop-blur-sm z-20 relative">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-400 border-2 border-black flex items-center justify-center text-lg shadow-[2px_2px_0px_0px_#000]">
             🤖
@@ -601,7 +601,7 @@ export default function MesinPenggandaGame() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ── KANVAS ARENA UTAMA (PABRIK & HABITAT KLONING) ───────────── */}
       <div

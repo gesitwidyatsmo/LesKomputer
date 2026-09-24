@@ -957,7 +957,7 @@ export default function RocketLaunchGame() {
     <div
       ref={containerRef}
       className={`relative w-full bg-slate-900 border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_#000] overflow-hidden select-none font-sans flex flex-col ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none border-none h-screen bg-slate-950' : ''
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none border-none h-screen w-screen bg-slate-950' : ''
       }`}
     >
       {/* ── TOP HUD NAVIGATION & STATUS BAR ─────────────────────────── */}
@@ -1031,201 +1031,250 @@ export default function RocketLaunchGame() {
       </div>
 
       {/* ── PROGRESS BAR MISI ────────────────────────────────────────── */}
-      <div className="bg-white border-b-2 border-black px-4 py-1.5 flex items-center justify-between text-xs font-mono font-bold text-slate-700">
+      <div className="shrink-0 bg-white border-b-2 border-black px-4 py-1.5 flex items-center justify-between text-xs font-mono font-bold text-slate-700">
         <div className="flex items-center gap-2">
           <span className="bg-blue-200 border border-black px-2 py-0.5 rounded text-[11px] font-black text-blue-950">
-            MISI {currentMission.mission}/5
+            {gameState === 'idle' ? 'PERSIAPAN MISI' : `MISI ${currentMission.mission}/5`}
           </span>
           <span className="truncate max-w-[200px] sm:max-w-md text-black font-extrabold">
-            {currentMission.title}
+            {gameState === 'idle'
+              ? 'Latihan Refleks: Ketangkasan Tombol Enter (⏎ / Return)'
+              : currentMission.title}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <span>Target Peluncuran:</span>
-          <span className="text-blue-700 font-black">
-            {missionLaunchCount} / {currentMission.targetCount}
-          </span>
-          <div className="w-20 sm:w-28 h-3 bg-slate-200 border border-black rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 transition-all duration-300"
-              style={{
-                width: `${Math.min(100, (missionLaunchCount / currentMission.targetCount) * 100)}%`,
-              }}
-            />
-          </div>
+          {gameState === 'idle' ? (
+            <span className="text-blue-950 font-black bg-blue-100 border border-blue-400 px-2.5 py-0.5 rounded text-[11px]">
+              ⭐ Total 5 Misi Atmosfer (~4–5 Menit)
+            </span>
+          ) : (
+            <>
+              <span>Target Peluncuran:</span>
+              <span className="text-blue-700 font-black">
+                {missionLaunchCount} / {currentMission.targetCount}
+              </span>
+              <div className="w-20 sm:w-28 h-3 bg-slate-200 border border-black rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300"
+                  style={{
+                    width: `${Math.min(100, (missionLaunchCount / currentMission.targetCount) * 100)}%`,
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* ── KANVAS ANIMASI ROKET & KONSOL ───────────────────────────── */}
-      <div className={`relative w-full bg-slate-950 flex items-center justify-center overflow-hidden ${
-        isFullscreen
-          ? 'flex-1 min-h-0'
-          : 'min-h-[420px] aspect-[16/9] max-h-[520px]'
-      }`}>
-        <canvas
-          ref={canvasRef}
-          width={840}
-          height={472}
-          className="w-full h-full object-contain block"
-        />
-
-        {/* ── TERMINAL KONSOL OPERATOR ANTARIKSA DI SEBELAH KANAN (TIDAK MENUTUPI ROKET DI SISI KIRI) ──────── */}
-        {gameState === 'playing' && (
-          <div className="absolute top-2.5 sm:top-4 bottom-2.5 sm:bottom-4 right-2 sm:right-5 w-[46%] sm:w-[48%] max-w-[420px] z-10 pointer-events-none flex flex-col justify-between">
-            <div className="w-full bg-slate-900/95 backdrop-blur-md border-3 border-emerald-400 rounded-2xl p-3 sm:p-4 text-center space-y-2 sm:space-y-3 shadow-[5px_5px_0px_0px_#000] pointer-events-auto h-full flex flex-col justify-between overflow-y-auto">
-              {/* Status Header Terminal */}
-              <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono font-bold text-emerald-400 border-b border-emerald-400/30 pb-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
-                  <span className="truncate">KONSOL KENDALI NUSANTARA-1</span>
-                </div>
-                <span className="bg-emerald-950/80 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] shrink-0">
-                  {launchStage === 'LAUNCHING'
-                    ? 'MELUNCUR'
-                    : launchStage === 'READY_FOR_ENTER' || launchStage === 'SECOND_ENTER'
-                    ? 'SIAP IGNISI'
-                    : 'INPUT KODE'}
-                </span>
+      <div
+        className={`relative w-full bg-slate-950 flex items-center justify-center overflow-hidden transition-all ${
+          isFullscreen
+            ? 'flex-1 min-h-0 w-full h-full'
+            : 'min-h-[460px] sm:min-h-[520px]'
+        }`}
+      >
+        {gameState === 'idle' ? (
+          /* ── KONTEN KANVAS MULAI PERMAINAN (LANGSUNG DI KANVAS, BUKAN POPUP) ── */
+          <div className="flex-1 w-full h-full flex flex-col justify-between items-center text-center py-4 sm:py-6 px-4 sm:px-6 relative z-10 my-auto max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            {/* Header Judul Game */}
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-3 duration-300">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-300 border-2 border-black rounded-full text-xs font-mono font-black shadow-[2px_2px_0px_#000] uppercase text-black">
+                <span>🚀</span>
+                <span>Game 2 • Fokus Motorik: Tombol Enter / Return</span>
               </div>
+              <h1 className="font-heading font-black text-2xl sm:text-4xl text-white drop-shadow-[3px_3px_0px_#000]">
+                Peluncuran Roket Antariksa
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xl mx-auto leading-relaxed">
+                Jadilah Komandan Operator Pusat Kendali Antariksa! Ketik kode hitung mundur lalu tekan <strong>ENTER</strong> secara tegas untuk meluncurkan roket dalam <strong>5 Misi Atmosfer</strong>.
+              </p>
+            </div>
 
-              {/* Tampilan Kode Target & Input */}
-              <div className="py-0.5 sm:py-1">
-                <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-300 block uppercase mb-1 sm:mb-1.5">
-                  {launchStage === 'WAITING_CODE'
-                    ? '⌨️ KETIK KODE ANGKA BERIKUT:'
-                    : currentMission.requireDoubleEnter && launchStage === 'SECOND_ENTER'
-                    ? '⚠️ TAHAP 1 LEPAS! TEKAN ENTER SEKALI LAGI:'
-                    : '✅ KODE LENGKAP! SIAPKAN PELUNCURAN:'}
-                </span>
-
-                <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 font-mono font-black text-xl sm:text-3xl text-white">
-                  {targetCode.split('').map((char, idx) => {
-                    const isTyped = idx < typedInput.length;
-                    return (
-                      <span
-                        key={idx}
-                        className={`inline-block px-2 sm:px-3 py-1 rounded-lg border-2 transition-all ${
-                          isTyped
-                            ? 'bg-emerald-400 text-black border-black shadow-[2px_2px_0px_0px_#000]'
-                            : 'bg-slate-800 text-emerald-300 border-emerald-400/40'
-                        }`}
-                      >
-                        {char}
-                      </span>
-                    );
-                  })}
+            {/* Panggung Tiga Kolom: Info Misi & Kunci Kontrol */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-stretch">
+              <div className="bg-slate-900/95 border-3 border-emerald-400 rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-emerald-400 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🔢
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-emerald-400 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    1. KETIK KODE
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-white mt-1">
+                    Hitung Mundur Angka
+                  </h3>
+                  <p className="text-[11px] text-slate-300 font-medium mt-1 leading-snug">
+                    Ketik urutan angka target (misal: 3-2-1) untuk mengaktifkan sistem bahan bakar roket.
+                  </p>
                 </div>
               </div>
 
-              {/* Timer Darurat untuk Misi 3 */}
-              {currentMission.hasEmergencyTimer && launchStage !== 'LAUNCHING' && (
-                <div className="bg-rose-950/90 border border-rose-500 rounded-xl p-1.5 sm:p-2 text-left text-[10px] sm:text-[11px] font-mono space-y-1">
-                  <div className="flex justify-between text-rose-300 font-bold">
-                    <span>⚠️ DARURAT AWAN BADAI:</span>
-                    <span className="text-rose-400 font-black">{Math.max(0, emergencyTimeLeft).toFixed(1)}s</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-black">
-                    <div
-                      className="h-full bg-rose-500 transition-all duration-100"
-                      style={{ width: `${Math.max(0, (emergencyTimeLeft / 5.5) * 100)}%` }}
-                    />
-                  </div>
+              <div className="bg-slate-900/95 border-3 border-rose-500 rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-rose-500 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  ⏎
                 </div>
-              )}
-
-              {/* Pengukur Tekanan Jarum (Gauge) jika aktif di Misi 2, 4, 5 */}
-              {currentMission.hasGauge && (
-                <div className="bg-slate-950 border border-emerald-400/40 rounded-xl p-1.5 sm:p-2 text-left text-[10px] sm:text-[11px] font-mono space-y-1">
-                  <div className="flex justify-between text-slate-300 font-bold">
-                    <span>PENGUKUR TEKANAN (PRESSURE):</span>
-                    <span className={gaugeValue >= 60 && gaugeValue <= 88 ? 'text-emerald-400 font-black' : 'text-amber-400 font-bold'}>
-                      {Math.round(gaugeValue)}% {gaugeValue >= 60 && gaugeValue <= 88 ? '⭐ ZONA HIJAU' : ''}
-                    </span>
-                  </div>
-                  <div className="relative w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-black">
-                    {/* Zona Hijau Ideal */}
-                    <div className="absolute left-[60%] w-[28%] h-full bg-emerald-500/80" />
-                    {/* Indikator Jarum */}
-                    <div
-                      className="absolute top-0 bottom-0 w-2 bg-yellow-300 border border-black transition-all"
-                      style={{ left: `${gaugeValue}%` }}
-                    />
-                  </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-rose-500 border border-black rounded-md text-[11px] font-mono font-black text-white shadow-[1px_1px_0px_#000]">
+                    2. TEKAN ENTER
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-white mt-1">
+                    Eksekusi Ignisi
+                  </h3>
+                  <p className="text-[11px] text-slate-300 font-medium mt-1 leading-snug">
+                    Tekan tombol Enter secara tegas untuk menyalakan roket pendorong menuju angkasa!
+                  </p>
                 </div>
-              )}
+              </div>
 
-              {/* Tombol / Callout Indikator Enter */}
-              <div className="pt-0.5 sm:pt-1">
-                {launchStage === 'WAITING_CODE' ? (
-                  <div className="bg-slate-800/90 text-slate-300 font-mono text-[10px] sm:text-xs py-2 px-2.5 rounded-xl border border-slate-700 flex items-center justify-center gap-1.5">
-                    <span>Ketik kode di atas untuk membuka klem peluncuran</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleTriggerEnter}
-                    className="w-full py-2.5 px-3 bg-rose-500 hover:bg-rose-400 text-white font-mono font-black text-xs sm:text-sm rounded-xl border-2 sm:border-3 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
-                  >
-                    <CornerDownLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
-                    <span>
-                      {launchStage === 'SECOND_ENTER'
-                        ? 'TEKAN ENTER 1x LAGI!'
-                        : 'TEKAN ENTER SEKARANG!'}
-                    </span>
-                  </button>
-                )}
+              <div className="bg-slate-900/95 border-3 border-blue-400 rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-blue-400 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🌌
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-blue-400 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    3. CAPAI ORBIT
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-white mt-1">
+                    5 Misi Atmosfer
+                  </h3>
+                  <p className="text-[11px] text-slate-300 font-medium mt-1 leading-snug">
+                    Taklukkan cuaca badai, double-enter dua tahap, dan pertahankan tekanan roket!
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* ── OVERLAY: IDLE / COVER START SCREEN ────────────────────── */}
-        {gameState === 'idle' && (
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-20 overflow-y-auto">
-            <div className="bg-white border-3 sm:border-4 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl max-w-md w-full p-4 sm:p-5 text-center space-y-2 sm:space-y-3 animate-in fade-in zoom-in-95 duration-200 my-auto">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 bg-blue-300 border-2 sm:border-3 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000]">
-                🚀
-              </div>
-
-              <div>
-                <span className="inline-block px-2.5 py-0.5 bg-amber-300 border border-black rounded-full text-[10px] sm:text-xs font-black font-mono shadow-[1px_1px_0px_0px_#000] mb-1 uppercase">
-                  Fokus Motorik: Tombol Enter / Return
-                </span>
-                <h2 className="font-heading font-black text-xl sm:text-2xl text-black leading-tight">
-                  Peluncuran Roket Antariksa
-                </h2>
-                <p className="text-[11px] sm:text-xs text-slate-600 font-medium mt-1 leading-snug">
-                  Bertindaklah sebagai Komandan Operator! Ketik kode hitung mundur lalu tekan <strong>ENTER</strong> secara tegas untuk meluncurkan roket dalam <strong>5 Misi Atmosfer (~5 Menit)</strong>.
-                </p>
-              </div>
-
-              {/* Panduan Tombol Enter */}
-              <div className="bg-blue-50 border-2 border-black rounded-xl p-2.5 text-left text-xs font-mono space-y-1.5">
-                <div className="flex items-center gap-1.5 font-bold text-blue-950 text-[11px]">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  <span>KUNCI KONTROL OPERATOR:</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5 text-[10px] sm:text-[11px]">
-                  <div className="bg-white border border-black/30 p-1.5 rounded">
-                    <span className="font-black text-blue-700 block">1. Ketik Kode:</span>
-                    <span>Ketik angka (misal: 3-2-1)</span>
-                  </div>
-                  <div className="bg-white border border-black/30 p-1.5 rounded">
-                    <span className="font-black text-rose-600 block">2. Tekan ENTER:</span>
-                    <span>Ignisi & luncurkan roket!</span>
-                  </div>
-                </div>
-              </div>
-
+            {/* Tombol Mulai Permainan */}
+            <div className="pt-2">
               <button
                 onClick={handleStartGame}
-                className="w-full py-2.5 sm:py-3 bg-blue-500 hover:bg-blue-400 border-3 border-black font-heading font-black text-xs sm:text-sm text-white rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="py-3 px-8 bg-blue-500 hover:bg-blue-400 border-3 border-black font-heading font-black text-sm sm:text-base text-white rounded-2xl shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
               >
-                <Play className="w-4 h-4 fill-white" />
+                <Play className="w-5 h-5 fill-white" />
                 <span>MULAI MISI ANTARIKSA (TEKAN ENTER)</span>
               </button>
             </div>
           </div>
+        ) : (
+          <>
+            <canvas
+              ref={canvasRef}
+              width={840}
+              height={472}
+              className="w-full h-full object-contain block"
+            />
+
+            {/* ── TERMINAL KONSOL OPERATOR ANTARIKSA DI SEBELAH KANAN (TIDAK MENUTUPI ROKET DI SISI KIRI) ──────── */}
+            {gameState === 'playing' && (
+              <div className="absolute top-2.5 sm:top-4 bottom-2.5 sm:bottom-4 right-2 sm:right-5 w-[46%] sm:w-[48%] max-w-[420px] z-10 pointer-events-none flex flex-col justify-between">
+                <div className="w-full bg-slate-900/95 backdrop-blur-md border-3 border-emerald-400 rounded-2xl p-3 sm:p-4 text-center space-y-2 sm:space-y-3 shadow-[5px_5px_0px_0px_#000] pointer-events-auto h-full flex flex-col justify-between overflow-y-auto">
+                  {/* Status Header Terminal */}
+                  <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono font-bold text-emerald-400 border-b border-emerald-400/30 pb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                      <span className="truncate">KONSOL KENDALI NUSANTARA-1</span>
+                    </div>
+                    <span className="bg-emerald-950/80 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] shrink-0">
+                      {launchStage === 'LAUNCHING'
+                        ? 'MELUNCUR'
+                        : launchStage === 'READY_FOR_ENTER' || launchStage === 'SECOND_ENTER'
+                        ? 'SIAP IGNISI'
+                        : 'INPUT KODE'}
+                    </span>
+                  </div>
+
+                  {/* Tampilan Kode Target & Input */}
+                  <div className="py-0.5 sm:py-1">
+                    <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-300 block uppercase mb-1 sm:mb-1.5">
+                      {launchStage === 'WAITING_CODE'
+                        ? '⌨️ KETIK KODE ANGKA BERIKUT:'
+                        : currentMission.requireDoubleEnter && launchStage === 'SECOND_ENTER'
+                        ? '⚠️ TAHAP 1 LEPAS! TEKAN ENTER SEKALI LAGI:'
+                        : '✅ KODE LENGKAP! SIAPKAN PELUNCURAN:'}
+                    </span>
+
+                    <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 font-mono font-black text-xl sm:text-3xl text-white">
+                      {targetCode.split('').map((char, idx) => {
+                        const isTyped = idx < typedInput.length;
+                        return (
+                          <span
+                            key={idx}
+                            className={`inline-block px-2 sm:px-3 py-1 rounded-lg border-2 transition-all ${
+                              isTyped
+                                ? 'bg-emerald-400 text-black border-black shadow-[2px_2px_0px_0px_#000]'
+                                : 'bg-slate-800 text-emerald-300 border-emerald-400/40'
+                            }`}
+                          >
+                            {char}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Timer Darurat untuk Misi 3 */}
+                  {currentMission.hasEmergencyTimer && launchStage !== 'LAUNCHING' && (
+                    <div className="bg-rose-950/90 border border-rose-500 rounded-xl p-1.5 sm:p-2 text-left text-[10px] sm:text-[11px] font-mono space-y-1">
+                      <div className="flex justify-between text-rose-300 font-bold">
+                        <span>⚠️ DARURAT AWAN BADAI:</span>
+                        <span className="text-rose-400 font-black">{Math.max(0, emergencyTimeLeft).toFixed(1)}s</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-black">
+                        <div
+                          className="h-full bg-rose-500 transition-all duration-100"
+                          style={{ width: `${Math.max(0, (emergencyTimeLeft / 5.5) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pengukur Tekanan Jarum (Gauge) jika aktif di Misi 2, 4, 5 */}
+                  {currentMission.hasGauge && (
+                    <div className="bg-slate-950 border border-emerald-400/40 rounded-xl p-1.5 sm:p-2 text-left text-[10px] sm:text-[11px] font-mono space-y-1">
+                      <div className="flex justify-between text-slate-300 font-bold">
+                        <span>PENGUKUR TEKANAN (PRESSURE):</span>
+                        <span className={gaugeValue >= 60 && gaugeValue <= 88 ? 'text-emerald-400 font-black' : 'text-amber-400 font-bold'}>
+                          {Math.round(gaugeValue)}% {gaugeValue >= 60 && gaugeValue <= 88 ? '⭐ ZONA HIJAU' : ''}
+                        </span>
+                      </div>
+                      <div className="relative w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-black">
+                        {/* Zona Hijau Ideal */}
+                        <div className="absolute left-[60%] w-[28%] h-full bg-emerald-500/80" />
+                        {/* Indikator Jarum */}
+                        <div
+                          className="absolute top-0 bottom-0 w-2 bg-yellow-300 border border-black transition-all"
+                          style={{ left: `${gaugeValue}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tombol / Callout Indikator Enter */}
+                  <div className="pt-0.5 sm:pt-1">
+                    {launchStage === 'WAITING_CODE' ? (
+                      <div className="bg-slate-800/90 text-slate-300 font-mono text-[10px] sm:text-xs py-2 px-2.5 rounded-xl border border-slate-700 flex items-center justify-center gap-1.5">
+                        <span>Ketik kode di atas untuk membuka klem peluncuran</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleTriggerEnter}
+                        className="w-full py-2.5 px-3 bg-rose-500 hover:bg-rose-400 text-white font-mono font-black text-xs sm:text-sm rounded-xl border-2 sm:border-3 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
+                      >
+                        <CornerDownLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
+                        <span>
+                          {launchStage === 'SECOND_ENTER'
+                            ? 'TEKAN ENTER 1x LAGI!'
+                            : 'TEKAN ENTER SEKARANG!'}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* ── OVERLAY: COUNTDOWN MULAI MISI ─────────────────────────── */}

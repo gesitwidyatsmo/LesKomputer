@@ -661,11 +661,23 @@ export default function BurgerFactoryGame() {
     }
   };
 
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
       className={`relative isolate bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col select-none ${
-        isFullscreen ? 'fixed inset-0 z-[90] rounded-none' : ''
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none h-screen w-screen' : ''
       }`}
     >
       {/* ─── TOP HUD HEADER ──────────────────────────────────────── */}
@@ -674,20 +686,20 @@ export default function BurgerFactoryGame() {
         <div className="flex items-center gap-2 sm:gap-2.5">
           <div className="bg-amber-300 border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2">
             <span className="font-heading font-black text-xs sm:text-sm text-black">
-              SHIFT {currentShift.shift} / {SHIFTS_CONFIG.length}
+              {gameState === 'idle' ? 'PERSIAPAN MISI' : `SHIFT ${currentShift.shift} / ${SHIFTS_CONFIG.length}`}
             </span>
             <span className="hidden xl:inline text-xs font-mono font-bold text-slate-700">
-              ({currentShift.title.split(':')[1]})
+              ({gameState === 'idle' ? 'Latihan Refleks: Ketangkasan Drag & Drop' : currentShift.title.split(':')[1]})
             </span>
           </div>
 
           <div
             className={`border-2 border-black shadow-[2px_2px_0px_0px_#000] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 font-mono font-black text-xs sm:text-sm ${
-              timeLeft <= 10 ? 'bg-rose-400 text-white animate-pulse' : 'bg-white text-black'
+              timeLeft <= 10 && gameState === 'playing' ? 'bg-rose-400 text-white animate-pulse' : 'bg-white text-black'
             }`}
           >
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{timeLeft} dtk</span>
+            <span>{gameState === 'idle' ? '5 Shift' : `${timeLeft} dtk`}</span>
           </div>
         </div>
 
@@ -776,172 +788,260 @@ export default function BurgerFactoryGame() {
       </div>
 
       {/* ─── ARENA DAPUR PABRIK BURGER ───────────────────────────── */}
-      <div className="relative flex-1 p-3 sm:p-5 bg-gradient-to-b from-amber-50/70 via-orange-50/40 to-amber-100/70 min-h-[480px] sm:min-h-[520px] flex flex-col justify-between select-none overflow-hidden">
-        {/* BARIS ATAS: TIKET PESANAN & CHECKLIST RESEP */}
-        <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl p-2.5 sm:p-3">
-          {/* Info Pelanggan & Nama Burger */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-amber-300 border-2 border-black rounded-lg flex items-center justify-center text-xl shrink-0 shadow-[1px_1px_0px_0px_#000]">
-              🍔
+      <div className={`relative flex-1 p-3 sm:p-5 bg-gradient-to-b from-amber-50/70 via-orange-50/40 to-amber-100/70 flex flex-col justify-between select-none overflow-hidden ${
+        isFullscreen ? 'min-h-0 w-full h-full' : 'min-h-[480px] sm:min-h-[520px]'
+      }`}>
+        {gameState === 'idle' ? (
+          /* ─── IN-ARENA WELCOME SCREEN (BUKAN POPUP MODAL) ─── */
+          <div className="flex-1 w-full h-full flex flex-col justify-between items-center text-center py-4 sm:py-6 px-4 sm:px-6 relative z-10 my-auto max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            {/* Header Judul Game */}
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-3 duration-300">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-300 border-2 border-black rounded-full text-xs font-mono font-black shadow-[2px_2px_0px_#000] uppercase text-black">
+                <span>🍔</span>
+                <span>Game 3 • Fokus Motorik: Drag &amp; Drop (Seret &amp; Lepas)</span>
+              </div>
+              <h1 className="font-heading font-black text-2xl sm:text-4xl text-black drop-shadow-[2px_2px_0px_#fff]">
+                Pabrik Burger Cilik
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-800 font-bold max-w-xl mx-auto leading-relaxed">
+                Rakit pesanan burger lezat dengan <strong>menahan klik kiri, menggeser bahan ke piring, lalu melepasnya</strong>! Selesaikan <strong>5 Shift Koki (~4.5 Menit)</strong> untuk melatih koordinasi jemarimu.
+              </p>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">
-                  Pesanan #{currentOrderIdx + 1}:
+
+            {/* Panggung Tiga Kolom Edukasi */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-stretch">
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-amber-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🖱️
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-amber-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    1. TAHAN &amp; GESER
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Tarik Bahan Lezat
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Klik kiri tahan pada bahan di nampan bawah, lalu arahkan kursor ke piring saji.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-emerald-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  📋
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-emerald-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    2. SESUAI RESEP
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Ikuti Tiket Pesanan
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Pasang lapisan burger berurutan dari bawah ke atas sesuai petunjuk pelanggan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white/95 border-3 border-black rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between">
+                <div className="w-12 h-12 bg-blue-300 border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🧲
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-blue-300 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    3. MAGNET PIRING
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-black mt-1">
+                    Lepas di Piring Saji
+                  </h3>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug">
+                    Lepaskan klik kiri saat kursor di dekat piring, bahan otomatis menempel rapi!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tombol Mulai Permainan */}
+            <div className="pt-2">
+              <button
+                onClick={startGame}
+                className="py-3 px-8 bg-amber-400 hover:bg-amber-300 border-3 border-black font-heading font-black text-sm sm:text-base text-black rounded-2xl shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                <Play className="w-5 h-5 fill-black" />
+                <span>MULAI MERAKIT BURGER</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* BARIS ATAS: TIKET PESANAN & CHECKLIST RESEP */}
+            <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl p-2.5 sm:p-3">
+              {/* Info Pelanggan & Nama Burger */}
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 bg-amber-300 border-2 border-black rounded-lg flex items-center justify-center text-xl shrink-0 shadow-[1px_1px_0px_0px_#000]">
+                  🍔
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">
+                      Pesanan #{currentOrderIdx + 1}:
+                    </span>
+                    <span className="text-xs font-mono font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded">
+                      {activeRecipe.customer}
+                    </span>
+                  </div>
+                  <h3 className="font-heading font-black text-sm sm:text-base text-black leading-tight">
+                    {activeRecipe.name}
+                  </h3>
+                </div>
+              </div>
+
+              {/* Checklist Lapisan Resep (Dari Bawah ke Atas) */}
+              <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase hidden lg:inline mr-1">
+                  Urutan (Bawah ➔ Atas):
                 </span>
-                <span className="text-xs font-mono font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded">
-                  {activeRecipe.customer}
+                {activeRecipe.layers.map((layerId, idx) => {
+                  const isPlaced = idx < currentStack.length;
+                  const isCurrentTarget = idx === currentStack.length;
+                  const ing = INGREDIENTS[layerId];
+
+                  return (
+                    <div
+                      key={`${layerId}-${idx}`}
+                      className={`px-2 py-1 rounded-md border-2 font-mono text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 transition-all ${
+                        isPlaced
+                          ? 'bg-emerald-100 border-emerald-600 text-emerald-800 line-through opacity-75'
+                          : isCurrentTarget
+                          ? 'bg-amber-300 border-black text-black shadow-[2px_2px_0px_0px_#000] scale-105 animate-pulse'
+                          : 'bg-slate-100 border-slate-300 text-slate-400'
+                      }`}
+                    >
+                      <span className="text-slate-400 font-mono text-[9px] mr-0.5">#{idx + 1}</span>
+                      <span>{ing.icon}</span>
+                      <span className="hidden sm:inline">{ing.shortName}</span>
+                      {isPlaced && <Check className="w-3 h-3 text-emerald-600" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* BARIS TENGAH: MEJA SAJI & PIRING TARGET (DROP ZONE) */}
+            <div className="flex-1 flex flex-col items-center justify-center my-2 sm:my-3 relative">
+              {/* Bubble Feedback Penempatan Bahan */}
+              {plateFeedback && (
+                <div
+                  className={`absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-md text-xs font-mono font-black border-2 border-black shadow-[2px_2px_0px_0px_#000] z-20 animate-in fade-in zoom-in-95 duration-150 ${
+                    plateFeedback.type === 'success'
+                      ? 'bg-emerald-300 text-black'
+                      : 'bg-rose-400 text-white'
+                  }`}
+                >
+                  {plateFeedback.text}
+                </div>
+              )}
+
+              {/* Wadah Tumpukan Burger & Piring Saji */}
+              <div
+                ref={plateRef}
+                className={`relative flex flex-col items-center justify-end p-4 rounded-3xl transition-all duration-150 ${
+                  isPlateHovered
+                    ? 'bg-emerald-100/70 border-3 border-dashed border-emerald-600 scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                    : 'border-3 border-transparent'
+                }`}
+                style={{ width: '280px', minHeight: '200px' }}
+              >
+                {/* Tumpukan Lapisan Burger (Bahan Pertama Roti Bawah Berada Paling Bawah Menempel Piring) */}
+                <div className="w-full flex flex-col items-center justify-end z-10 space-y-1 mb-1">
+                  {currentStack.length === 0 ? (
+                    <div className="py-4 text-center">
+                      <span className="text-xs font-mono font-bold text-slate-400 block animate-bounce">
+                        ⬇️ Seret &amp; Lepas Bahan ke Sini!
+                      </span>
+                    </div>
+                  ) : (
+                    currentStack
+                      .slice()
+                      .reverse()
+                      .map((layerId, revIdx) => {
+                        const actualIdx = currentStack.length - 1 - revIdx;
+                        const ing = INGREDIENTS[layerId];
+                        return (
+                          <div
+                            key={`stacked-${actualIdx}-${layerId}`}
+                            className={`w-44 sm:w-48 ${ing.layerHeight} ${ing.color} ${ing.rounded} border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center gap-1 font-mono text-[10px] font-black tracking-wide transition-all transform animate-in slide-in-from-top-2 duration-150`}
+                          >
+                            <span>{ing.icon}</span>
+                            <span className="truncate">{ing.name}</span>
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+
+                {/* Piring Keramik Neo-Brutal */}
+                <div className="w-56 sm:w-64 h-5 sm:h-6 bg-white border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-full flex items-center justify-center">
+                  <div className="w-48 sm:w-56 h-2 bg-slate-100 border border-black/30 rounded-full"></div>
+                </div>
+
+                {/* Label Petunjuk Piring */}
+                <span className="text-[10px] font-mono font-bold text-slate-500 mt-1 uppercase">
+                  Piring Saji Burger
                 </span>
               </div>
-              <h3 className="font-heading font-black text-sm sm:text-base text-black leading-tight">
-                {activeRecipe.name}
-              </h3>
-            </div>
-          </div>
-
-          {/* Checklist Lapisan Resep (Dari Bawah ke Atas) */}
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 md:pb-0">
-            <span className="text-[10px] font-mono font-bold text-slate-500 uppercase hidden lg:inline mr-1">
-              Urutan (Bawah ➔ Atas):
-            </span>
-            {activeRecipe.layers.map((layerId, idx) => {
-              const isPlaced = idx < currentStack.length;
-              const isCurrentTarget = idx === currentStack.length;
-              const ing = INGREDIENTS[layerId];
-
-              return (
-                <div
-                  key={`${layerId}-${idx}`}
-                  className={`px-2 py-1 rounded-md border-2 font-mono text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 transition-all ${
-                    isPlaced
-                      ? 'bg-emerald-100 border-emerald-600 text-emerald-800 line-through opacity-75'
-                      : isCurrentTarget
-                      ? 'bg-amber-300 border-black text-black shadow-[2px_2px_0px_0px_#000] scale-105 animate-pulse'
-                      : 'bg-slate-100 border-slate-300 text-slate-400'
-                  }`}
-                >
-                  <span className="text-slate-400 font-mono text-[9px] mr-0.5">#{idx + 1}</span>
-                  <span>{ing.icon}</span>
-                  <span className="hidden sm:inline">{ing.shortName}</span>
-                  {isPlaced && <Check className="w-3 h-3 text-emerald-600" />}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* BARIS TENGAH: MEJA SAJI & PIRING TARGET (DROP ZONE) */}
-        <div className="flex-1 flex flex-col items-center justify-center my-2 sm:my-3 relative">
-          {/* Bubble Feedback Penempatan Bahan */}
-          {plateFeedback && (
-            <div
-              className={`absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-md text-xs font-mono font-black border-2 border-black shadow-[2px_2px_0px_0px_#000] z-20 animate-in fade-in zoom-in-95 duration-150 ${
-                plateFeedback.type === 'success'
-                  ? 'bg-emerald-300 text-black'
-                  : 'bg-rose-400 text-white'
-              }`}
-            >
-              {plateFeedback.text}
-            </div>
-          )}
-
-          {/* Wadah Tumpukan Burger & Piring Saji */}
-          <div
-            ref={plateRef}
-            className={`relative flex flex-col items-center justify-end p-4 rounded-3xl transition-all duration-150 ${
-              isPlateHovered
-                ? 'bg-emerald-100/70 border-3 border-dashed border-emerald-600 scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                : 'border-3 border-transparent'
-            }`}
-            style={{ width: '280px', minHeight: '200px' }}
-          >
-            {/* Tumpukan Lapisan Burger (Bahan Pertama Roti Bawah Berada Paling Bawah Menempel Piring) */}
-            <div className="w-full flex flex-col items-center justify-end z-10 space-y-1 mb-1">
-              {currentStack.length === 0 ? (
-                <div className="py-4 text-center">
-                  <span className="text-xs font-mono font-bold text-slate-400 block animate-bounce">
-                    ⬇️ Seret & Lepas Bahan ke Sini!
-                  </span>
-                </div>
-              ) : (
-                currentStack
-                  .slice()
-                  .reverse()
-                  .map((layerId, revIdx) => {
-                    const actualIdx = currentStack.length - 1 - revIdx;
-                    const ing = INGREDIENTS[layerId];
-                    return (
-                      <div
-                        key={`stacked-${actualIdx}-${layerId}`}
-                        className={`w-44 sm:w-48 ${ing.layerHeight} ${ing.color} ${ing.rounded} border-2 border-black shadow-[2px_2px_0px_0px_#000] flex items-center justify-center gap-1 font-mono text-[10px] font-black tracking-wide transition-all transform animate-in slide-in-from-top-2 duration-150`}
-                      >
-                        <span>{ing.icon}</span>
-                        <span className="truncate">{ing.name}</span>
-                      </div>
-                    );
-                  })
-              )}
             </div>
 
-            {/* Piring Keramik Neo-Brutal */}
-            <div className="w-56 sm:w-64 h-5 sm:h-6 bg-white border-3 border-black shadow-[4px_4px_0px_0px_#000] rounded-full flex items-center justify-center">
-              <div className="w-48 sm:w-56 h-2 bg-slate-100 border border-black/30 rounded-full"></div>
+            {/* BARIS BAWAH: NAMPAN BAHAN-BAHAN DAPUR (DRAG SOURCES) */}
+            <div className="w-full max-w-4xl mx-auto bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl p-2.5 sm:p-3">
+              <div className="flex items-center justify-between border-b border-black/20 pb-1.5 mb-2 text-xs font-mono">
+                <span className="font-black text-black flex items-center gap-1.5 text-[11px]">
+                  <Layers className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Nampan Bahan (Klik &amp; Tahan, lalu Seret):</span>
+                </span>
+                <span className="text-[10px] font-bold text-slate-500 hidden sm:inline">
+                  {currentShift.availableIngredients.length} Bahan Siap Pakai
+                </span>
+              </div>
+
+              {/* Grid Bahan yang Bisa Ditarik */}
+              <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-9 gap-2">
+                {currentShift.availableIngredients.map((ingId) => {
+                  const ing = INGREDIENTS[ingId];
+                  const isNextNeeded = activeRecipe.layers[currentStack.length] === ingId;
+
+                  return (
+                    <div
+                      key={ingId}
+                      onPointerDown={(e) => handlePointerDown(ingId, e)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={handlePointerUp}
+                      className={`relative p-2 rounded-xl border-2 border-black flex flex-col items-center justify-between text-center cursor-grab active:cursor-grabbing transition-all select-none touch-none ${
+                        isNextNeeded
+                          ? 'bg-amber-100 hover:bg-amber-200 shadow-[3px_3px_0px_0px_#000] hover:-translate-y-0.5'
+                          : 'bg-slate-50 hover:bg-slate-100 shadow-[2px_2px_0px_0px_#000]'
+                      }`}
+                      title={`Seret ${ing.name} ke piring`}
+                    >
+                      {/* Indikator Rekomendasi Langkah Selanjutnya */}
+                      {isNextNeeded && (
+                        <span className="absolute -top-2 -right-1 w-4 h-4 bg-emerald-400 border border-black rounded-full flex items-center justify-center text-[10px] font-bold text-black animate-ping duration-1000">
+                          ★
+                        </span>
+                      )}
+
+                      <div className="text-2xl sm:text-3xl my-0.5">{ing.icon}</div>
+                      <span className="font-heading font-black text-[10px] sm:text-[11px] text-black leading-tight truncate w-full">
+                        {ing.shortName}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-
-            {/* Label Petunjuk Piring */}
-            <span className="text-[10px] font-mono font-bold text-slate-500 mt-1 uppercase">
-              Piring Saji Burger
-            </span>
-          </div>
-        </div>
-
-        {/* BARIS BAWAH: NAMPAN BAHAN-BAHAN DAPUR (DRAG SOURCES) */}
-        <div className="w-full max-w-4xl mx-auto bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl p-2.5 sm:p-3">
-          <div className="flex items-center justify-between border-b border-black/20 pb-1.5 mb-2 text-xs font-mono">
-            <span className="font-black text-black flex items-center gap-1.5 text-[11px]">
-              <Layers className="w-3.5 h-3.5 text-amber-600" />
-              <span>Nampan Bahan (Klik & Tahan, lalu Seret):</span>
-            </span>
-            <span className="text-[10px] font-bold text-slate-500 hidden sm:inline">
-              {currentShift.availableIngredients.length} Bahan Siap Pakai
-            </span>
-          </div>
-
-          {/* Grid Bahan yang Bisa Ditarik */}
-          <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-9 gap-2">
-            {currentShift.availableIngredients.map((ingId) => {
-              const ing = INGREDIENTS[ingId];
-              const isNextNeeded = activeRecipe.layers[currentStack.length] === ingId;
-
-              return (
-                <div
-                  key={ingId}
-                  onPointerDown={(e) => handlePointerDown(ingId, e)}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  className={`relative p-2 rounded-xl border-2 border-black flex flex-col items-center justify-between text-center cursor-grab active:cursor-grabbing transition-all select-none touch-none ${
-                    isNextNeeded
-                      ? 'bg-amber-100 hover:bg-amber-200 shadow-[3px_3px_0px_0px_#000] hover:-translate-y-0.5'
-                      : 'bg-slate-50 hover:bg-slate-100 shadow-[2px_2px_0px_0px_#000]'
-                  }`}
-                  title={`Seret ${ing.name} ke piring`}
-                >
-                  {/* Indikator Rekomendasi Langkah Selanjutnya */}
-                  {isNextNeeded && (
-                    <span className="absolute -top-2 -right-1 w-4 h-4 bg-emerald-400 border border-black rounded-full flex items-center justify-center text-[10px] font-bold text-black animate-ping duration-1000">
-                      ★
-                    </span>
-                  )}
-
-                  <div className="text-2xl sm:text-3xl my-0.5">{ing.icon}</div>
-                  <span className="font-heading font-black text-[10px] sm:text-[11px] text-black leading-tight truncate w-full">
-                    {ing.shortName}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+          </>
+        )}
 
         {/* ─── FLOATING GHOST BADGE SAAT DRAGGING ─────────────────── */}
         {draggedItem && (
@@ -957,59 +1057,6 @@ export default function BurgerFactoryGame() {
               <span className="font-heading font-black text-xs text-black">
                 {INGREDIENTS[draggedItem]?.name}
               </span>
-            </div>
-          </div>
-        )}
-
-        {/* ─── OVERLAY 1: IDLE WELCOME SCREEN ─────────────────────── */}
-        {gameState === 'idle' && (
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-20 overflow-y-auto">
-            <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-md w-full text-center space-y-3.5 sm:space-y-4 my-auto animate-in fade-in zoom-in-95 duration-200">
-              <div className="w-13 h-13 sm:w-14 sm:h-14 bg-amber-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center text-2xl sm:text-3xl">
-                🍔
-              </div>
-
-              <div className="space-y-1 sm:space-y-1.5">
-                <div className="inline-block bg-emerald-300 border-2 border-black px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
-                  Game 3 • Fokus: Drag-and-Drop (Seret & Lepas)
-                </div>
-                <h2 className="font-heading font-black text-xl sm:text-2xl text-black">
-                  Pabrik Burger Cilik
-                </h2>
-                <p className="text-[11px] sm:text-xs text-slate-600 font-medium leading-relaxed max-w-sm mx-auto">
-                  Rakit pesanan burger lezat dengan <strong>menahan klik kiri, menggeser bahan ke piring, lalu melepasnya</strong>! Selesaikan <strong>5 Shift Koki (~4.5 - 5 menit)</strong> untuk melatih koordinasi jemarimu.
-                </p>
-              </div>
-
-              {/* Panduan Singkat Aturan Main */}
-              <div className="bg-[#FFFDF5] border-2 border-black rounded-xl p-2.5 sm:p-3 text-left space-y-1.5 text-xs font-mono">
-                <div className="font-black text-black border-b border-black pb-1 flex items-center gap-1.5 text-[11px]">
-                  <Info className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Aturan Koki Pabrik:</span>
-                </div>
-                <ul className="space-y-1 text-[10px] sm:text-[11px] text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">🖱️</span>
-                    <span><strong>Tahan & Geser:</strong> Klik kiri tahan pada bahan, lalu seret ke piring.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">📋</span>
-                    <span><strong>Ikuti Tiket:</strong> Pasang lapisan burger berurutan dari bawah ke atas.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-sm">🧲</span>
-                    <span><strong>Zona Magnetik:</strong> Lepaskan di dekat piring, bahan otomatis menempel rapi!</span>
-                  </li>
-                </ul>
-              </div>
-
-              <button
-                onClick={startGame}
-                className="w-full py-2.5 sm:py-3 bg-amber-400 hover:bg-amber-300 text-black font-heading font-black text-xs sm:text-sm uppercase border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#000] transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Play className="w-4 h-4 fill-current" />
-                <span>MULAI MERAKIT BURGER</span>
-              </button>
             </div>
           </div>
         )}

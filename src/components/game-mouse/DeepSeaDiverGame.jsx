@@ -606,8 +606,8 @@ export default function DeepSeaDiverGame() {
     <div
       ref={containerRef}
       onPointerMove={handlePointerMove}
-      className={`relative isolate w-full max-w-4xl mx-auto rounded-3xl border-3 border-black shadow-[6px_6px_0px_0px_#000] overflow-hidden select-none bg-slate-900 text-white font-sans ${
-        isFullscreen ? 'fixed inset-0 z-[90] rounded-none max-w-none h-screen' : 'aspect-[4/3] min-h-[580px] max-h-[720px]'
+      className={`relative isolate bg-slate-900 text-white font-sans border-3 border-black shadow-[8px_8px_0px_0px_#000] rounded-2xl overflow-hidden flex flex-col select-none ${
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none h-screen w-screen' : ''
       }`}
     >
       {/* ── LATAR BELAKANG KEDALAMAN SAMUDRA BERGRADASI DINAMIS ───── */}
@@ -652,7 +652,7 @@ export default function DeepSeaDiverGame() {
       )}
 
       {/* ── TOP HUD NAVIGATION BAR ─────────────────────────────────── */}
-      <header className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 bg-black/70 backdrop-blur-md border-b-2 border-black">
+      <div role="banner" className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 bg-black/70 backdrop-blur-md border-b-2 border-black">
         {/* Tombol Back & Title */}
         <div className="flex items-center gap-2">
           <Link
@@ -673,7 +673,7 @@ export default function DeepSeaDiverGame() {
               </span>
             </div>
             <p className="text-[10px] font-mono text-slate-300 line-clamp-1">
-              {currentConfig.title}
+              {gameState === 'idle' ? 'PERSIAPAN MISI SAMUDRA' : currentConfig.title}
             </p>
           </div>
         </div>
@@ -686,7 +686,7 @@ export default function DeepSeaDiverGame() {
             <div>
               <div className="text-[9px] font-mono text-cyan-200 uppercase leading-none">Kedalaman</div>
               <div className="text-xs sm:text-sm font-mono font-black text-cyan-300 leading-tight">
-                {currentDepth.toLocaleString()} m
+                {gameState === 'idle' ? '0 - 11.000m' : `${currentDepth.toLocaleString()} m`}
               </div>
             </div>
           </div>
@@ -694,12 +694,12 @@ export default function DeepSeaDiverGame() {
           {/* Oksigen / Waktu */}
           <div
             className={`border-2 border-black px-2 sm:px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_#000] flex items-center gap-1.5 transition-colors ${
-              timeLeft <= 8 ? 'bg-rose-500 text-white animate-pulse' : 'bg-amber-400 text-black'
+              timeLeft <= 8 && gameState !== 'idle' ? 'bg-rose-500 text-white animate-pulse' : 'bg-amber-400 text-black'
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
             <span className="font-mono font-black text-xs sm:text-sm">
-              {timeLeft}s
+              {gameState === 'idle' ? '5 Zona' : `${timeLeft}s`}
             </span>
           </div>
 
@@ -710,7 +710,7 @@ export default function DeepSeaDiverGame() {
           >
             <Camera className="w-3.5 h-3.5" />
             <span>
-              {photographedIds.length}/{currentConfig.targets.length}
+              {gameState === 'idle' ? 'Target: Biota' : `${photographedIds.length}/${currentConfig.targets.length}`}
             </span>
           </div>
 
@@ -749,37 +749,39 @@ export default function DeepSeaDiverGame() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ── METERAN VERTIKAL KEDALAMAN (DEPTH METER SLIDER) ───────── */}
-      <aside
-        aria-label="Meteran Kedalaman"
-        className="absolute left-3 top-20 bottom-16 z-20 w-8 sm:w-10 bg-black/60 border-2 border-cyan-400/80 rounded-2xl p-1 flex flex-col justify-between items-center shadow-[3px_3px_0px_0px_#000] backdrop-blur-sm pointer-events-none"
-      >
-        <span className="text-[9px] font-mono font-bold text-cyan-300">
-          {currentConfig.depthMin}m
-        </span>
-
-        {/* Track Vertikal & Jarum Posisi */}
-        <div className="relative w-2 flex-1 bg-white/20 rounded-full my-1 overflow-hidden">
-          <div
-            className="absolute top-0 left-0 right-0 bg-cyan-400 rounded-full transition-all duration-150"
-            style={{ height: `${depthPercentInZone}%` }}
-          ></div>
-        </div>
-
-        {/* Jarum Indikator Submarine */}
-        <div
-          className="absolute -right-3 w-4 h-4 bg-amber-400 border border-black rounded-full flex items-center justify-center text-[8px] text-black font-black shadow-[1px_1px_0px_0px_#000] transition-all duration-150"
-          style={{ top: `${Math.min(Math.max(depthPercentInZone, 5), 90)}%` }}
+      {gameState !== 'idle' && (
+        <aside
+          aria-label="Meteran Kedalaman"
+          className="absolute left-3 top-20 bottom-16 z-20 w-8 sm:w-10 bg-black/60 border-2 border-cyan-400/80 rounded-2xl p-1 flex flex-col justify-between items-center shadow-[3px_3px_0px_0px_#000] backdrop-blur-sm pointer-events-none"
         >
-          ▼
-        </div>
+          <span className="text-[9px] font-mono font-bold text-cyan-300">
+            {currentConfig.depthMin}m
+          </span>
 
-        <span className="text-[9px] font-mono font-bold text-cyan-300">
-          {currentConfig.depthMax}m
-        </span>
-      </aside>
+          {/* Track Vertikal & Jarum Posisi */}
+          <div className="relative w-2 flex-1 bg-white/20 rounded-full my-1 overflow-hidden">
+            <div
+              className="absolute top-0 left-0 right-0 bg-cyan-400 rounded-full transition-all duration-150"
+              style={{ height: `${depthPercentInZone}%` }}
+            ></div>
+          </div>
+
+          {/* Jarum Indikator Submarine */}
+          <div
+            className="absolute -right-3 w-4 h-4 bg-amber-400 border border-black rounded-full flex items-center justify-center text-[8px] text-black font-black shadow-[1px_1px_0px_0px_#000] transition-all duration-150"
+            style={{ top: `${Math.min(Math.max(depthPercentInZone, 5), 90)}%` }}
+          >
+            ▼
+          </div>
+
+          <span className="text-[9px] font-mono font-bold text-cyan-300">
+            {currentConfig.depthMax}m
+          </span>
+        </aside>
+      )}
 
       {/* ── AREA ARENA BAWAH LAUT ──────────────────────────────────── */}
       <main
@@ -788,9 +790,95 @@ export default function DeepSeaDiverGame() {
             takePhotoOfTarget(activePhotoLockTarget);
           }
         }}
-        className="relative w-full h-full overflow-hidden cursor-crosshair"
+        className={`relative flex-1 w-full overflow-hidden flex items-center justify-center ${
+          gameState === 'playing' ? 'cursor-crosshair' : 'cursor-default'
+        } ${isFullscreen ? 'min-h-0 w-full h-full' : 'min-h-[500px] sm:min-h-[540px]'}`}
       >
-        {/* ── ELEMEN AIR & BIOTA DI KEDALAMAN ──────────────────────── */}
+        {gameState === 'idle' ? (
+          /* ─── IN-ARENA WELCOME SCREEN (BUKAN POPUP MODAL) ─── */
+          <div className="flex-1 w-full h-full flex flex-col justify-between items-center text-center py-4 sm:py-6 px-4 sm:px-6 relative z-10 my-auto max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            {/* Header Judul Game */}
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-3 duration-300">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-400 border-2 border-black rounded-full text-xs font-mono font-black shadow-[2px_2px_0px_#000] uppercase text-black">
+                <span>🌊</span>
+                <span>Game 5 • Fokus Motorik: Roda Gulir (Scroll Wheel)</span>
+              </div>
+              <h1 className="font-heading font-black text-2xl sm:text-4xl text-white drop-shadow-[2px_2px_0px_#000]">
+                Penyelam Laut Dalam
+              </h1>
+              <p className="text-xs sm:text-sm text-cyan-100 font-bold max-w-xl mx-auto leading-relaxed">
+                Kendalikan kapal selam riset samudra! Gunakan <strong>roda scroll mouse</strong> untuk menyelam ke palung terdalam, potret biota laut langka, dan hindari rintangan karang. Terdiri dari <strong>5 Zona Samudra (~5 Menit)</strong>.
+              </p>
+            </div>
+
+            {/* Panggung Tiga Kolom Edukasi */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-stretch">
+              <div className="bg-slate-900/90 border-3 border-cyan-400 rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between text-white">
+                <div className="w-12 h-12 bg-cyan-400 text-black border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  🖱️
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-cyan-400 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    1. GULIR KE BAWAH
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-cyan-200 mt-1">
+                    Menyelam ke Dasar
+                  </h3>
+                  <p className="text-[11px] text-slate-300 font-medium mt-1 leading-snug">
+                    Putar roda scroll mouse ke bawah perlahan untuk meluncur menembus kedalaman air laut.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/90 border-3 border-cyan-400 rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between text-white">
+                <div className="w-12 h-12 bg-amber-400 text-black border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  ⬆️
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-amber-400 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    2. GULIR KE ATAS
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-amber-200 mt-1">
+                    Mengapung &amp; Hindari
+                  </h3>
+                  <p className="text-[11px] text-slate-300 font-medium mt-1 leading-snug">
+                    Putar roda scroll ke atas untuk naik kembali dan menghindar saat ada karang atau ranjau laut!
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/90 border-3 border-cyan-400 rounded-2xl p-3 sm:p-4 text-center space-y-2 shadow-[4px_4px_0px_#000] flex flex-col justify-between text-white">
+                <div className="w-12 h-12 bg-emerald-400 text-black border-2 border-black rounded-xl mx-auto flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+                  📸
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 bg-emerald-400 border border-black rounded-md text-[11px] font-mono font-black text-black shadow-[1px_1px_0px_#000]">
+                    3. JEPRET FOTO
+                  </span>
+                  <h3 className="font-heading font-black text-sm text-emerald-200 mt-1">
+                    Tangkap Biota Langka
+                  </h3>
+                  <p className="text-[11px] text-slate-300 font-medium mt-1 leading-snug">
+                    Dekati hewan hingga lingkaran bidik mengunci, lalu klik kiri atau tekan Spasi untuk memotret!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Tombol Mulai Besar */}
+            <div className="w-full max-w-md pt-1">
+              <button
+                onClick={startGame}
+                className="w-full py-3.5 sm:py-4 px-6 bg-cyan-400 hover:bg-cyan-300 active:translate-x-0.5 active:translate-y-0.5 text-black border-3 border-black rounded-2xl font-heading font-black text-base sm:text-lg shadow-[5px_5px_0px_#000] flex items-center justify-center gap-3 cursor-pointer uppercase transition-all tracking-wider animate-pulse hover:animate-none"
+              >
+                <Play className="w-5 h-5 fill-black" />
+                <span>Mulai Menyelam Samudra</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* ── ELEMEN AIR & BIOTA DI KEDALAMAN ──────────────────────── */}
         {/* Render Biota Laut Sasaran */}
         {currentConfig.targets.map((tgt) => {
           const isDone = photographedIds.includes(tgt.id);
@@ -1107,60 +1195,9 @@ export default function DeepSeaDiverGame() {
             </span>
           </div>
         </div>
+          </>
+        )}
       </main>
-
-      {/* ─── MODAL 1: IDLE WELCOME & TUTORIAL ──────────────────────── */}
-      {gameState === 'idle' && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-40 overflow-y-auto">
-          <div className="bg-white border-3 border-black shadow-[6px_6px_0px_0px_#000] rounded-2xl p-5 sm:p-6 max-w-md w-full text-center space-y-3.5 sm:space-y-4 my-auto animate-in fade-in zoom-in-95 duration-200 text-black">
-            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-cyan-300 border-2 border-black shadow-[3px_3px_0px_0px_#000] rounded-xl mx-auto flex items-center justify-center text-2xl sm:text-3xl">
-              🌊
-            </div>
-
-            <div className="space-y-1 sm:space-y-1.5">
-              <div className="inline-block bg-blue-300 border-2 border-black px-2.5 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black uppercase shadow-[1px_1px_0px_0px_#000]">
-                Game 5 • Fokus: Roda Gulir (Scroll Wheel)
-              </div>
-              <h2 className="font-heading font-black text-xl sm:text-2xl text-black">
-                Penyelam Laut Dalam
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-700 font-sans leading-relaxed">
-                Kendalikan kapal selam riset samudra! Gunakan <strong>roda scroll mouse</strong> untuk menyelam ke palung terdalam, potret biota laut langka, dan hindari rintangan karang.
-              </p>
-            </div>
-
-            {/* Kotak Petunjuk Praktis */}
-            <div className="bg-sky-50 border-2 border-black rounded-xl p-3 text-left space-y-1.5">
-              <div className="flex items-center gap-1.5 font-mono font-bold text-xs text-sky-900">
-                <Info className="w-3.5 h-3.5 text-sky-600" />
-                <span>Kendali Kemudi Kapal Selam:</span>
-              </div>
-              <ul className="space-y-1 text-[10px] sm:text-[11px] text-slate-700">
-                <li className="flex items-center gap-2">
-                  <span className="text-sm">🖱️</span>
-                  <span><strong>Scroll ke Bawah:</strong> Menyelam menembus kedalaman air laut.</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-sm">⬆️</span>
-                  <span><strong>Scroll ke Atas:</strong> Naik kembali menuju permukaan air laut.</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-sm">📸</span>
-                  <span><strong>Jepret Foto:</strong> Dekati hewan laut lalu klik di mana saja atau tekan Spasi!</span>
-                </li>
-              </ul>
-            </div>
-
-            <button
-              onClick={startGame}
-              className="w-full bg-cyan-400 hover:bg-cyan-300 active:translate-x-0.5 active:translate-y-0.5 text-black border-3 border-black font-heading font-black text-sm sm:text-base py-2.5 sm:py-3 rounded-xl shadow-[4px_4px_0px_0px_#000] flex items-center justify-center gap-2 cursor-pointer uppercase transition-all"
-            >
-              <Play className="w-4 h-4 fill-black" />
-              <span>Mulai Menyelam Samudra</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ─── MODAL 2: PAUSED SCREEN ─────────────────────────────────── */}
       {gameState === 'paused' && (

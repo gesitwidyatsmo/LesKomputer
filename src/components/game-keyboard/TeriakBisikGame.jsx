@@ -611,7 +611,7 @@ export default function TeriakBisikGame() {
     <div
       ref={containerRef}
       className={`relative w-full bg-slate-950 border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_#000] overflow-hidden flex flex-col select-none transition-all ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none border-none shadow-none h-screen' : ''
+        isFullscreen ? 'fixed inset-0 z-[9999] rounded-none border-none shadow-none h-screen' : ''
       }`}
     >
       {/* ── HEADER GAME & INDIKATOR UTAMA ─────────────────────────── */}
