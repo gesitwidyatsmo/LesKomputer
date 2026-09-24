@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import FrogJumpGame from './FrogJumpGame';
 import RocketLaunchGame from './RocketLaunchGame';
+import MonsterHurufGame from './MonsterHurufGame';
 import GameKeyboardHubSelector from './GameKeyboardHubSelector';
 import { Sparkles, Clock, Lock, Play, ArrowRight } from 'lucide-react';
 
@@ -132,13 +133,12 @@ export default function GameKeyboardArena() {
         {/* ── RENDER GAME SESUAI PILIHAN TAB ───────────────────────── */}
         {activeGame === 'katak-melompat' && <FrogJumpGame />}
         {activeGame === 'peluncuran-roket' && <RocketLaunchGame />}
+        {activeGame === 'monster-huruf' && <MonsterHurufGame />}
 
-        {activeGame !== 'katak-melompat' && activeGame !== 'peluncuran-roket' && (
+        {activeGame !== 'katak-melompat' && activeGame !== 'peluncuran-roket' && activeGame !== 'monster-huruf' && (
           <div className="bg-white border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_#000] p-8 sm:p-12 text-center space-y-5">
             <div className="w-20 h-20 bg-amber-200 border-3 border-black rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-[4px_4px_0px_0px_#000]">
-              {activeGame === 'monster-huruf'
-                ? '👾'
-                : activeGame === 'teriak-bisik'
+              {activeGame === 'teriak-bisik'
                 ? '📢'
                 : activeGame === 'lampu-sorot'
                 ? '🔦'
@@ -150,16 +150,14 @@ export default function GameKeyboardArena() {
                 Dalam Tahap Persiapan Rilis
               </span>
               <h3 className="font-heading font-black text-2xl sm:text-3xl text-black">
-                {activeGame === 'monster-huruf'
-                  ? 'Game 3: Monster Pemakan Huruf (Fokus: Backspace vs Delete)'
-                  : activeGame === 'teriak-bisik'
+                {activeGame === 'teriak-bisik'
                   ? 'Game 4: Mode Berteriak vs Berbisik (Fokus: Caps Lock)'
                   : activeGame === 'lampu-sorot'
                   ? 'Game 5: Lampu Sorot Jari (Fokus: Shift & Simbol Khusus)'
                   : 'Game 6: Mesin Pengganda (Fokus: Ctrl+C & Ctrl+V)'}
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                Modul ini sedang disiapkan dengan tantangan 5 babak (4–5 menit) untuk memperkuat penguasaan tombol fungsi keyboard. Silakan mainkan <strong>Game 1: Katak Melompat</strong> atau <strong>Game 2: Peluncuran Roket</strong> terlebih dahulu!
+                Modul ini sedang disiapkan dengan tantangan 5 babak (4–5 menit) untuk memperkuat penguasaan tombol fungsi keyboard. Silakan mainkan <strong>Game 1: Katak Melompat</strong>, <strong>Game 2: Peluncuran Roket</strong>, atau <strong>Game 3: Monster Pemakan Huruf</strong> terlebih dahulu!
               </p>
             </div>
 
@@ -175,6 +173,12 @@ export default function GameKeyboardArena() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-400 hover:bg-blue-300 border-3 border-black font-heading font-black text-xs sm:text-sm text-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer transition-all"
               >
                 <span>🚀 Game 2: Peluncuran Roket</span>
+              </button>
+              <button
+                onClick={() => setActiveGame('monster-huruf')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-400 hover:bg-rose-300 border-3 border-black font-heading font-black text-xs sm:text-sm text-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer transition-all"
+              >
+                <span>👾 Game 3: Monster Huruf</span>
               </button>
             </div>
           </div>
