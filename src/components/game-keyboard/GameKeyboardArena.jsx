@@ -6,6 +6,7 @@ import RocketLaunchGame from './RocketLaunchGame';
 import MonsterHurufGame from './MonsterHurufGame';
 import TeriakBisikGame from './TeriakBisikGame';
 import LampuSorotGame from './LampuSorotGame';
+import MesinPenggandaGame from './MesinPenggandaGame';
 import GameKeyboardHubSelector from './GameKeyboardHubSelector';
 import { Sparkles, Clock, Lock, Play, ArrowRight } from 'lucide-react';
 
@@ -138,51 +139,7 @@ export default function GameKeyboardArena() {
         {activeGame === 'monster-huruf' && <MonsterHurufGame />}
         {activeGame === 'teriak-bisik' && <TeriakBisikGame />}
         {activeGame === 'lampu-sorot' && <LampuSorotGame />}
-
-        {activeGame !== 'katak-melompat' &&
-          activeGame !== 'peluncuran-roket' &&
-          activeGame !== 'monster-huruf' &&
-          activeGame !== 'teriak-bisik' &&
-          activeGame !== 'lampu-sorot' && (
-          <div className="bg-white border-4 border-black rounded-2xl shadow-[6px_6px_0px_0px_#000] p-8 sm:p-12 text-center space-y-5">
-            <div className="w-20 h-20 bg-amber-200 border-3 border-black rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-[4px_4px_0px_0px_#000]">
-              🤖
-            </div>
-
-            <div className="max-w-xl mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 bg-amber-300 border-2 border-black rounded-full text-xs font-mono font-black shadow-[2px_2px_0px_0px_#000] uppercase">
-                Dalam Tahap Persiapan Rilis
-              </span>
-              <h3 className="font-heading font-black text-2xl sm:text-3xl text-black">
-                Game 6: Mesin Pengganda (Fokus: Ctrl+C & Ctrl+V)
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                Modul ini sedang disiapkan dengan tantangan 5 babak (4–5 menit) untuk memperkuat penguasaan tombol fungsi keyboard. Silakan mainkan <strong>Game 1 s/d 5</strong> yang telah siap dimainkan!
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <button
-                onClick={() => setActiveGame('katak-melompat')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-400 hover:bg-emerald-300 border-3 border-black font-heading font-black text-xs sm:text-sm text-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer transition-all"
-              >
-                <span>🐸 Game 1: Katak Melompat</span>
-              </button>
-              <button
-                onClick={() => setActiveGame('peluncuran-roket')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-400 hover:bg-blue-300 border-3 border-black font-heading font-black text-xs sm:text-sm text-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer transition-all"
-              >
-                <span>🚀 Game 2: Peluncuran Roket</span>
-              </button>
-              <button
-                onClick={() => setActiveGame('monster-huruf')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-400 hover:bg-rose-300 border-3 border-black font-heading font-black text-xs sm:text-sm text-black rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer transition-all"
-              >
-                <span>👾 Game 3: Monster Huruf</span>
-              </button>
-            </div>
-          </div>
-        )}
+        {activeGame === 'mesin-pengganda' && <MesinPenggandaGame />}
       </section>
 
       {/* ── ETALASE 6 GAME PENGUASAAN KEYBOARD ───────────────────── */}

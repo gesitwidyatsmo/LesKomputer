@@ -70,16 +70,16 @@ export const KEYBOARD_GAMES = [
   },
   {
     id: 'mesin-pengganda',
-    title: 'Mesin Pengganda Robot',
+    title: 'Mesin Pengganda Hewan & Robot',
     focus: 'Fokus: Kombinasi Ctrl+C & Ctrl+V',
-    desc: 'Pabrik robotika otomatis membutuhkan bantuanmu! Salin pola cetakan blueprint suku cadang (Ctrl+C) dan tempelkan (Ctrl+V) berkali-kali pada ban berjalan pabrik.',
+    desc: 'Blok karakter hewan induk (seperti Bebek 🦆), tekan Ctrl+C untuk menyalin ke memori, lalu tekan Ctrl+V berkali-kali untuk memenuhi danau dan layar dengan anak bebek lucu!',
     icon: '🤖',
     duration: '4-5 Menit',
-    status: 'upcoming',
+    status: 'ready',
     color: 'bg-amber-200',
-    tagColor: 'bg-amber-200 text-amber-900',
-    tagText: 'SEGERA HADIR',
-    waves: '5 Jalur Pabrik',
+    tagColor: 'bg-amber-300 text-black',
+    tagText: 'SIAP DIMAINKAN',
+    waves: '5 Babak Kloning',
   },
 ];
 
