@@ -154,11 +154,60 @@ export default function RocketLaunchGame() {
 
   const currentMission = MISSIONS_CONFIG[currentMissionIdx] || MISSIONS_CONFIG[0];
 
+  const towerImgRef = useRef(null);
+  const [towerImgLoaded, setTowerImgLoaded] = useState(false);
+  const penyanggaImgRef = useRef(null);
+  const [penyanggaImgLoaded, setPenyanggaImgLoaded] = useState(false);
+  const rocketImgRef = useRef(null);
+  const [rocketImgLoaded, setRocketImgLoaded] = useState(false);
+
+  useEffect(() => {
+    // 1. Muat aset SVG Tiang & Landasan
+    const img = new Image();
+    img.src = '/roket/tiang%20Rocket.svg';
+    img.onload = () => {
+      towerImgRef.current = img;
+      setTowerImgLoaded(true);
+    };
+    img.onerror = () => {
+      const fallbackImg = new Image();
+      fallbackImg.src = '/roket/tiang_rocket.svg';
+      fallbackImg.onload = () => {
+        towerImgRef.current = fallbackImg;
+        setTowerImgLoaded(true);
+      };
+    };
+
+    // 2. Muat aset SVG Penyangga (Gantry Arm Bridge)
+    const pImg = new Image();
+    pImg.src = '/roket/penyangga%20roket.svg';
+    pImg.onload = () => {
+      penyanggaImgRef.current = pImg;
+      setPenyanggaImgLoaded(true);
+    };
+    pImg.onerror = () => {
+      const fallbackPImg = new Image();
+      fallbackPImg.src = '/roket/penyangga_roket.svg';
+      fallbackPImg.onload = () => {
+        penyanggaImgRef.current = fallbackPImg;
+        setPenyanggaImgLoaded(true);
+      };
+    };
+
+    // 3. Muat aset SVG Roket
+    const rImg = new Image();
+    rImg.src = '/roket/roket.svg';
+    rImg.onload = () => {
+      rocketImgRef.current = rImg;
+      setRocketImgLoaded(true);
+    };
+  }, []);
+
   // Ref objek partikel & roket kanvas (Posisi di sisi kiri kanvas agar tidak tertutup konsol kode di kanan)
   const rocketAnimRef = useRef({
-    rocketY: 270,
+    rocketY: 397,
     rocketX: 220, // Sisi kiri kanvas
-    baseY: 270,
+    baseY: 397,
     speedY: 0,
     rumble: 0,
     clampRetract: 0, // 0 = menjepit roket, 1 = terbuka/lepas
@@ -393,15 +442,16 @@ export default function RocketLaunchGame() {
       anim.speedY = -12;
       anim.screenShake = 15;
 
-      // Spawn partikel api & asap dari 3 nozzle roket (tengah, booster kiri, booster kanan)
-      for (let i = 0; i < 45; i++) {
-        const offset = Math.random() < 0.35 ? -28 : Math.random() < 0.7 ? 28 : 0;
+      // Spawn partikel api & asap dari 3 nozzle roket SVG (tengah, booster kiri, booster kanan)
+      for (let i = 0; i < 48; i++) {
+        const offset = Math.random() < 0.35 ? -41.4 : Math.random() < 0.7 ? 41.4 : 0;
+        const nozzleY = offset === 0 ? anim.baseY : anim.baseY - 11.6;
         anim.fireParticles.push({
-          x: anim.rocketX + offset + (Math.random() - 0.5) * 14,
-          y: anim.baseY + 54,
+          x: anim.rocketX + offset + (Math.random() - 0.5) * 12,
+          y: nozzleY,
           vx: (Math.random() - 0.5) * 80 + offset * 0.4,
-          vy: Math.random() * 150 + 70,
-          radius: Math.random() * 6 + 3,
+          vy: Math.random() * 160 + 80,
+          radius: Math.random() * 7 + 4,
           color: Math.random() < 0.5 ? '#F97316' : Math.random() < 0.8 ? '#FBBF24' : '#EF4444',
           life: 0,
           maxLife: 0.65,
@@ -409,13 +459,13 @@ export default function RocketLaunchGame() {
       }
 
       // Spawn uap putih pelepasan klem penahan
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < 20; i++) {
         anim.steamParticles.push({
-          x: anim.rocketX + (Math.random() < 0.5 ? -45 : 45),
-          y: anim.baseY + 40 + (Math.random() - 0.5) * 20,
-          vx: (Math.random() - 0.5) * 60 + (Math.random() < 0.5 ? -40 : 40),
+          x: anim.rocketX + (Math.random() < 0.5 ? -55 : 55),
+          y: anim.baseY - 10 + (Math.random() - 0.5) * 20,
+          vx: (Math.random() - 0.5) * 70 + (Math.random() < 0.5 ? -40 : 40),
           vy: (Math.random() - 0.5) * 30 - 20,
-          radius: Math.random() * 8 + 4,
+          radius: Math.random() * 9 + 5,
           alpha: 0.8,
           life: 0,
           maxLife: 0.5,
@@ -606,14 +656,18 @@ export default function RocketLaunchGame() {
           anim.speedY -= 25 * dt; // Percepatan naik
           anim.clampRetract = Math.min(1, anim.clampRetract + dt * 4.5); // Penahan roket membuka
 
-          // Semburan api kontinu saat meluncur dari 3 nozzle
-          [-28, 0, 28].forEach((offset) => {
+          // Semburan api kontinu saat meluncur dari 3 nozzle roket SVG
+          [
+            { offset: -41.4, yOffset: -11.6 },
+            { offset: 0, yOffset: 0 },
+            { offset: 41.4, yOffset: -11.6 },
+          ].forEach(({ offset, yOffset }) => {
             anim.fireParticles.push({
               x: anim.rocketX + offset + (Math.random() - 0.5) * 8,
-              y: anim.rocketY + 54,
-              vx: (Math.random() - 0.5) * 40,
-              vy: Math.random() * 150 + 90,
-              radius: Math.random() * 5 + 3,
+              y: anim.rocketY + yOffset,
+              vx: (Math.random() - 0.5) * 45,
+              vy: Math.random() * 160 + 100,
+              radius: Math.random() * 6 + 3,
               color: Math.random() < 0.6 ? '#F97316' : '#FBBF24',
               life: 0,
               maxLife: 0.45,
@@ -728,186 +782,49 @@ export default function RocketLaunchGame() {
         }
       }
 
-      // E. MEJA & LANDASAN PELUNCURAN (LAUNCH PAD COMPLEX PENUH SAMPAI DASAR KANVAS)
-      const padY = anim.baseY + 75; // ~345px
-      const rocketX = anim.rocketX; // 220px
-      const padH = height - padY + 10; // Mengisi penuh sampai menyentuh dasar kanvas tanpa celah gantung
+      // E. TIANG GANTRY & MEJA LANDASAN PELUNCURAN (ASET VEKTOR SVG: tiang Rocket.svg)
+      const rocketX = anim.rocketX; // 220px (Sumbu tengah roket)
+      const towerImg = towerImgRef.current;
+      const padScale = height / 1460.16; // Skala pas dengan tinggi kanvas (472px)
+      const svgW = 1024 * padScale;
+      const svgH = 1460.16 * padScale;
+      // Menyelaraskan titik tengah antara 2 pilar penyangga landasan SVG (x=631.0) tepat di sumbu roket (220)
+      const svgX = rocketX - 631.0 * padScale;
+      const svgY = height - svgH; // Dasar landasan menyentuh batas dasar kanvas
 
-      // Pondasi Beton Landasan Luncur Penuh Sampai Dasar
-      ctx.fillStyle = '#1E293B';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.roundRect(rocketX - 145, padY, 230, padH, [6, 6, 0, 0]);
-      ctx.fill();
-      ctx.stroke();
+      if (towerImg && towerImg.complete && towerImg.naturalWidth > 0) {
+        ctx.drawImage(towerImg, svgX, svgY, svgW, svgH);
 
-      // Parit Pembuangan Api (Flame Deflector Trench) Tembus Penuh Ke Bawah
-      ctx.fillStyle = '#020617';
-      ctx.beginPath();
-      ctx.roundRect(rocketX - 45, padY, 90, padH, [0, 0, 0, 0]);
-      ctx.fill();
-      ctx.stroke();
-
-      // Garis Belang Peringatan Bahaya (Hazard Stripes) di Bibir Landasan
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(rocketX - 145, padY - 5, 230, 6);
-      ctx.clip();
-      ctx.fillStyle = '#F59E0B';
-      ctx.fillRect(rocketX - 145, padY - 5, 230, 6);
-      ctx.fillStyle = '#000000';
-      for (let s = -150; s < 100; s += 16) {
+        // Lampu Merah Berkedip di Puncak Menara SVG (koordinat SVG: x=282.21, y=21.38)
+        const beaconX = svgX + 282.21 * padScale;
+        const beaconY = svgY + 21.38 * padScale;
+        const beaconGlow = Math.sin(timestamp * 0.008) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(239, 68, 68, ${beaconGlow * 0.95})`;
         ctx.beginPath();
-        ctx.moveTo(rocketX + s, padY - 5);
-        ctx.lineTo(rocketX + s + 8, padY - 5);
-        ctx.lineTo(rocketX + s + 2, padY + 1);
-        ctx.lineTo(rocketX + s - 6, padY + 1);
+        ctx.arc(beaconX, beaconY, 3.5, 0, Math.PI * 2);
         ctx.fill();
-      }
-      ctx.restore();
-
-      // F. MENARA GANTRY PELUNCURAN (LAUNCH TOWER)
-      const towerX = rocketX - 135; // 85px
-      const towerW = 42;
-      const towerTop = 100;
-
-      // Tiang Vertikal Menara Merah-Putih
-      const segH = 28;
-      const numSegs = Math.floor((padY - towerTop) / segH);
-      for (let s = 0; s < numSegs; s++) {
-        const sy = padY - (s + 1) * segH;
-        ctx.fillStyle = s % 2 === 0 ? '#DC2626' : '#F8FAFC';
-        ctx.strokeStyle = '#0F172A';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.rect(towerX, sy, towerW, segH);
-        ctx.fill();
-        ctx.stroke();
-
-        // Rangka Silang Truss Baja (X-Bracing)
-        ctx.strokeStyle = s % 2 === 0 ? '#7F1D1D' : '#94A3B8';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(towerX, sy);
-        ctx.lineTo(towerX + towerW, sy + segH);
-        ctx.moveTo(towerX + towerW, sy);
-        ctx.lineTo(towerX, sy + segH);
-        ctx.stroke();
+      } else {
+        // Fallback procedural sederhana jika gambar sedang dimuat
+        const padY = anim.baseY + 10;
+        const padH = height - padY + 10;
+        ctx.fillStyle = '#1E293B';
+        ctx.fillRect(rocketX - 160, padY, 320, padH);
       }
 
-      // Balkon & Pagar Pengawas Menara
-      ctx.fillStyle = '#334155';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.rect(towerX - 4, 170, towerW + 8, 7);
-      ctx.fill();
-      ctx.stroke();
+      // F. LENGAN JEMBATAN PENYANGGA ROKET (ASET VEKTOR SVG: penyangga roket.svg)
+      const penyanggaImg = penyanggaImgRef.current;
+      if (penyanggaImg && penyanggaImg.complete && penyanggaImg.naturalWidth > 0) {
+        const pScale = 0.636;
+        const pW = 464.4 * pScale * padScale;
+        const pH = 159.12 * pScale * padScale;
+        // Lengan penyangga membuka/retract ke arah menara saat roket meluncur
+        const pRetract = anim.clampRetract * 35 * padScale;
+        const pX = svgX + 312.0 * padScale - pRetract;
+        const pY = svgY + (260.5 - 22.18 * pScale) * padScale;
+        ctx.drawImage(penyanggaImg, pX, pY, pW, pH);
+      }
 
-      // Tiang Penangkal Petir & Lampu Peringatan Pesawat di Puncak Menara
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(towerX + towerW / 2, towerTop);
-      ctx.lineTo(towerX + towerW / 2, towerTop - 25);
-      ctx.stroke();
-
-      // Lampu Merah Berkedip di Puncak Menara
-      const beaconGlow = Math.sin(timestamp * 0.008) * 0.5 + 0.5;
-      ctx.fillStyle = `rgba(239, 68, 68, ${beaconGlow})`;
-      ctx.beginPath();
-      ctx.arc(towerX + towerW / 2, towerTop - 25, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // G. PENAHAN ROKET 1: LENGAN UMBILICAL ATAS (UPPER SWING ARM)
-      // Lengan ayun dari menara memegang badan atas roket, berayun menjauh saat diluncurkan
-      const upperPivotX = towerX + towerW;
-      const upperPivotY = 168;
-      const armSwing = -anim.clampRetract * 0.75; // Berayun ke atas-kiri saat lepas
-
-      ctx.save();
-      ctx.translate(upperPivotX, upperPivotY);
-      ctx.rotate(armSwing);
-
-      // Batang Lengan Ayun Baja
-      ctx.fillStyle = '#334155';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.roundRect(0, -6, 75, 12, 3);
-      ctx.fill();
-      ctx.stroke();
-
-      // Piston Hidrolik Penggerak
-      ctx.fillStyle = '#94A3B8';
-      ctx.fillRect(10, 4, 35, 4);
-
-      // Kepala Klem Penjepit (Hazard Striped)
-      ctx.fillStyle = '#F59E0B';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(72, -10, 16, 20, 3);
-      ctx.fill();
-      ctx.stroke();
-      // Garis hazard klem
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(74, -7, 12, 4);
-      ctx.fillRect(74, 3, 12, 4);
-
-      ctx.restore();
-
-      // H. PENAHAN ROKET 2 & 3: KLEM PENAHAN BAWAH (HOLD-DOWN CLAMPS KIRI & KANAN)
-      // Mengunci booster kaki roket di landasan, membuka ke kiri dan kanan saat diluncurkan
-      const leftClampAngle = -anim.clampRetract * 0.65;
-      const rightClampAngle = anim.clampRetract * 0.65;
-
-      // Klem Kaki Kiri
-      ctx.save();
-      ctx.translate(rocketX - 44, padY - 2);
-      ctx.rotate(leftClampAngle);
-      // Silinder piston
-      ctx.fillStyle = '#475569';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(-8, -26, 12, 28, 3);
-      ctx.fill();
-      ctx.stroke();
-      // Rahang penjepit kaki kiri
-      ctx.fillStyle = '#F59E0B';
-      ctx.beginPath();
-      ctx.roundRect(0, -32, 14, 10, 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(2, -30, 10, 3);
-      ctx.restore();
-
-      // Klem Kaki Kanan
-      ctx.save();
-      ctx.translate(rocketX + 44, padY - 2);
-      ctx.rotate(rightClampAngle);
-      // Silinder piston
-      ctx.fillStyle = '#475569';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(-4, -26, 12, 28, 3);
-      ctx.fill();
-      ctx.stroke();
-      // Rahang penjepit kaki kanan
-      ctx.fillStyle = '#F59E0B';
-      ctx.beginPath();
-      ctx.roundRect(-14, -32, 14, 10, 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(-12, -30, 10, 3);
-      ctx.restore();
-
-      // I. PARTIKEL UAP PELEPASAN KLEM (STEAM PARTICLES)
+      // G. PARTIKEL UAP PELEPASAN KLEM (STEAM PARTICLES)
       anim.steamParticles.forEach((sp) => {
         ctx.fillStyle = `rgba(241, 245, 249, ${Math.max(0, sp.alpha * (1 - sp.life / sp.maxLife))})`;
         ctx.beginPath();
@@ -915,7 +832,7 @@ export default function RocketLaunchGame() {
         ctx.fill();
       });
 
-      // J. PARTIKEL API & ASAP SEMBURAN
+      // H. PARTIKEL API & ASAP SEMBURAN
       anim.fireParticles.forEach((fp) => {
         ctx.fillStyle = fp.color;
         ctx.beginPath();
@@ -923,228 +840,96 @@ export default function RocketLaunchGame() {
         ctx.fill();
       });
 
-      // K. ROKET BERTINGKAT MULTI-STAGE "NUSANTARA-1" 🚀
+      // I. ROKET ANTARIKSA BESAR MULTI-STAGE "NUSANTARA-1" (ASET VEKTOR SVG: roket.svg) 🚀
       const rx = anim.rocketX + (launchStage === 'LAUNCHING' ? 0 : anim.rumble);
       const ry = anim.rocketY;
 
       ctx.save();
       ctx.translate(rx, ry);
 
+      // Dimensi roket diperbesar agar proporsional dengan pilar penyangga landasan (rasio 256.0 / 370.0 ≈ 0.69189)
+      const rocketScale = 0.69189;
+      const rocketW = 769.21 * rocketScale * padScale; // ~172px pada height 472
+      const rocketH = 1485.37 * rocketScale * padScale; // ~332px pada height 472
+      const centerNozzleBottomY = rocketH * (1443.43 / 1485.37); // ~322.8px dari pucuk kerucut
+
       // ── API PENYEMBUR DARI 3 NOZZLE SAAT MELUNCUR ──
       if (launchStage === 'LAUNCHING') {
-        const flamePulse = Math.sin(timestamp * 0.1) * 6;
-        // Api Nozzle Utama Tengah
+        const flamePulse = Math.sin(timestamp * 0.1) * 8;
+        // 1. Api Nozzle Utama Tengah (x = 0, y = 0)
         ctx.fillStyle = '#F97316';
         ctx.beginPath();
-        ctx.moveTo(-12, 54);
-        ctx.lineTo(0, 95 + flamePulse);
-        ctx.lineTo(12, 54);
+        ctx.moveTo(-16, -4);
+        ctx.lineTo(0, 72 + flamePulse);
+        ctx.lineTo(16, -4);
         ctx.closePath();
         ctx.fill();
         ctx.fillStyle = '#FEF08A';
         ctx.beginPath();
-        ctx.moveTo(-7, 54);
-        ctx.lineTo(0, 80 + flamePulse * 0.7);
-        ctx.lineTo(7, 54);
+        ctx.moveTo(-10, -4);
+        ctx.lineTo(0, 54 + flamePulse * 0.7);
+        ctx.lineTo(10, -4);
         ctx.closePath();
         ctx.fill();
 
-        // Api Booster Kiri
+        // 2. Api Booster Kiri (x = -41.4, y = -11.6)
         ctx.fillStyle = '#F97316';
         ctx.beginPath();
-        ctx.moveTo(-34, 52);
-        ctx.lineTo(-28, 80 + flamePulse * 0.8);
-        ctx.lineTo(-22, 52);
+        ctx.moveTo(-41.4 - 13, -15);
+        ctx.lineTo(-41.4, 46 + flamePulse * 0.8);
+        ctx.lineTo(-41.4 + 13, -15);
         ctx.closePath();
         ctx.fill();
         ctx.fillStyle = '#FEF08A';
         ctx.beginPath();
-        ctx.moveTo(-31, 52);
-        ctx.lineTo(-28, 70 + flamePulse * 0.6);
-        ctx.lineTo(-25, 52);
+        ctx.moveTo(-41.4 - 8, -15);
+        ctx.lineTo(-41.4, 35 + flamePulse * 0.6);
+        ctx.lineTo(-41.4 + 8, -15);
         ctx.closePath();
         ctx.fill();
 
-        // Api Booster Kanan
+        // 3. Api Booster Kanan (x = 41.4, y = -11.6)
         ctx.fillStyle = '#F97316';
         ctx.beginPath();
-        ctx.moveTo(22, 52);
-        ctx.lineTo(28, 80 + flamePulse * 0.8);
-        ctx.lineTo(34, 52);
+        ctx.moveTo(41.4 - 13, -15);
+        ctx.lineTo(41.4, 46 + flamePulse * 0.8);
+        ctx.lineTo(41.4 + 13, -15);
         ctx.closePath();
         ctx.fill();
         ctx.fillStyle = '#FEF08A';
         ctx.beginPath();
-        ctx.moveTo(25, 52);
-        ctx.lineTo(28, 70 + flamePulse * 0.6);
-        ctx.lineTo(31, 52);
+        ctx.moveTo(41.4 - 8, -15);
+        ctx.lineTo(41.4, 35 + flamePulse * 0.6);
+        ctx.lineTo(41.4 + 8, -15);
         ctx.closePath();
         ctx.fill();
       }
 
-      // ── 1. STRAP-ON BOOSTER KIRI ──
-      // Penopang Sambungan ke Badan Utama
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(-22, -2, 6, 8);
-      ctx.fillRect(-22, 28, 6, 8);
+      // ── BADAN ROKET ASET VEKTOR SVG: roket.svg ──
+      const rocketImg = rocketImgRef.current;
+      if (rocketImg && rocketImg.complete && rocketImg.naturalWidth > 0) {
+        ctx.drawImage(rocketImg, -rocketW / 2, -centerNozzleBottomY, rocketW, rocketH);
+      } else {
+        // Fallback procedural proporsional jika aset SVG roket sedang dimuat
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#0F172A';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-rocketW * 0.22, -centerNozzleBottomY * 0.72, rocketW * 0.44, centerNozzleBottomY * 0.68, 6);
+        ctx.fill();
+        ctx.stroke();
 
-      // Sayap Fin Booster Kiri
-      ctx.fillStyle = '#DC2626';
-      ctx.strokeStyle = '#7F1D1D';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-37, 30);
-      ctx.lineTo(-54, 52);
-      ctx.lineTo(-37, 46);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath();
+        ctx.moveTo(-rocketW * 0.22, -centerNozzleBottomY * 0.72);
+        ctx.lineTo(0, -centerNozzleBottomY);
+        ctx.lineTo(rocketW * 0.22, -centerNozzleBottomY * 0.72);
+        ctx.closePath();
+        ctx.fill();
 
-      // Silinder Booster Kiri
-      ctx.fillStyle = '#F1F5F9';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.roundRect(-37, -12, 18, 62, 3);
-      ctx.fill();
-      ctx.stroke();
-
-      // Moncong Kerucut Booster Kiri
-      ctx.fillStyle = '#DC2626';
-      ctx.beginPath();
-      ctx.moveTo(-37, -12);
-      ctx.lineTo(-28, -28);
-      ctx.lineTo(-19, -12);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Nozzle Booster Kiri
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(-33, 50, 10, 5);
-
-      // ── 2. STRAP-ON BOOSTER KANAN ──
-      // Penopang Sambungan ke Badan Utama
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(16, -2, 6, 8);
-      ctx.fillRect(16, 28, 6, 8);
-
-      // Sayap Fin Booster Kanan
-      ctx.fillStyle = '#DC2626';
-      ctx.strokeStyle = '#7F1D1D';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(37, 30);
-      ctx.lineTo(54, 52);
-      ctx.lineTo(37, 46);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Silinder Booster Kanan
-      ctx.fillStyle = '#F1F5F9';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.roundRect(19, -12, 18, 62, 3);
-      ctx.fill();
-      ctx.stroke();
-
-      // Moncong Kerucut Booster Kanan
-      ctx.fillStyle = '#DC2626';
-      ctx.beginPath();
-      ctx.moveTo(19, -12);
-      ctx.lineTo(28, -28);
-      ctx.lineTo(37, -12);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Nozzle Booster Kanan
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(23, 50, 10, 5);
-
-      // ── 3. BADAN UTAMA ROKET TENGAH (CORE STAGE) ──
-      // Badan Silinder Putih Utama
-      ctx.fillStyle = '#FFFFFF';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.roundRect(-19, -48, 38, 98, 5);
-      ctx.fill();
-      ctx.stroke();
-
-      // Cincin Sambungan Tahap Antara (Interstage Ring)
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(-18, -48, 36, 5);
-
-      // Moncong Kerucut Merah Atas
-      ctx.fillStyle = '#DC2626';
-      ctx.strokeStyle = '#7F1D1D';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(-19, -48);
-      ctx.lineTo(0, -92);
-      ctx.lineTo(19, -48);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Jarum Sensor & Lampu Indikator Satelit di Pucuk Roket
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, -92);
-      ctx.lineTo(0, -104);
-      ctx.stroke();
-      ctx.fillStyle = '#38BDF8';
-      ctx.beginPath();
-      ctx.arc(0, -104, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Kaca Jendela Pengawas Cockpit (Visor Kapsul)
-      ctx.fillStyle = '#38BDF8';
-      ctx.strokeStyle = '#0284C7';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(0, -28, 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Kilau Kaca
-      ctx.fillStyle = '#FFFFFF';
-      ctx.beginPath();
-      ctx.arc(-3, -31, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Bendera Merah Putih Indonesia di Badan Roket
-      ctx.fillStyle = '#DC2626';
-      ctx.fillRect(-12, -10, 24, 6);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(-12, -4, 24, 6);
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 1.2;
-      ctx.strokeRect(-12, -10, 24, 12);
-
-      // Tulisan NUSANTARA di Badan Roket
-      ctx.save();
-      ctx.fillStyle = '#0F172A';
-      ctx.font = 'bold 8px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('NUSANTARA', 0, 16);
-      ctx.restore();
-
-      // Nozzle Knalpot Utama Tengah Bawah
-      ctx.fillStyle = '#334155';
-      ctx.strokeStyle = '#0F172A';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-14, 50);
-      ctx.lineTo(-18, 58);
-      ctx.lineTo(18, 58);
-      ctx.lineTo(14, 50);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(-20, -10, 40, 10);
+      }
 
       ctx.restore();
 
@@ -1159,7 +944,7 @@ export default function RocketLaunchGame() {
       isRunning = false;
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [gameState, currentMission, launchStage]);
+  }, [gameState, currentMission, launchStage, towerImgLoaded, penyanggaImgLoaded, rocketImgLoaded]);
 
   // Format waktu mm:ss
   const formatTime = (secs) => {
